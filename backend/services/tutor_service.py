@@ -16,24 +16,43 @@ def encriptar_pass(password: str) -> str:
     return pwd_context.hash(password)
 
 def crear(db: Session, data: TutorCreate):
-    """
-    Registra un nuevo tutor.
-    La cedula y el email son unicos — si ya existen lanza error.
-    """
-    pass
+    if obtener_por_cedula(db, data.cedula):
+        raise ValueError("CEDULA_EXISTE")
+
+    if obtener_por_email(db, data.email):
+        raise ValueError("EMAIL_EXISTE")
+    
+    passwordenc =encriptar_pass(data.password)
+
+    nuevo = UsuarioTutor(
+        nombre=data.nombre,
+        cedula=data.cedula,
+        email=data.email,
+        password=passwordenc,
+        telefono=data.telefono
+    )
+
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
 
 
 def obtener_por_id(db: Session, id_tutor: str):
-    """Busca un tutor por UUID."""
-    pass
+    return db.query(UsuarioTutor).filter(
+        UsuarioTutor.id_tutor == id_tutor
+    ).first()
 
 
 def obtener_por_cedula(db: Session, cedula: str):
-    """
-    Busca un tutor por cedula.
-    Se usa en el router para evitar duplicados antes de crear.
-    """
-    pass
+    return db.query(UsuarioTutor).filter(
+        UsuarioTutor.cedula == cedula
+    ).first()
+
+def obtener_por_email(db: Session, email: str):
+    return db.query(UsuarioTutor).filter(
+        UsuarioTutor.email == email
+    ).first()
 
 def actualizar(db: Session, id_tutor: str, data: TutorUpdate):
     """Actualiza nombre, email o telefono del tutor."""
