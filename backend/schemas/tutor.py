@@ -8,6 +8,7 @@ class TutorCreate(BaseModel):
     nombre: str
     cedula: str
     email: EmailStr  # Pydantic valida automaticamente que sea un email valido
+    password: str
     telefono: Optional[str] = None
 
     @field_validator("cedula") # hay que agregar el api que valida el numero de cedula
@@ -24,6 +25,7 @@ class TutorCreate(BaseModel):
                 "nombre": "Juan Perez",
                 "cedula": "12345678",
                 "email": "juan@email.com",
+                "password": "123456",
                 "telefono": "099123456"
             }
         }

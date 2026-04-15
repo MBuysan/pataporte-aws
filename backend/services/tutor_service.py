@@ -2,10 +2,18 @@ import uuid
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
+from passlib.context import CryptContext
+
 
 from schemas.tutor import TutorCreate, TutorUpdate
 from config.database import UsuarioTutor, MascotaTutor, Mascota
 
+#config de encriptación
+# ! no sé si esto está bien
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def encriptar_pass(password: str) -> str:
+    return pwd_context.hash(password)
 
 def crear(db: Session, data: TutorCreate):
     """

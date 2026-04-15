@@ -35,6 +35,7 @@ class UsuarioTutor(Base):
     nombre:         Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:          Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     telefono:       Mapped[str|None] = mapped_column(VARCHAR(30),  nullable=True)
+    password_hash:  Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     fecha_registro: Mapped[datetime] = mapped_column(DateTime,     nullable=False, default=datetime.utcnow)
     estado:         Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
 
@@ -81,6 +82,7 @@ class Veterinaria(Base):
     matricula_profesional: Mapped[str]      = mapped_column(VARCHAR(40),  nullable=False, unique=True)
     nombre:                Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:                 Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
+    password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
     fecha_registro:        Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
 
