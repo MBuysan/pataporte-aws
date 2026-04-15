@@ -7,4 +7,5 @@ python-dotenv==1.0.1
 pydantic==2.7.1
 pydantic-settings==2.2.1
 pydantic[email]==2.7.1
-passlib[bcrypt]
+passlib==1.7.4
+bcrypt==4.1.3
