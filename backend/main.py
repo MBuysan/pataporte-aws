@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import mascotas, tutores, veterinarios, historial, tratamientos, vacunas, pataporte
+from routers import mascotas, tutores, veterinarios, historial, tratamientos, vacunas, pataporte, auth
 
 app = FastAPI(
     title="Pataporte API",
@@ -24,7 +24,7 @@ app.include_router(historial.router,     prefix="/historial",     tags=["Histori
 app.include_router(tratamientos.router,  prefix="/tratamientos",  tags=["Tratamientos"])
 app.include_router(vacunas.router,       prefix="/vacunas",       tags=["Vacunas"])
 app.include_router(pataporte.router,     prefix="/pataporte",     tags=["Pataporte"])
-
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
 @app.get("/", tags=["Health"])
 def health_check():
