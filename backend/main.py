@@ -24,7 +24,7 @@ app.include_router(historial.router,     prefix="/historial",     tags=["Histori
 app.include_router(tratamientos.router,  prefix="/tratamientos",  tags=["Tratamientos"])
 app.include_router(vacunas.router,       prefix="/vacunas",       tags=["Vacunas"])
 app.include_router(pataporte.router,     prefix="/pataporte",     tags=["Pataporte"])
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(auth.router,          prefix="/auth",          tags=["Auth"])
 
 @app.get("/", tags=["Health"])
 def health_check():

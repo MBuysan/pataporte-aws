@@ -1,6 +1,5 @@
-import re
 from pydantic import BaseModel, EmailStr, field_validator
-
+from backend.utils.password_utils import validar_password
 
 #  lo que se recibe al solicitar recuperacion
 class SolicitarRecuperacionRequest(BaseModel):
