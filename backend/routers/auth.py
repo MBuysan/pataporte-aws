@@ -5,21 +5,12 @@ from config.database import get_db
 from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest, MensajeResponse
 from services import auth_service
 
-# en main.py se registra con un prefix="/auth", para que todas las
-# rutas definidas aca quedan bajo /auth/
 router = APIRouter()
 
 @router.post(
     "/recuperar",
-    response_model=MensajeResponse,     # define la forma del JSON que devuelve
-    summary="Solicitar recuperación de contraseña",
-    description="""
-paso 1: el usuario ingresa su email para iniciar la recuperación.
-
-- si el email está registrado, se genera un código de 6 caracteres y se envía al correo.
-- el código expira en 15 minutos.
-- si el email no está registrado, la respuesta es la misma (por seguridad no se revela si existe o no).
-""",
+    response_model=MensajeResponse,    
+    summary= "usuario ingresa su email para iniciar la recuperación."
 )
 def solicitar_recuperacion(
     data: SolicitarRecuperacionRequest,  # pydantic valida el body del request automaticamente
@@ -31,18 +22,7 @@ def solicitar_recuperacion(
 @router.post(
     "/reset",
     response_model=MensajeResponse,
-    summary="Resetear contraseña con código",
-    description="""
-paso 2: el usuario ingresa el código recibido y su nueva contraseña.
-
-Requisitos de la nueva contraseña:
-- mínimo 6 caracteres
-- al menos una mayúscula
-- al menos una minúscula
-- al menos un número
-- al menos un carácter especial (!@#$%)
-- debe ser diferente a la contraseña anterior
-""",
+    summary="Resetear contraseña con código"
 )
 def resetear_password(
     data: ResetPasswordRequest,

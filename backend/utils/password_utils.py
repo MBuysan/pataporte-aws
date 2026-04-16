@@ -2,8 +2,8 @@ import re
 
 def validar_password(password: str) -> None:
     """
-    Valida la contraseña según reglas de seguridad.
-    Lanza ValueError si algo no cumple.
+    valida la contraseña según reglas de seguridad.
+    lanza ValueError si algo no cumple.
     """
 
     if not password:
@@ -21,5 +21,5 @@ def validar_password(password: str) -> None:
     if not re.search(r"\d", password):
         raise ValueError("Debe tener al menos un número")
 
-    if not re.search(r"[!@#$%^&*(),.?\":{}|<>_\-]", password):
+    if not re.search(r"[!@#$%^&*?]", password):
         raise ValueError("Debe tener al menos un carácter especial")
