@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from schemas.recuperacion import SolicitarRecuperacionRequest, ResetPasswordRequest, MensajeResponse
+from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest, MensajeResponse
 from services import auth_service
 
 # en main.py se registra con un prefix="/auth", para que todas las

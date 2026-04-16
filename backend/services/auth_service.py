@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from config.database import UsuarioTutor, RecuperacionPassword
-from schemas.recuperacion import SolicitarRecuperacionRequest, ResetPasswordRequest
+from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest
 
 # configuracion de hashing
 # CryptContext es el objeto que sabe como hashear y verificar con bcrypt.
