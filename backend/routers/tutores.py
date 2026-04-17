@@ -11,10 +11,18 @@ router = APIRouter()
 
 @router.post("/", response_model=TutorResponse, status_code=201, summary="Registrar tutor")
 def registrar_tutor(data: TutorCreate, db: Session = Depends(get_db)):
-    if tutor_service.obtener_por_cedula(db, data.cedula):
-        raise HTTPException(status_code=400, detail="Ya existe un tutor con esa cedula")
-    return tutor_service.crear(db, data)
 
+    try:
+        return tutor_service.crear_tutor(db, data)
+
+    except ValueError as e:
+        if str(e) == "CEDULA_EXISTE":
+            raise HTTPException(status_code=400, detail="Cédula ya registrada")
+
+        if str(e) == "EMAIL_EXISTE":
+            raise HTTPException(status_code=400, detail="Email ya registrado")
+
+        raise HTTPException(status_code=500, detail="Error interno")
 
 @router.get("/{id_tutor}", response_model=TutorResponse, summary="Obtener tutor")
 def obtener_tutor(id_tutor: str, db: Session = Depends(get_db)):
