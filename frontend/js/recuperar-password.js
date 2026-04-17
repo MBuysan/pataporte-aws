@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // encodeURIComponent convierte caracteres especiales del email (como @)
       // a su forma válida para url (40% en este caso).
       setTimeout(() => {
-        window.location.href = `index.html?seccion=reset-password&email=${encodeURIComponent(email)}`;
+        window.location.href = `reset-password.html?email=${encodeURIComponent(email)}`;
       }, 2000);
 
     } catch (error) {
