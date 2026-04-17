@@ -22,4 +22,4 @@ def validar_password(password: str) -> None:
         raise ValueError("Debe tener al menos un número")
 
     if not re.search(r"[!@#$%^&*?]", password):
-        raise ValueError("Debe tener al menos un carácter especial")
+        raise ValueError("Debe tener al menos un carácter especial. (!@#$%^&*?)")
