@@ -1,10 +1,12 @@
-import uuid
+import secrets
+import string
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from schemas.mascota import MascotaCreate, MascotaUpdate
-from config.database import Mascota, MascotaTutor
+from config.database import Mascota, CodigoAccesoMascota
 
 
 def listar(db: Session):
@@ -21,6 +23,40 @@ def crear(db: Session, data: MascotaCreate):
     El id_mascota lo genera el backend, no el usuario.
     """
     pass
+
+
+
+def generar_codigo_acceso(db: Session, id_mascota: str):
+    """
+    Genera un código único de 8 caracteres para compartir acceso.
+    Expira en 24 horas.
+    """
+    mascota = obtener_por_id(db, id_mascota)
+    if not mascota:
+        raise HTTPException(status_code=404, detail="Mascota no encontrada")
+
+    # Generar código alfanumérico aleatorio
+    caracteres = string.ascii_uppercase + string.digits
+    codigo = ''.join(secrets.choice(caracteres) for _ in range(8))
+
+    # Definir expiración (24 horas)
+    expiracion = datetime.utcnow() + timedelta(hours=24)
+
+    nuevo_codigo = CodigoAccesoMascota(
+        id_mascota=id_mascota,
+        codigo=codigo,
+        fecha_expiracion=expiracion
+    )
+    
+    db.add(nuevo_codigo)
+    try:
+        db.commit()
+        db.refresh(nuevo_codigo)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al generar el código: {str(e)}")
+    
+    return nuevo_codigo
 
 
 def actualizar(db: Session, id_mascota: str, data: MascotaUpdate):
