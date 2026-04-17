@@ -9,8 +9,6 @@ from datetime import datetime
 from schemas.tutor import TutorCreate, TutorUpdate
 from config.database import MascotaTutor, CodigoAccesoMascota
 
-#config de encriptación
-# ! no sé si esto está bien
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def encriptar_pass(password: str) -> str:
@@ -54,6 +52,7 @@ def obtener_por_email(db: Session, email: str):
     return db.query(UsuarioTutor).filter(
         UsuarioTutor.email == email
     ).first()
+
 
 def actualizar(db: Session, id_tutor: str, data: TutorUpdate):
     """Actualiza nombre, email o telefono del tutor."""
