@@ -230,7 +230,24 @@ class Certificado(Base):
     emisor:  Mapped["Veterinaria"]      = relationship("Veterinaria", back_populates="certificados_emitidos",  foreign_keys=[id_veterinario_emisor])
     revisor: Mapped["Veterinaria|None"] = relationship("Veterinaria", back_populates="certificados_revisados", foreign_keys=[id_revisor])
 
+class RecuperacionPassword(Base):
+     """
+     Guarda los codigos de recuperacion de contraseña.
+     - El codigo se genera al solicitar recuperacion y expira en 15 minutos.
+     - Una vez usado, la columna 'usado' se marca True y no puede reutilizarse.
+     - Relacion con UsuarioTutor via id_tutor (ForeignKey).
+     """
+     __tablename__ = "recuperacion_password"
 
+     id_recuperacion: Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+     id_tutor:        Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("usuario_tutor.id_tutor", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+     codigo_hash:     Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
+     expiracion:      Mapped[datetime] = mapped_column(DateTime, nullable=False)
+     usado:           Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
+     fecha_solicitud: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+
+     tutor: Mapped["UsuarioTutor"] = relationship("UsuarioTutor")
+ 
 # ── Sesion y utilidades ───────────────────────────────────────────────────────
 
 def get_db():

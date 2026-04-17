@@ -8,7 +8,7 @@ from typing import Optional
 class TutorCreate(BaseModel):
     nombre: str
     cedula: str
-    email: EmailStr  # Pydantic valida automaticamente que sea un email valido
+    email: EmailStr  # pydantic valida automaticamente que sea un email valido
     password: str
     telefono: Optional[str] = None
 

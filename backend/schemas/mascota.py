@@ -3,8 +3,9 @@ from datetime import date, datetime
 from typing import Optional
 from enum import Enum
 
-
-class SexoEnum(str, Enum):
+"""el tipo enum, permite marcar los únicos valores validos para un campo, 
+tambien hereda de str para poder manejarse en json y la base de datos"""
+class SexoEnum(str, Enum): 
     macho = "macho"
     hembra = "hembra"
     desconocido = "desconocido"
@@ -37,15 +38,15 @@ class MascotaCreate(BaseModel):
         }
 
 
-# ── Lo que se recibe al ACTUALIZAR una mascota ─────────────
-# Todos los campos son opcionales: solo se actualizan los que llegan
+# ── Lo que se recibe al actualizar una mascota ─────────────
+# todos los campos son opcionales: solo se actualizan los que llegan
 class MascotaUpdate(BaseModel):
     nombre: Optional[str] = None
     raza: Optional[str] = None
     foto_url: Optional[str] = None
 
 
-# ── Lo que se DEVUELVE al consultar una mascota ────────────
+# ── Lo que se devuelve al consultar una mascota ────────────
 class MascotaResponse(BaseModel):
     id_mascota: str
     nombre: str
