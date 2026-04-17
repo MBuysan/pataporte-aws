@@ -3,8 +3,9 @@ from datetime import date, datetime
 from typing import Optional
 from enum import Enum
 
-
-class SexoEnum(str, Enum):
+"""el tipo enum, permite marcar los únicos valores validos para un campo, 
+tambien hereda de str para poder manejarse en json y la base de datos"""
+class SexoEnum(str, Enum): 
     macho = "macho"
     hembra = "hembra"
     desconocido = "desconocido"
@@ -58,4 +59,4 @@ class MascotaResponse(BaseModel):
     estado: EstadoEnum
 
     class Config:
-        from_attributes = True  # permite convertir objetos SQLAlchemy a este schema
+        from_attributes = True  # permite convertir objetos SQLAlchemy a este schema, evita errores

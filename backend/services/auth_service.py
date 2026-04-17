@@ -9,15 +9,19 @@ from sqlalchemy.orm import Session
 from config.database import UsuarioTutor, RecuperacionPassword
 from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest
 
-# configuracion de hashing
-# CryptContext es el objeto que sabe como hashear y verificar con bcrypt.
-# "deprecated=auto" significa que si en el futuro cambiamos el algoritmo, los hashes viejos se reconocen igual y se migran solitos.
+"""
+configuracion de hashing 
+    CryptContext es el objeto que sabe como hashear y verificar con bcrypt.
+    "deprecated=auto" significa que si en el futuro cambiamos el algoritmo,
+    los hashes viejos se reconocen igual y se migran solitos.
+"""
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 EXPIRACION_MINUTOS = 15
 
 
-#  funciones privadas (con _ al inicio = uso interno del modulo)
+#funciones privadas (con _ al inicio = uso interno del modulo)
 
 def _generar_codigo() -> str:
     """
@@ -56,13 +60,12 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     Logica de seguridad importante:
     - Si el email NO existe, la respuesta es IDENTICA a si existe.
     - Esto evita que alguien pueda usar este endpoint para descubrir
-      que emails estan registrados en el sistema (ataque de enumeracion).
+      que emails estan registrados en el sistema.
     """
     # db.query(Modelo).filter(condicion).first() → busca el primer registro que cumpla la condicion, o None si no existe
     tutor = db.query(UsuarioTutor).filter(UsuarioTutor.email == data.email).first()
 
     if not tutor:
-        # misma respuesta aunque no exista (por seguridad)
         return {"mensaje": "Si el email está registrado, recibirás un código de recuperación"}
 
     # invalida codigos anteriores pendientes del mismo tutor.
@@ -104,13 +107,13 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     2. La nueva contraseña es distinta a la anterior.
     3. Actualiza password_hash y marca el codigo como usado.
 
-    Nota: las validaciones de FORMATO de contraseña (mayuscula, numero, etc.)
-    ya las hizo Pydantic en el schema antes de llegar aqui.
+    Nota: las validaciones de formato de contraseña (mayuscula, numero, etc.)
+    ya las hizo Pydantic en el schema antes de llegar hasta aca.
     """
 
     # Busca todos los codigos que tecnicamente podrian ser validos
     # (no usados y no expirados). Luego verifica cual matchea con bcrypt.
-    # No podemos hacer WHERE codigo_hash = ? porque bcrypt genera hashes
+    # No se puede hacer hacer WHERE codigo_hash = ? porque bcrypt genera hashes
     # distintos cada vez aunque el texto sea el mismo.
     recuperaciones_candidatas = db.query(RecuperacionPassword).filter(
         RecuperacionPassword.usado      == False,
@@ -130,7 +133,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
             detail="El código es inválido o ha expirado"
         )
 
-    # Obtiene el tutor dueno de ese codigo
+    # obtiene el tutor dueño de ese codigo
     tutor = db.query(UsuarioTutor).filter(
         UsuarioTutor.id_tutor == recuperacion.id_tutor
     ).first()
@@ -153,7 +156,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     # Marca el codigo como usado para que no pueda reutilizarse
     recuperacion.usado = True
 
-    # db.commit() guarda AMBOS cambios en la BD en una sola transaccion
+    # db.commit() guarda ambos cambios en la BD en una sola transaccion
     db.commit()
 
     return {"mensaje": "Contraseña actualizada correctamente"}
