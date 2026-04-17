@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.config.settings import settings
+from config.settings import settings
 
 # ── Motor y sesion ────────────────────────────────────────────────────────────
 engine = create_engine(settings.DATABASE_URL)
@@ -72,6 +72,19 @@ class MascotaTutor(Base):
 
     tutor:   Mapped["UsuarioTutor"] = relationship("UsuarioTutor", back_populates="mascotas")
     mascota: Mapped["Mascota"]      = relationship("Mascota",      back_populates="tutores")
+
+
+class CodigoAccesoMascota(Base):
+    __tablename__ = "codigo_acceso_mascota"
+
+    id_codigo:        Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_mascota:       Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+    codigo:           Mapped[str]      = mapped_column(VARCHAR(20), nullable=False, unique=True)
+    fecha_creacion:   Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_expiracion: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    usado:            Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
+
+    mascota: Mapped["Mascota"] = relationship("Mascota")
 
 
 class Veterinaria(Base):

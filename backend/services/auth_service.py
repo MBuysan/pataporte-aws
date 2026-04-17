@@ -1,13 +1,14 @@
 import random
 import string
-from datetime import datetime, timedelta
-
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-
 from config.database import UsuarioTutor, RecuperacionPassword
 from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest
+from datetime import datetime, timedelta, timezone
+import jwt
+from sqlalchemy import or_
+from config.settings import settings
 
 """
 configuracion de hashing 
@@ -34,14 +35,6 @@ def _generar_codigo() -> str:
 def _hashear(texto: str) -> str:
     """transforma texto plano en hash bcrypt."""
     return pwd_context.hash(texto)
-
-
-def _verificar(texto_plano: str, hash_guardado: str) -> bool:
-    """
-    compara texto plano contra su hash. devuelve true si coinciden.
-    """
-    return pwd_context.verify(texto_plano, hash_guardado)
-
 
 def _enviar_email_recuperacion(email: str, codigo: str):
     """
@@ -194,7 +187,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     # recorre los candidatos hasta encontrar uno cuyo hash coincida con el codigo ingresado
     recuperacion = None
     for r in recuperaciones_candidatas:
-        if _verificar(data.codigo, r.codigo_hash):
+        if verificar_password(data.codigo, r.codigo_hash):
             recuperacion = r
             break  # encontrado, no necesitamos seguir buscando
 
@@ -213,8 +206,8 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
         raise HTTPException(status_code=404, detail="Tutor no encontrado")
 
     # verifica que la nueva contraseña sea diferente a la actual.
-    # _verificar compara texto plano contra el hash guardado en la BD.
-    if _verificar(data.nueva_password, tutor.password_hash):
+    # verificar_password compara texto plano contra el hash guardado en la BD.
+    if verificar_password(data.nueva_password, tutor.password_hash):
         raise HTTPException(
             status_code=400,
             detail="La nueva contraseña no puede ser igual a la anterior"
@@ -231,3 +224,65 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     db.commit()
 
     return {"mensaje": "Contraseña actualizada correctamente"}
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def verificar_password(password_plano: str, password_hash: str) -> bool:
+    try:
+        return pwd_context.verify(password_plano, password_hash)
+    except ValueError:
+        return False
+    
+
+def crear_access_token(data: dict) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+
+    payload = data.copy()
+    payload.update({"exp": expire})
+
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return token
+
+
+def login_tutor(db: Session, identificador: str, password: str):
+    tutor = (
+        db.query(UsuarioTutor)
+        .filter(
+            UsuarioTutor.estado == "activo",
+            or_(
+                UsuarioTutor.email == identificador,
+                UsuarioTutor.cedula == identificador,
+            ),
+        )
+        .first()
+    )
+
+    if not tutor:
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    if not verificar_password(password, tutor.password_hash):
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    access_token = crear_access_token(
+        {
+            "sub": tutor.id_tutor,
+            "rol": "tutor",
+            "nombre": tutor.nombre,
+            "email": tutor.email,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id_tutor": tutor.id_tutor,
+            "nombre": tutor.nombre,
+            "email": tutor.email,
+            "cedula": tutor.cedula,
+        },
+    }

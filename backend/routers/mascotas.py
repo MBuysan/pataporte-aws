@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from schemas.mascota import MascotaCreate, MascotaUpdate, MascotaResponse
+from schemas.mascota import MascotaCreate, MascotaUpdate, MascotaResponse, CodigoAccesoResponse
 from services import mascota_service
 
 # todos las etiquetas get,post etc de mas abajo se registran sobre este objeto
@@ -16,11 +16,17 @@ parametros dentro del endpoint
 3er parametro: summary (resumen) o description usualmente
 """
 
-
 @router.get(
     "/",
     response_model=list[MascotaResponse],
     summary="Listar mascotas")
+
+@router.post("/{id_mascota}/generar-codigo", response_model=CodigoAccesoResponse, summary="Generar código para compartir")
+def generar_codigo(id_mascota: str, db: Session = Depends(get_db)):
+    return mascota_service.generar_codigo_acceso(db, id_mascota)
+
+
+@router.get("/", response_model=list[MascotaResponse], summary="Listar mascotas")
 def listar_mascotas(db: Session = Depends(get_db)):
     return mascota_service.listar(db)
 

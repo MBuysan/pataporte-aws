@@ -59,4 +59,16 @@ class MascotaResponse(BaseModel):
     estado: EstadoEnum
 
     class Config:
-        from_attributes = True  # permite convertir objetos SQLAlchemy a este schema, evita errores
+        from_attributes = True  # permite convertir objetos SQLAlchemy a este schema
+
+
+class CodigoAccesoResponse(BaseModel):
+    codigo: str
+    fecha_expiracion: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VincularMascotaRequest(BaseModel):
+    codigo: str
