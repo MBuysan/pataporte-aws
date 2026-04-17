@@ -4,12 +4,9 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from passlib.context import CryptContext
 
-
 from schemas.tutor import TutorCreate, TutorUpdate
 from config.database import UsuarioTutor, MascotaTutor, Mascota
 
-#config de encriptación
-# ! no sé si esto está bien
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def encriptar_pass(password: str) -> str:
@@ -20,7 +17,25 @@ def crear(db: Session, data: TutorCreate):
     Registra un nuevo tutor.
     La cedula y el email son unicos — si ya existen lanza error.
     """
-    pass
+    try:
+        nuevo_tutor = UsuarioTutor(
+            id_tutor=str(uuid.uuid4()),
+            nombre=data.nombre,
+            cedula=data.cedula,
+            email=data.email,
+            telefono=data.telefono,
+            password_hash=encriptar_pass(data.password),
+            estado="activo"
+        )
+
+        db.add(nuevo_tutor)
+        db.commit()
+        db.refresh(nuevo_tutor)
+        return nuevo_tutor
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Ya existe un tutor con esa cedula o email")
 
 
 def obtener_por_id(db: Session, id_tutor: str):
@@ -34,6 +49,7 @@ def obtener_por_cedula(db: Session, cedula: str):
     Se usa en el router para evitar duplicados antes de crear.
     """
     pass
+
 
 def actualizar(db: Session, id_tutor: str, data: TutorUpdate):
     """Actualiza nombre, email o telefono del tutor."""
@@ -54,4 +70,3 @@ def vincular_mascota(db: Session, id_tutor: str, id_mascota: str, rol: str = "se
     Regla: solo puede haber un tutor principal por mascota.
     """
     pass
-

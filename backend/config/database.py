@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.config.settings import settings
+from config.settings import settings
 
 # ── Motor y sesion ────────────────────────────────────────────────────────────
 engine = create_engine(settings.DATABASE_URL)
