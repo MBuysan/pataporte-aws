@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from config.database import UsuarioTutor, RecuperacionPassword
-from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest
+from schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest
 from datetime import datetime, timedelta, timezone
 import jwt
 from sqlalchemy import or_
