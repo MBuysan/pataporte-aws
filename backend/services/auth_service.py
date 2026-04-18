@@ -1,5 +1,8 @@
 import random
 import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session

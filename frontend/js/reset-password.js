@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       { id: "req-mayuscula", cumple: /[A-Z]/.test(password) },   // test() devuelve true si la regex matchea
       { id: "req-minuscula", cumple: /[a-z]/.test(password) },
       { id: "req-numero",   cumple: /\d/.test(password) },
-      { id: "req-especial", cumple: /[!@#$%^&*(),.?]/.test(password) },
+      { id: "req-especial", cumple: /[!@#$%^&*?]/.test(password) },
     ];
 
     requisitos.forEach(({ id, cumple }) => {
