@@ -3,13 +3,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from passlib.context import CryptContext
-
+from services import auth_service
 
 from datetime import datetime
 from schemas.tutor import TutorCreate, TutorUpdate
 from config.database import MascotaTutor, CodigoAccesoMascota
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
 
 def encriptar_pass(password: str) -> str:
     return pwd_context.hash(password)
@@ -21,7 +23,8 @@ def crear(db: Session, data: TutorCreate):
     if obtener_por_email(db, data.email):
         raise ValueError("EMAIL_EXISTE")
     
-    passwordenc =encriptar_pass(data.password)
+    
+    passwordenc =auth_service._hashear(data.password)
 
     nuevo = UsuarioTutor(
         nombre=data.nombre,

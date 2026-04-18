@@ -9,19 +9,6 @@ from services import tutor_service
 router = APIRouter()
 
 
-@router.post(
-    "/",
-    response_model=TutorResponse,
-    status_code=201,
-    summary="Registrar tutor"
-    )
-def registrar_tutor(
-    data: TutorCreate,
-    db: Session = Depends(get_db)
-    ):
-    if tutor_service.obtener_por_cedula(db, data.cedula):
-        raise HTTPException(status_code=400, detail="Ya existe un tutor con esa cedula")
-    return tutor_service.crear(db, data)
 @router.post("/{id_tutor}/vincular-mascota", summary="Vincular mascota con código")
 def vincular_mascota(id_tutor: str, data: VincularMascotaRequest, db: Session = Depends(get_db)):
     return tutor_service.vincular_mascota_con_codigo(db, id_tutor, data.codigo)
@@ -31,7 +18,7 @@ def vincular_mascota(id_tutor: str, data: VincularMascotaRequest, db: Session = 
 def registrar_tutor(data: TutorCreate, db: Session = Depends(get_db)):
 
     try:
-        return tutor_service.crear_tutor(db, data)
+        return tutor_service.crear(db, data)
 
     except ValueError as e:
         if str(e) == "CEDULA_EXISTE":
