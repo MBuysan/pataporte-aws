@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from backend.schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest, MensajeResponse
+from schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest, MensajeResponse
 from schemas.auth import LoginRequest, LoginResponse
 from services import auth_service
 
