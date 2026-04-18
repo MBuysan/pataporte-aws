@@ -7,14 +7,9 @@ from services import auth_service
 
 from datetime import datetime
 from schemas.tutor import TutorCreate, TutorUpdate
-from config.database import MascotaTutor, CodigoAccesoMascota
+from config.database import MascotaTutor, CodigoAccesoMascota, UsuarioTutor
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-
-def encriptar_pass(password: str) -> str:
-    return pwd_context.hash(password)
 
 def crear(db: Session, data: TutorCreate):
     if obtener_por_cedula(db, data.cedula):
@@ -30,7 +25,7 @@ def crear(db: Session, data: TutorCreate):
         nombre=data.nombre,
         cedula=data.cedula,
         email=data.email,
-        password=passwordenc,
+        password_hash=passwordenc,
         telefono=data.telefono
     )
 

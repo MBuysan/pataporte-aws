@@ -3,11 +3,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import mascotas, tutores, veterinarios, historial, tratamientos, vacunas, pataporte, auth
 
+from config.database import create_tables
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_tables()
+    yield
+
 #crea la instancia principal aplicacion, lo de adentro es mera documentacion
 app = FastAPI(
     title="Pataporte API",
     description="API REST para la gestión de salud de mascotas en Uruguay.",
     version="1.0.0",
+    lifespan=lifespan
 )
 
 #agrega permisos de donde se ppuede acceder a la api y demas configuraciones
