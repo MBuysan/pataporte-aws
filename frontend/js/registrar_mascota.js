@@ -40,7 +40,9 @@ form.addEventListener("submit", async (e) => {
       mensaje.innerText = `Mascota registrada. ID: ${result.id_mascota}`;
       mensaje.style.color = "green";
       form.reset();
-      setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 1000);
     }
   } catch (error) {
     mensaje.innerText = "Error de conexión con el servidor";
