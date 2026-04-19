@@ -36,6 +36,8 @@ def obtener_por_id(db: Session, id_tratamiento: str) -> Tratamiento:
     pass
 
 
-def actualizar(db: Session, id_tratamiento: str, data: TratamientoUpdate) -> Tratamiento:
+def actualizar(
+    db: Session, id_tratamiento: str, data: TratamientoUpdate
+) -> Tratamiento:
     """Actualiza descripción o fecha de finalización de un tratamiento."""
     pass

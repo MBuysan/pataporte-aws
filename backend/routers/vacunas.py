@@ -7,6 +7,7 @@ from services import vacuna_service
 
 router = APIRouter()
 
+
 # TODO: reemplazar por dependencia real de autenticación JWT
 def _get_id_veterinaria(x_veterinaria_id: str = Header(...)) -> str:
     """

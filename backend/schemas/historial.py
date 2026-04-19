@@ -19,7 +19,7 @@ class AgregarConsultaHistorialCreate(BaseModel):
                 "id_mascota": "uuid-de-la-mascota",
                 "motivo": "Vómitos frecuentes",
                 "diagnostico": "Gastritis leve",
-                "tratamiento_indicado": "Dieta blanda por 48 horas"
+                "tratamiento_indicado": "Dieta blanda por 48 horas",
             }
         }
 

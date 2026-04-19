@@ -19,25 +19,27 @@ def obtener_por_id(db: Session, id_mascota: str):
 
 def crear(db: Session, data: MascotaCreate):
     """
-    *Funcionalidad:* 
+    *Funcionalidad:*
     Crear una nueva mascota con id único generado por el sistema y asociarlo con el tutor
-    
+
     *Retorna:*
     nueva_mascota[obj]
-    
+
     *Validaciones:*
         1) Valida si existe el tutor, en caso de que no, lanza excepción 404
         2) Valida si existe actualmente una mascota con el mismo: nombre, especie y feha de nacimiento para ese tutor, en caso de que no, lanza excepción 409
         3) Si por cualquier motivo el sistema no consigue almacenar la nueva mascota y su relacion con el tutor en la base de datos, lanza excepción 500
-        
+
     *Información adicional:*
-    
+
     .add() -> añade a la BD
-    
+
     .flush() -> borra el buffer interno y fuerza a que todos los datos que el dato almacenado se escriba inmediatamente en su destino
-    
+
     """
-    tutor = db.query(UsuarioTutor).filter(UsuarioTutor.id_tutor == data.id_tutor).first()
+    tutor = (
+        db.query(UsuarioTutor).filter(UsuarioTutor.id_tutor == data.id_tutor).first()
+    )
     if not tutor:
         raise HTTPException(status_code=404, detail="Tutor no encontrado")
 
@@ -53,7 +55,10 @@ def crear(db: Session, data: MascotaCreate):
         .first()
     )
     if duplicado:
-        raise HTTPException(status_code=409, detail="Ya existe una mascota con ese nombre, especie y fecha de nacimiento para este tutor")
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una mascota con ese nombre, especie y fecha de nacimiento para este tutor",
+        )
 
     nueva_mascota = Mascota(
         nombre=data.nombre,
@@ -63,7 +68,7 @@ def crear(db: Session, data: MascotaCreate):
         sexo=data.sexo,
         foto_url=data.foto_url,
     )
-    
+
     db.add(nueva_mascota)
     db.flush()
 
@@ -84,7 +89,6 @@ def crear(db: Session, data: MascotaCreate):
     return nueva_mascota
 
 
-
 def generar_codigo_acceso(db: Session, id_mascota: str):
     """
     Genera un código único de 8 caracteres para compartir acceso.
@@ -96,25 +100,25 @@ def generar_codigo_acceso(db: Session, id_mascota: str):
 
     # Generar código alfanumérico aleatorio
     caracteres = string.ascii_uppercase + string.digits
-    codigo = ''.join(secrets.choice(caracteres) for _ in range(8))
+    codigo = "".join(secrets.choice(caracteres) for _ in range(8))
 
     # Definir expiración (24 horas)
     expiracion = datetime.utcnow() + timedelta(hours=24)
 
     nuevo_codigo = CodigoAccesoMascota(
-        id_mascota=id_mascota,
-        codigo=codigo,
-        fecha_expiracion=expiracion
+        id_mascota=id_mascota, codigo=codigo, fecha_expiracion=expiracion
     )
-    
+
     db.add(nuevo_codigo)
     try:
         db.commit()
         db.refresh(nuevo_codigo)
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al generar el código: {str(e)}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Error al generar el código: {str(e)}"
+        )
+
     return nuevo_codigo
 
 
@@ -140,4 +144,3 @@ def _enviar_historial_por_email(db: Session, mascota):
     TODO: implementar con libreria de email (sendgrid, smtp, etc.)
     """
     pass
-

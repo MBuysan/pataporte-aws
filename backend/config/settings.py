@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
-    MAIL_FROM:     str
-    
+    MAIL_FROM: str
+
     class Config:
         env_file = ".env"
 

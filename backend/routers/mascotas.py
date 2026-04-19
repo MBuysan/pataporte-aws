@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from schemas.mascota import MascotaCreate, MascotaUpdate, MascotaResponse, CodigoAccesoResponse
+from schemas.mascota import (
+    MascotaCreate,
+    MascotaUpdate,
+    MascotaResponse,
+    CodigoAccesoResponse,
+)
 from services import mascota_service
 
 # todos las etiquetas get,post etc de mas abajo se registran sobre este objeto
@@ -15,7 +20,10 @@ parametros dentro del endpoint
 3er parametro: summary (resumen) o description usualmente
 """
 
-@router.get("/", response_model=list[MascotaResponse], summary="Listar todas las mascotas")
+
+@router.get(
+    "/", response_model=list[MascotaResponse], summary="Listar todas las mascotas"
+)
 def listar_mascotas(db: Session = Depends(get_db)):
     return mascota_service.listar(db)
 
@@ -28,13 +36,19 @@ def obtener_mascota(id_mascota: str, db: Session = Depends(get_db)):
     return mascota
 
 
-@router.post("/", response_model=MascotaResponse, status_code=201, summary="Registrar mascota")
+@router.post(
+    "/", response_model=MascotaResponse, status_code=201, summary="Registrar mascota"
+)
 def registrar_mascota(data: MascotaCreate, db: Session = Depends(get_db)):
     return mascota_service.crear(db, data)
 
 
-@router.patch("/{id_mascota}", response_model=MascotaResponse, summary="Actualizar mascota")
-def actualizar_mascota(id_mascota: str, data: MascotaUpdate, db: Session = Depends(get_db)):
+@router.patch(
+    "/{id_mascota}", response_model=MascotaResponse, summary="Actualizar mascota"
+)
+def actualizar_mascota(
+    id_mascota: str, data: MascotaUpdate, db: Session = Depends(get_db)
+):
     return mascota_service.actualizar(db, id_mascota, data)
 
 
@@ -43,6 +57,10 @@ def eliminar_mascota(id_mascota: str, db: Session = Depends(get_db)):
     mascota_service.eliminar(db, id_mascota)
 
 
-@router.post("/{id_mascota}/generar-codigo", response_model=CodigoAccesoResponse, summary="Generar código para compartir")
+@router.post(
+    "/{id_mascota}/generar-codigo",
+    response_model=CodigoAccesoResponse,
+    summary="Generar código para compartir",
+)
 def generar_codigo(id_mascota: str, db: Session = Depends(get_db)):
     return mascota_service.generar_codigo_acceso(db, id_mascota)

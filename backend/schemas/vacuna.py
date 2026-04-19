@@ -35,7 +35,7 @@ class DosisCreate(BaseModel):
                 "fecha_aplicacion": "2024-05-10",
                 "lote_vacuna": "LOT-2024-XZ",
                 "via_administracion": "subcutanea",
-                "es_externa": False
+                "es_externa": False,
             }
         }
 
