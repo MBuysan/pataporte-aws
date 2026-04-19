@@ -3,8 +3,10 @@ from datetime import date, datetime
 from typing import Optional
 from enum import Enum
 
-"""el tipo enum, permite marcar los únicos valores validos para un campo, 
-tambien hereda de str para poder manejarse en json y la base de datos"""
+"""
+el tipo enum, permite marcar los únicos valores validos para un campo, 
+tambien hereda de str para poder manejarse en json y la base de datos
+"""
 class SexoEnum(str, Enum): 
     macho = "macho"
     hembra = "hembra"
