@@ -8,7 +8,10 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from config.database import UsuarioTutor, RecuperacionPassword
-from schemas.recuperacion_password import SolicitarRecuperacionRequest, ResetPasswordRequest
+from schemas.recuperacion_password import (
+    SolicitarRecuperacionRequest,
+    ResetPasswordRequest,
+)
 from datetime import datetime, timedelta, timezone
 import jwt
 from sqlalchemy import or_
@@ -26,7 +29,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 EXPIRACION_MINUTOS = 15
 
 
-#funciones privadas (con _ al inicio = uso interno del modulo)
+# funciones privadas (con _ al inicio = uso interno del modulo)
+
 
 def _generar_codigo() -> str:
     """
@@ -40,32 +44,33 @@ def _hashear(texto: str) -> str:
     """transforma texto plano en hash bcrypt."""
     return pwd_context.hash(texto)
 
+
 def _enviar_email_recuperacion(email: str, codigo: str):
     """
-    envía código de recuperacion al email del usuario 
-    
+    envía código de recuperacion al email del usuario
+
     implementacion con smtp , es el protocolo estandar para enviar emails entre servidores
-    
+
     smtplib.SMTP_SSL abre una conexión cifrada al servidor de gmail en el puerto 465.
-    
+
     gmail requiere una "contraseña de aplicación" (no la contraseña de la cuenta).
       se genera en: google account → seguridad → verificación en dos pasos → contraseñas de app.
-    
- 
+
+
     estas variables se configuran en el .env:
         MAIL_USERNAME=tucuenta@gmail.com
-        MAIL_PASSWORD=xxxx-xxxx-xxxx-xxxx   
+        MAIL_PASSWORD=xxxx-xxxx-xxxx-xxxx
         MAIL_FROM=tucuenta@gmail.com
-    
+
     """
     # MIMEMultipart("alternative") crea un email con múltiples versiones del cuerpo.
     # "alternative" significa que son versiones alternativas del mismo contenido
     # (texto plano O html) — el cliente de email elige cuál mostrar dependiendo de sus capacidades.
     mensaje = MIMEMultipart("alternative")
     mensaje["Subject"] = "Recuperación de contraseña - Pataporte"
-    mensaje["From"]    = settings.MAIL_FROM
-    mensaje["To"]      = email
- 
+    mensaje["From"] = settings.MAIL_FROM
+    mensaje["To"] = email
+
     # versión texto plano: para clientes que no renderizan HTML
     cuerpo_texto = f"""
 Hola,
@@ -79,7 +84,7 @@ Si no solicitaste este cambio, podés ignorar este email.
  
 Equipo Pataporte
     """
- 
+
     # versión HTML: para clientes modernos
     cuerpo_html = f"""
     <html>
@@ -99,12 +104,12 @@ Equipo Pataporte
       </body>
     </html>
     """
- 
+
     # MIMEText envuelve el texto con el tipo MIME correcto.
     # se adjuntan ambas versiones — el cliente de email elige cuál mostrar.
     mensaje.attach(MIMEText(cuerpo_texto, "plain", "utf-8"))
-    mensaje.attach(MIMEText(cuerpo_html,  "html",  "utf-8"))
- 
+    mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
+
     try:
         # SMTP_SSL abre una conexión cifrada directamente en el puerto 465.
         # "with" garantiza que la conexión se cierre aunque ocurra un error.
@@ -112,7 +117,7 @@ Equipo Pataporte
             servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
             # sendmail(remitente, [destinatarios], mensaje_serializado_como_texto)
             servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
- 
+
     except Exception as e:
         # si el email falla, se registra pero no se interrumpe el flujo.
         # el código ya fue guardado en la BD — el usuario puede pedir otro.
@@ -120,7 +125,8 @@ Equipo Pataporte
         print(f"[ERROR EMAIL] No se pudo enviar email a {email}: {e}")
 
 
-#  funciones publicas (las llaman los routers) 
+#  funciones publicas (las llaman los routers)
+
 
 def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     """
@@ -135,26 +141,28 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     tutor = db.query(UsuarioTutor).filter(UsuarioTutor.email == data.email).first()
 
     if not tutor:
-        return {"mensaje": "Si el email está registrado, recibirás un código de recuperación"}
+        return {
+            "mensaje": "Si el email está registrado, recibirás un código de recuperación"
+        }
 
     # invalida codigos anteriores pendientes del mismo tutor.
     # .update({}) modifica todos los registros que matcheen el filter de una sola vez.
     db.query(RecuperacionPassword).filter(
         RecuperacionPassword.id_tutor == tutor.id_tutor,
-        RecuperacionPassword.usado    == False
+        RecuperacionPassword.usado == False,
     ).update({"usado": True})
 
     # genera el codigo, lo hashea y calcula su fecha de expiracion
     codigo_plano = _generar_codigo()
-    codigo_hash  = _hashear(codigo_plano)
-    expiracion   = datetime.utcnow() + timedelta(minutes=EXPIRACION_MINUTOS)
+    codigo_hash = _hashear(codigo_plano)
+    expiracion = datetime.utcnow() + timedelta(minutes=EXPIRACION_MINUTOS)
 
-    # crea el objeto python del modelo 
+    # crea el objeto python del modelo
     recuperacion = RecuperacionPassword(
-        id_tutor    = tutor.id_tutor,
-        codigo_hash = codigo_hash,
-        expiracion  = expiracion,
-        usado       = False,
+        id_tutor=tutor.id_tutor,
+        codigo_hash=codigo_hash,
+        expiracion=expiracion,
+        usado=False,
     )
 
     # db.add() → lo encola para insertar
@@ -164,7 +172,9 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
 
     _enviar_email_recuperacion(tutor.email, codigo_plano)
 
-    return {"mensaje": "Si el email está registrado, recibirás un código de recuperación"}
+    return {
+        "mensaje": "Si el email está registrado, recibirás un código de recuperación"
+    }
 
 
 def resetear_password(db: Session, data: ResetPasswordRequest):
@@ -184,10 +194,14 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     # (no usados y no expirados). Luego verifica cual matchea con bcrypt.
     # No se puede hacer hacer WHERE codigo_hash = ? porque bcrypt genera hashes
     # distintos cada vez aunque el texto sea el mismo.
-    recuperaciones_candidatas = db.query(RecuperacionPassword).filter(
-        RecuperacionPassword.usado      == False,
-        RecuperacionPassword.expiracion >  datetime.utcnow()
-    ).all()
+    recuperaciones_candidatas = (
+        db.query(RecuperacionPassword)
+        .filter(
+            RecuperacionPassword.usado == False,
+            RecuperacionPassword.expiracion > datetime.utcnow(),
+        )
+        .all()
+    )
 
     # recorre los candidatos hasta encontrar uno cuyo hash coincida con el codigo ingresado
     recuperacion = None
@@ -198,14 +212,15 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
 
     if not recuperacion:
         raise HTTPException(
-            status_code=400,
-            detail="El código es inválido o ha expirado"
+            status_code=400, detail="El código es inválido o ha expirado"
         )
 
     # obtiene el tutor dueño de ese codigo
-    tutor = db.query(UsuarioTutor).filter(
-        UsuarioTutor.id_tutor == recuperacion.id_tutor
-    ).first()
+    tutor = (
+        db.query(UsuarioTutor)
+        .filter(UsuarioTutor.id_tutor == recuperacion.id_tutor)
+        .first()
+    )
 
     if not tutor:
         raise HTTPException(status_code=404, detail="Tutor no encontrado")
@@ -215,7 +230,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     if verificar_password(data.nueva_password, tutor.password_hash):
         raise HTTPException(
             status_code=400,
-            detail="La nueva contraseña no puede ser igual a la anterior"
+            detail="La nueva contraseña no puede ser igual a la anterior",
         )
 
     # actualiza el campo password_hash en el objeto tutor
@@ -239,7 +254,7 @@ def verificar_password(password_plano: str, password_hash: str) -> bool:
         return pwd_context.verify(password_plano, password_hash)
     except ValueError:
         return False
-    
+
 
 def crear_access_token(data: dict) -> str:
     expire = datetime.now(timezone.utc) + timedelta(

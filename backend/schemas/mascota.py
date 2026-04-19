@@ -7,7 +7,9 @@ from enum import Enum
 el tipo enum, permite marcar los únicos valores validos para un campo, 
 tambien hereda de str para poder manejarse en json y la base de datos
 """
-class SexoEnum(str, Enum): 
+
+
+class SexoEnum(str, Enum):
     macho = "macho"
     hembra = "hembra"
     desconocido = "desconocido"
@@ -35,7 +37,7 @@ class MascotaCreate(BaseModel):
                 "raza": "Labrador",
                 "fecha_de_nacimiento": "2021-03-15",
                 "sexo": "macho",
-                "foto_url": "https://res.cloudinary.com/pataporte/image/upload/v1234567/mascotas/firulais.jpg"
+                "foto_url": "https://res.cloudinary.com/pataporte/image/upload/v1234567/mascotas/firulais.jpg",
             }
         }
 

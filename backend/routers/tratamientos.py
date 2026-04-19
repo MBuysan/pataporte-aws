@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from schemas.tratamiento import TratamientoCreate, TratamientoUpdate, TratamientoResponse
+from schemas.tratamiento import (
+    TratamientoCreate,
+    TratamientoUpdate,
+    TratamientoResponse,
+)
 from services import tratamiento_service
 
 router = APIRouter()

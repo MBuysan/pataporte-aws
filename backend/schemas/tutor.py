@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 
-
 # ── Lo que se recibe al REGISTRAR un tutor ─────────────────
 class TutorCreate(BaseModel):
     nombre: str
@@ -12,7 +11,7 @@ class TutorCreate(BaseModel):
     password: str
     telefono: Optional[str] = None
 
-    @field_validator("cedula") # hay que agregar el api que valida el numero de cedula
+    @field_validator("cedula")  # hay que agregar el api que valida el numero de cedula
     @classmethod
     def cedula_no_vacia(cls, v: str) -> str:
         v = v.strip()
@@ -27,7 +26,7 @@ class TutorCreate(BaseModel):
                 "cedula": "12345678",
                 "email": "juan@email.com",
                 "password": "123456",
-                "telefono": "099123456"
+                "telefono": "099123456",
             }
         }
 

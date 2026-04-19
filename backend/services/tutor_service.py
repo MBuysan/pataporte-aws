@@ -11,22 +11,22 @@ from config.database import MascotaTutor, CodigoAccesoMascota, UsuarioTutor
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def crear(db: Session, data: TutorCreate):
     if obtener_por_cedula(db, data.cedula):
         raise ValueError("CEDULA_EXISTE")
 
     if obtener_por_email(db, data.email):
         raise ValueError("EMAIL_EXISTE")
-    
-    
-    passwordenc =auth_service._hashear(data.password)
+
+    passwordenc = auth_service._hashear(data.password)
 
     nuevo = UsuarioTutor(
         nombre=data.nombre,
         cedula=data.cedula,
         email=data.email,
         password_hash=passwordenc,
-        telefono=data.telefono
+        telefono=data.telefono,
     )
 
     db.add(nuevo)
@@ -36,20 +36,15 @@ def crear(db: Session, data: TutorCreate):
 
 
 def obtener_por_id(db: Session, id_tutor: str):
-    return db.query(UsuarioTutor).filter(
-        UsuarioTutor.id_tutor == id_tutor
-    ).first()
+    return db.query(UsuarioTutor).filter(UsuarioTutor.id_tutor == id_tutor).first()
 
 
 def obtener_por_cedula(db: Session, cedula: str):
-    return db.query(UsuarioTutor).filter(
-        UsuarioTutor.cedula == cedula
-    ).first()
+    return db.query(UsuarioTutor).filter(UsuarioTutor.cedula == cedula).first()
+
 
 def obtener_por_email(db: Session, email: str):
-    return db.query(UsuarioTutor).filter(
-        UsuarioTutor.email == email
-    ).first()
+    return db.query(UsuarioTutor).filter(UsuarioTutor.email == email).first()
 
 
 def actualizar(db: Session, id_tutor: str, data: TutorUpdate):
@@ -65,21 +60,21 @@ def obtener_mascotas(db: Session, id_tutor: str):
     pass
 
 
-def vincular_mascota(db: Session, id_tutor: str, id_mascota: str, rol: str = "secundario"):
+def vincular_mascota(
+    db: Session, id_tutor: str, id_mascota: str, rol: str = "secundario"
+):
     """
     Vincula una mascota existente a un tutor.
     """
-    vinculo = MascotaTutor(
-        id_tutor=id_tutor,
-        id_mascota=id_mascota,
-        rol_tutor=rol
-    )
+    vinculo = MascotaTutor(id_tutor=id_tutor, id_mascota=id_mascota, rol_tutor=rol)
     db.add(vinculo)
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="El tutor ya está vinculado a esta mascota")
+        raise HTTPException(
+            status_code=400, detail="El tutor ya está vinculado a esta mascota"
+        )
 
 
 def vincular_mascota_con_codigo(db: Session, id_tutor: str, codigo: str):
@@ -87,13 +82,18 @@ def vincular_mascota_con_codigo(db: Session, id_tutor: str, codigo: str):
     Vincula una mascota usando un código de acceso.
     """
     # 1. Validar código
-    codigo_obj = db.query(CodigoAccesoMascota).filter(
-        CodigoAccesoMascota.codigo == codigo,
-        CodigoAccesoMascota.usado == False
-    ).first()
+    codigo_obj = (
+        db.query(CodigoAccesoMascota)
+        .filter(
+            CodigoAccesoMascota.codigo == codigo, CodigoAccesoMascota.usado == False
+        )
+        .first()
+    )
 
     if not codigo_obj:
-        raise HTTPException(status_code=404, detail="Código no encontrado o ya utilizado")
+        raise HTTPException(
+            status_code=404, detail="Código no encontrado o ya utilizado"
+        )
 
     # 2. Validar expiración
     if codigo_obj.fecha_expiracion < datetime.utcnow():
@@ -108,7 +108,8 @@ def vincular_mascota_con_codigo(db: Session, id_tutor: str, codigo: str):
 
     # 5. Notificar al tutor (Simulado por print en el server)
     tutor_nuevo = obtener_por_id(db, id_tutor)
-    print(f"NOTIFICACIÓN: El usuario {tutor_nuevo.nombre} ha sido agregado como co-tutor de la mascota {codigo_obj.id_mascota}")
+    print(
+        f"NOTIFICACIÓN: El usuario {tutor_nuevo.nombre} ha sido agregado como co-tutor de la mascota {codigo_obj.id_mascota}"
+    )
 
     return {"message": "Mascota vinculada exitosamente"}
-

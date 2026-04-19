@@ -3,7 +3,14 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from config.database import Mascota, MascotaTutor, UsuarioTutor, EsquemaVacunacion, Dosis, Certificado
+from config.database import (
+    Mascota,
+    MascotaTutor,
+    UsuarioTutor,
+    EsquemaVacunacion,
+    Dosis,
+    Certificado,
+)
 
 
 def ver_pataporte(db: Session, id_mascota: str) -> dict:
@@ -21,7 +28,6 @@ def generar_pataporte(db: Session, id_mascota: str) -> dict:
     (p. ej. generar PDF o URL pública).
     Retorna los mismos datos que ver_pataporte.
     """
-    
 
 
 def generar_certificado_vacunas(db: Session, id_mascota: str) -> dict:

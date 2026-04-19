@@ -16,7 +16,7 @@ class TratamientoCreate(BaseModel):
                 "id_mascota": "uuid-de-la-mascota",
                 "nombre": "Antibiótico 10 días",
                 "descripcion": "Amoxicilina 250mg cada 12hs durante 10 días",
-                "finalizacion": "2024-06-20T00:00:00"
+                "finalizacion": "2024-06-20T00:00:00",
             }
         }
 

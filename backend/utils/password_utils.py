@@ -1,5 +1,6 @@
 import re
 
+
 def validar_password(password: str) -> None:
     """
     valida la contraseña según reglas de seguridad.

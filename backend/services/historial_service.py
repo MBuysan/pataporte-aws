@@ -7,7 +7,9 @@ from schemas.historial import AgregarConsultaHistorialCreate
 from config.database import Consulta, Tratamiento, Mascota
 
 
-def agregar_consulta_al_historial(db: Session, data: AgregarConsultaHistorialCreate, id_veterinario: str) -> Consulta:
+def agregar_consulta_al_historial(
+    db: Session, data: AgregarConsultaHistorialCreate, id_veterinario: str
+) -> Consulta:
     """
     Registra una consulta clínica en el historial de la mascota.
     El id_veterinario proviene del token JWT (no del body).
@@ -23,6 +25,7 @@ def ver_historial_consultas(db: Session, id_mascota: str) -> list[Consulta]:
     Regla de negocio 3.8.1: el historial pertenece a la mascota, no a la clínica.
     """
     pass
+
 
 def visualizar_historial(db: Session, id_mascota: str) -> dict:
     """
