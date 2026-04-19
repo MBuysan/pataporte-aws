@@ -1,5 +1,9 @@
 import random
 import string
+import smtplib
+import traceback
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -109,9 +113,10 @@ Equipo Pataporte
             # sendmail(remitente, [destinatarios], mensaje_serializado_como_texto)
             servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
  
-    except smtplib.SMTPException as e:
+    except Exception as e:
         # si el email falla, se registra pero no se interrumpe el flujo.
         # el código ya fue guardado en la BD — el usuario puede pedir otro.
+        traceback.print_exc()
         print(f"[ERROR EMAIL] No se pudo enviar email a {email}: {e}")
 
 
