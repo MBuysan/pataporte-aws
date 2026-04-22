@@ -76,3 +76,31 @@ class CodigoAccesoResponse(BaseModel):
 
 class VincularMascotaRequest(BaseModel):
     codigo: str
+
+
+
+class ResultadoBusquedaTutor(BaseModel):
+    
+    """
+    para busqueda del tutor y sus mascotas por parte del veterinario
+    
+    """
+    
+    nombre_tutor:      str
+    cantidad_mascotas: int
+    mascotas:          list["MascotaResumen"]
+ 
+    class Config:
+        from_attributes = True
+        
+        
+        
+class MascotaResumen(BaseModel):
+    id_mascota: str
+    nombre:     str
+    especie:    str
+    foto_url:   Optional[str]
+    edad:       Optional[int]
+ 
+    class Config:
+        from_attributes = True
