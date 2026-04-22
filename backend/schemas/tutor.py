@@ -7,10 +7,11 @@ from typing import Optional
 class TutorCreate(BaseModel):
     nombre: str
     cedula: str
-    email: EmailStr  # Pydantic valida automaticamente que sea un email valido
+    email: EmailStr  # pydantic valida automaticamente que sea un email valido
+    password: str
     telefono: Optional[str] = None
 
-    @field_validator("cedula") # hay que agregar el api que valida el numero de cedula
+    @field_validator("cedula")  # hay que agregar el api que valida el numero de cedula
     @classmethod
     def cedula_no_vacia(cls, v: str) -> str:
         v = v.strip()
@@ -24,7 +25,8 @@ class TutorCreate(BaseModel):
                 "nombre": "Juan Perez",
                 "cedula": "12345678",
                 "email": "juan@email.com",
-                "telefono": "099123456"
+                "password": "123456",
+                "telefono": "099123456",
             }
         }
 

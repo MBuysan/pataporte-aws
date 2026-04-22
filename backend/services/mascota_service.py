@@ -1,10 +1,12 @@
-import uuid
+import secrets
+import string
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from schemas.mascota import MascotaCreate, MascotaUpdate
-from config.database import Mascota, MascotaTutor
+from config.database import Mascota, CodigoAccesoMascota, UsuarioTutor, MascotaTutor
 
 
 def listar(db: Session):
@@ -17,10 +19,107 @@ def obtener_por_id(db: Session, id_mascota: str):
 
 def crear(db: Session, data: MascotaCreate):
     """
-    Crea una nueva mascota con UUID generado por el sistema.
-    El id_mascota lo genera el backend, no el usuario.
+    *Funcionalidad:*
+    Crear una nueva mascota con id único generado por el sistema y asociarlo con el tutor
+
+    *Retorna:*
+    nueva_mascota[obj]
+
+    *Validaciones:*
+        1) Valida si existe el tutor, en caso de que no, lanza excepción 404
+        2) Valida si existe actualmente una mascota con el mismo: nombre, especie y feha de nacimiento para ese tutor, en caso de que no, lanza excepción 409
+        3) Si por cualquier motivo el sistema no consigue almacenar la nueva mascota y su relacion con el tutor en la base de datos, lanza excepción 500
+
+    *Información adicional:*
+
+    .add() -> añade a la BD
+
+    .flush() -> borra el buffer interno y fuerza a que todos los datos que el dato almacenado se escriba inmediatamente en su destino
+
     """
-    pass
+    tutor = (
+        db.query(UsuarioTutor).filter(UsuarioTutor.id_tutor == data.id_tutor).first()
+    )
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+
+    duplicado = (
+        db.query(Mascota)
+        .join(MascotaTutor, Mascota.id_mascota == MascotaTutor.id_mascota)
+        .filter(
+            MascotaTutor.id_tutor == data.id_tutor,
+            Mascota.nombre == data.nombre,
+            Mascota.especie == data.especie,
+            Mascota.fecha_de_nacimiento == data.fecha_de_nacimiento,
+        )
+        .first()
+    )
+    if duplicado:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una mascota con ese nombre, especie y fecha de nacimiento para este tutor",
+        )
+
+    nueva_mascota = Mascota(
+        nombre=data.nombre,
+        especie=data.especie,
+        raza=data.raza,
+        fecha_de_nacimiento=data.fecha_de_nacimiento,
+        sexo=data.sexo,
+        foto_url=data.foto_url,
+    )
+
+    db.add(nueva_mascota)
+    db.flush()
+
+    vinculo_mascota_tutor = MascotaTutor(
+        id_tutor=data.id_tutor,
+        id_mascota=nueva_mascota.id_mascota,
+        rol_tutor="principal",
+    )
+    db.add(vinculo_mascota_tutor)
+
+    try:
+        db.commit()
+        db.refresh(nueva_mascota)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al registrar la mascota")
+
+    return nueva_mascota
+
+
+def generar_codigo_acceso(db: Session, id_mascota: str):
+    """
+    Genera un código único de 8 caracteres para compartir acceso.
+    Expira en 24 horas.
+    """
+    mascota = obtener_por_id(db, id_mascota)
+    if not mascota:
+        raise HTTPException(status_code=404, detail="Mascota no encontrada")
+
+    # Generar código alfanumérico aleatorio
+    caracteres = string.ascii_uppercase + string.digits
+    codigo = "".join(secrets.choice(caracteres) for _ in range(8))
+
+    # Definir expiración (24 horas)
+    expiracion = datetime.utcnow() + timedelta(hours=24)
+
+    nuevo_codigo = CodigoAccesoMascota(
+        id_mascota=id_mascota, codigo=codigo, fecha_expiracion=expiracion
+    )
+
+    db.add(nuevo_codigo)
+    try:
+        db.commit()
+        db.refresh(nuevo_codigo)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Error al generar el código: {str(e)}"
+        )
+
+    return nuevo_codigo
 
 
 def actualizar(db: Session, id_mascota: str, data: MascotaUpdate):
@@ -45,4 +144,3 @@ def _enviar_historial_por_email(db: Session, mascota):
     TODO: implementar con libreria de email (sendgrid, smtp, etc.)
     """
     pass
-

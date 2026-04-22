@@ -16,6 +16,7 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     """
     pass
 
+
 def esquema_por_mascota(db: Session, id_mascota: str):
     """Retorna todos los esquemas de vacunacion de una mascota con sus dosis."""
     pass
@@ -36,4 +37,3 @@ def _actualizar_proxima_dosis(db: Session, dosis: Dosis):
     usando el intervalo definido en TipoVacunas.
     """
     pass
-

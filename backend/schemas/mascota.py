@@ -3,6 +3,11 @@ from datetime import date, datetime
 from typing import Optional
 from enum import Enum
 
+"""
+el tipo enum, permite marcar los únicos valores validos para un campo, 
+tambien hereda de str para poder manejarse en json y la base de datos
+"""
+
 
 class SexoEnum(str, Enum):
     macho = "macho"
@@ -32,20 +37,20 @@ class MascotaCreate(BaseModel):
                 "raza": "Labrador",
                 "fecha_de_nacimiento": "2021-03-15",
                 "sexo": "macho",
-                "foto_url": "https://res.cloudinary.com/pataporte/image/upload/v1234567/mascotas/firulais.jpg"
+                "foto_url": "https://res.cloudinary.com/pataporte/image/upload/v1234567/mascotas/firulais.jpg",
             }
         }
 
 
-# ── Lo que se recibe al ACTUALIZAR una mascota ─────────────
-# Todos los campos son opcionales: solo se actualizan los que llegan
+# ── Lo que se recibe al actualizar una mascota ─────────────
+# todos los campos son opcionales: solo se actualizan los que llegan
 class MascotaUpdate(BaseModel):
     nombre: Optional[str] = None
     raza: Optional[str] = None
     foto_url: Optional[str] = None
 
 
-# ── Lo que se DEVUELVE al consultar una mascota ────────────
+# ── Lo que se devuelve al consultar una mascota ────────────
 class MascotaResponse(BaseModel):
     id_mascota: str
     nombre: str
@@ -59,3 +64,15 @@ class MascotaResponse(BaseModel):
 
     class Config:
         from_attributes = True  # permite convertir objetos SQLAlchemy a este schema
+
+
+class CodigoAccesoResponse(BaseModel):
+    codigo: str
+    fecha_expiracion: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VincularMascotaRequest(BaseModel):
+    codigo: str

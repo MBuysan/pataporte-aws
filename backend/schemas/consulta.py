@@ -16,7 +16,7 @@ class ConsultaCreate(BaseModel):
                 "id_mascota": "uuid-de-la-mascota",
                 "motivo": "Control anual",
                 "diagnostico": "Animal sano",
-                "tratamiento_indicado": "Ninguno"
+                "tratamiento_indicado": "Ninguno",
             }
         }
 

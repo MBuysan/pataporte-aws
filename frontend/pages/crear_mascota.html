@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registrar Mascota</title>
+  </head>
+  <body>
+    <h2>Registrar Mascota</h2>
+
+    <form id="formMascota">
+      <label>Foto (URL):</label><br />
+      <input
+        type="url"
+        id="foto_url"
+        placeholder="https://ejemplo.com/foto.jpg"
+        required
+      /><br /><br />
+
+      <label>Nombre:</label><br />
+      <input
+        type="text"
+        id="nombre"
+        placeholder="Ej: Fatiga"
+        required
+      /><br /><br />
+
+      <label>Especie:</label><br />
+      <input
+        type="text"
+        id="especie"
+        placeholder="Ej: Perro, Gato, Conejo"
+        required
+      /><br /><br />
+
+      <label>Raza:</label><br />
+      <input
+        type="text"
+        id="raza"
+        placeholder="Ej: Labrador, Siamés"
+        required
+      /><br /><br />
+
+      <label>Fecha de nacimiento:</label><br />
+      <input type="date" id="fecha_de_nacimiento" required /><br /><br />
+
+      <label>Sexo:</label><br />
+      <select id="sexo" required>
+        <option value="macho">Macho</option>
+        <option value="hembra">Hembra</option>
+        <option value="desconocido" selected>Desconocido</option></select
+      ><br /><br />
+
+      <button type="submit">Registrar</button>
+    </form>
+
+    <p id="mensaje"></p>
+
+    <script src="../js/registrar_mascota.js"></script>
+  </body>
+</html>

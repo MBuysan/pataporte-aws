@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.config.settings import settings
+from config.settings import settings
 
 # ── Motor y sesion ────────────────────────────────────────────────────────────
 engine = create_engine(settings.DATABASE_URL)
@@ -35,6 +35,7 @@ class UsuarioTutor(Base):
     nombre:         Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:          Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     telefono:       Mapped[str|None] = mapped_column(VARCHAR(30),  nullable=True)
+    password_hash:  Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     fecha_registro: Mapped[datetime] = mapped_column(DateTime,     nullable=False, default=datetime.utcnow)
     estado:         Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
 
@@ -73,6 +74,19 @@ class MascotaTutor(Base):
     mascota: Mapped["Mascota"]      = relationship("Mascota",      back_populates="tutores")
 
 
+class CodigoAccesoMascota(Base):
+    __tablename__ = "codigo_acceso_mascota"
+
+    id_codigo:        Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_mascota:       Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+    codigo:           Mapped[str]      = mapped_column(VARCHAR(20), nullable=False, unique=True)
+    fecha_creacion:   Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_expiracion: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    usado:            Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
+
+    mascota: Mapped["Mascota"] = relationship("Mascota")
+
+
 class Veterinaria(Base):
     __tablename__ = "veterinaria"
 
@@ -81,6 +95,7 @@ class Veterinaria(Base):
     matricula_profesional: Mapped[str]      = mapped_column(VARCHAR(40),  nullable=False, unique=True)
     nombre:                Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:                 Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
+    password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
     fecha_registro:        Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
 
@@ -215,7 +230,24 @@ class Certificado(Base):
     emisor:  Mapped["Veterinaria"]      = relationship("Veterinaria", back_populates="certificados_emitidos",  foreign_keys=[id_veterinario_emisor])
     revisor: Mapped["Veterinaria|None"] = relationship("Veterinaria", back_populates="certificados_revisados", foreign_keys=[id_revisor])
 
+class RecuperacionPassword(Base):
+     """
+     Guarda los codigos de recuperacion de contraseña.
+     - El codigo se genera al solicitar recuperacion y expira en 15 minutos.
+     - Una vez usado, la columna 'usado' se marca True y no puede reutilizarse.
+     - Relacion con UsuarioTutor via id_tutor (ForeignKey).
+     """
+     __tablename__ = "recuperacion_password"
 
+     id_recuperacion: Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+     id_tutor:        Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("usuario_tutor.id_tutor", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+     codigo_hash:     Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
+     expiracion:      Mapped[datetime] = mapped_column(DateTime, nullable=False)
+     usado:           Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
+     fecha_solicitud: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+
+     tutor: Mapped["UsuarioTutor"] = relationship("UsuarioTutor")
+ 
 # ── Sesion y utilidades ───────────────────────────────────────────────────────
 
 def get_db():

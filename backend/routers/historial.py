@@ -8,6 +8,7 @@ from services import historial_service
 
 router = APIRouter()
 
+
 # TODO: reemplazar por dependencia real de autenticación JWT
 def _get_id_veterinario(x_veterinario_id: str = Header(...)) -> str:
     """
