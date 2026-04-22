@@ -1,0 +1,218 @@
+[33mcommit afdc6094a17662ec18536cfcd7300493124da12a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/key-7-crear-tratamiento-mascota[m[33m, [m[1;31morigin/sprint/01[m[33m, [m[1;32msprint/02[m[33m, [m[1;32msprint/01[m[33m)[m
+Merge: 8fc0788 ac1c1b0
+Author: Ariana Perez <azperez@correo.um.edu.uy>
+Date:   Sun Apr 19 13:22:26 2026 -0300
+
+    Merge pull request #17 from azperez-salinas/style/pataporte
+    
+    style(pataporte): aplicar black formatter a todos los archivos .py de…
+
+[33mcommit ac1c1b00100420beeba5ed5e1652f16f14b351b4[m[33m ([m[1;31morigin/style/pataporte[m[33m)[m
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sun Apr 19 13:18:15 2026 -0300
+
+    style(pataporte): aplicar black formatter a todos los archivos .py del proyecto, menos a database.py
+
+[33mcommit 8fc0788fd246d783e86c6559ffaf2cfdd66113d0[m
+Merge: cb85495 171cde8
+Author: Ariana Perez <azperez@correo.um.edu.uy>
+Date:   Sun Apr 19 12:02:51 2026 -0300
+
+    Merge pull request #16 from azperez-salinas/feature/key-13-registrar-mascota
+    
+    Feature/key 13 registrar mascota
+
+[33mcommit 171cde85536a97d718859f48f321298fd31cb650[m[33m ([m[1;31morigin/feature/key-13-registrar-mascota[m[33m)[m
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sun Apr 19 12:00:14 2026 -0300
+
+    feat(crear mascota): obtuve los nuevos cambios de sprint/01 para y adicion los nuevos archivos
+
+[33mcommit bb711380f62f5065c9e684bb170018382d867ac6[m
+Merge: 9eeab0c cb85495
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sun Apr 19 11:56:44 2026 -0300
+
+    Merge branch 'sprint/01' into feature/key-13-registrar-mascota
+
+[33mcommit cb85495efbed53dfbc09cf77b74faecefe4c863e[m
+Merge: baa61bd 95e78e7
+Author: Ariana Perez <azperez@correo.um.edu.uy>
+Date:   Sun Apr 19 11:53:29 2026 -0300
+
+    Merge pull request #15 from azperez-salinas/fix/corregir-recuperar-contraseña
+    
+    Fix/corregir recuperar contraseña
+
+[33mcommit 9eeab0cb206defb7e703c2833882526b8c8fe804[m
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sat Apr 18 23:40:20 2026 -0300
+
+    feat(crear mascota): crear frontend, agregar control de mayusculas en el schema de mascota y modificar algunos html's para poder testear
+
+[33mcommit 543d10da8525fb1407667fd4d824ec12e4ceaf2e[m
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sat Apr 18 22:01:42 2026 -0300
+
+    chore(docker-compose bd): agregar el puerto de la BD
+
+[33mcommit 0b34acbdeaf775159a0e4041ecf39f0a08d950bc[m
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sat Apr 18 21:10:41 2026 -0300
+
+    feat(agregar mascota): correcciones de orden en las rutas
+
+[33mcommit 84bf5132824c950e9b2256292f3fd9cd89033af1[m
+Author: Ariana <azperez@correo.um.edu.uy>
+Date:   Sat Apr 18 20:34:06 2026 -0300
+
+    feat(agregar mascota): completar la funcion crear de mascota_service.py
+
+[33mcommit 95e78e7fecb06f86aeb055124efdf6580d2c48bf[m[33m ([m[1;31morigin/fix/corregir-recuperar-contraseña[m[33m)[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 20:18:04 2026 -0300
+
+    se solucionó el envío de mail al pedir recuperar contraseña, dependencias necesarias y algunas direcciones en enlaces
+
+[33mcommit 0c18407f4cb285b4b8a68ff89dd3eb3094a24f91[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 19:55:24 2026 -0300
+
+    fix(recuperar-contraseña): se modificaron imports y direcciones que impedian el funcionamiento correcto del envío del correo
+
+[33mcommit baa61bd98251c60df4664263d52a7005d232cfbb[m
+Merge: 8c662d5 909cb13
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Sat Apr 18 17:02:38 2026 -0300
+
+    Merge pull request #13 from azperez-salinas/fix/registrar-tutor
+    
+    Ya se puede registrar tutor con exito
+
+[33mcommit 909cb13de30bbdd2be874edcb56e68833b967ab8[m[33m ([m[1;31morigin/fix/registrar-tutor[m[33m)[m
+Author: lautasiri <lsiri@correo.um.edu.uy>
+Date:   Sat Apr 18 17:00:10 2026 -0300
+
+    Ya se puede registrar tutor con exito
+
+[33mcommit 8c662d562db6b5ada3a554e2507b8e1a18eaa7db[m
+Merge: 687d3ec 643170a
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Sat Apr 18 16:08:53 2026 -0300
+
+    Merge pull request #12 from azperez-salinas/feature/frontend-registrar-tutor
+    
+    Frontend de registrar-tutor
+
+[33mcommit 643170a0748c9974cd724c40ebca309d659dfc39[m[33m ([m[1;31morigin/feature/frontend-registrar-tutor[m[33m)[m
+Merge: 1c9cf32 687d3ec
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Sat Apr 18 16:08:41 2026 -0300
+
+    Merge branch 'sprint/01' into feature/frontend-registrar-tutor
+
+[33mcommit 687d3ec79424b08f9d99eaaaa06dcc8f789783ac[m
+Merge: 83640ea c6aaeaa
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Sat Apr 18 16:06:54 2026 -0300
+
+    Merge pull request #11 from azperez-salinas/fix/corregir-docker-up
+    
+    Fix/corregir docker up
+
+[33mcommit 83640eab89773278c15dd086d474f38679fcacbb[m
+Merge: 30dfa10 047c11f
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Sat Apr 18 16:05:58 2026 -0300
+
+    Merge pull request #10 from azperez-salinas/feature/recuperar-contrasena
+    
+    ultimos cambios de la hu
+
+[33mcommit 1c9cf32a568545992b7196c15a7df102507dfcb0[m
+Author: lautasiri <lsiri@correo.um.edu.uy>
+Date:   Sat Apr 18 16:01:50 2026 -0300
+
+    Frontend de registrar-tutor
+
+[33mcommit c6aaeaa72b2866f86cbb7a107182b13a9a72b581[m[33m ([m[1;31morigin/fix/corregir-docker-up[m[33m)[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 15:32:38 2026 -0300
+
+    se agregó conetnido a docker-compose que soluciona error al levantar docker
+
+[33mcommit b679666550c6cfbdb225c8587d7552884c547d94[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 15:15:22 2026 -0300
+
+    se agregó conetnido a docker-compose que soluciona error al levantar docker
+
+[33mcommit d7963982f317795a65bdf14670ea2ceff2d6d8ac[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 15:12:51 2026 -0300
+
+    se agregó conetnido a docker-compose que soluciona error al levantar docker
+
+[33mcommit 372eb54168dfa6f04827a855f570068f7cec6563[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 14:56:23 2026 -0300
+
+    se agregó conetnido a docker-compose que soluciona error al levantar docker
+
+[33mcommit 047c11fcdebfdcb032e1c8092dfd61f5b3827899[m[33m ([m[1;31morigin/feature/recuperar-contrasena[m[33m)[m
+Author: lhuercmpj <jrocumpaj@correo.um.edu.uy>
+Date:   Sat Apr 18 14:26:14 2026 -0300
+
+    ultimos cambios de la hu
+
+[33mcommit 30dfa101903059dd73dea62a92cc00197c5de83e[m
+Merge: ee921bb 0735700
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Fri Apr 17 18:57:09 2026 -0300
+
+    Merge pull request #7 from azperez-salinas/fix/recuperar-contrasena
+    
+    Fix/recuperar contrasena
+
+[33mcommit 07357004ffe73314e15130ca83c29160ef60b239[m[33m ([m[1;31morigin/fix/recuperar-contrasena[m[33m)[m
+Merge: 5b69d26 ee921bb
+Author: lautasiri <lsiri@correo.um.edu.uy>
+Date:   Fri Apr 17 18:54:22 2026 -0300
+
+    fix (recuperar-contrasena) Arreglos creados para mergear feature/recuperar-contrasena con sprint/01
+
+[33mcommit ee921bbc837482b7b0569b3e9f74b70d7fc30694[m
+Merge: 886eddb 95af219
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Fri Apr 17 18:26:35 2026 -0300
+
+    Merge pull request #5 from azperez-salinas/feature/key-11-Iniciar-sesion
+    
+    feature-11: implementa login de tutor
+
+[33mcommit 95af21909e60bd46b4c79902484589fca56519b4[m[33m ([m[1;31morigin/feature/key-11-Iniciar-sesion[m[33m)[m
+Merge: 1f1248b 886eddb
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Fri Apr 17 18:25:37 2026 -0300
+
+    Merge branch 'sprint/01' into feature/key-11-Iniciar-sesion
+
+[33mcommit 886eddbc5d4f058a7fbae231d49a8274a417abda[m
+Merge: 2d947c5 aab3bb1
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Fri Apr 17 18:15:29 2026 -0300
+
+    Merge pull request #1 from azperez-salinas/feature/key-15-compartir-acceso-mascota
+    
+    feature/key-15: Compartir acceso de mascota
+
+[33mcommit 2d947c51f3fee1f0b47a6f662a6cd4b13d8c8597[m
+Merge: 50d77be 280caa0
+Author: lautisiri <lautisiri@gmail.com>
+Date:   Fri Apr 17 18:13:57 2026 -0300
+
+    Merge pull request #4 from azperez-salinas/feature/registrar-tutor
+    
+    Se añadio: Registrar tutor routers/tutores, y se añadio crear, obtene…
+
+

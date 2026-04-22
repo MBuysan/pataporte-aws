@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tratamientos - Pataporte</title>
+  </head>
+  <body>
+    <h1>Gestion de tratamientos</h1>
+
+    <section>
+      <h2>Crear tratamiento</h2>
+
+      <form id="formTratamiento">
+        <div>
+          <label for="id_consulta">ID de la consulta</label>
+          <input type="text" id="id_consulta" required />
+          <p>
+            Este ID lo genera la HU de consultas.
+        </div>
+
+        <div>
+          <label for="nombre">Nombre del tratamiento</label>
+          <input type="text" id="nombre" required />
+        </div>
+
+        <div>
+          <label for="indicaciones">Indicaciones</label>
+          <textarea id="indicaciones" required></textarea>
+        </div>
+
+        <div>
+          <label for="fecha_inicio">Fecha de inicio</label>
+          <input type="date" id="fecha_inicio" required />
+        </div>
+
+        <div>
+          <label for="fecha_fin_estimada">Fecha de fin estimada</label>
+          <input type="date" id="fecha_fin_estimada" required />
+        </div>
+
+        <button type="submit">Crear tratamiento</button>
+      </form>
+
+      <p id="mensajeCrear"></p>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Ver tratamientos activos</h2>
+
+      <div>
+        <label for="id_mascota_busqueda">ID de la mascota</label>
+        <input type="text" id="id_mascota_busqueda" />
+        <button id="btnBuscarActivos" type="button">Buscar</button>
+      </div>
+
+      <p id="mensajeLista"></p>
+      <div id="listaTratamientos"></div>
+    </section>
+
+    <hr />
+
+    <section id="seccionEditar" style="display: none;">
+      <h2>Editar tratamiento</h2>
+
+      <form id="formEditarTratamiento">
+        <input type="hidden" id="editar_id_tratamiento" />
+
+        <div>
+          <label for="editar_nombre">Nombre del tratamiento</label>
+          <input type="text" id="editar_nombre" />
+        </div>
+
+        <div>
+          <label for="editar_indicaciones">Indicaciones</label>
+          <textarea id="editar_indicaciones"></textarea>
+        </div>
+
+        <div>
+          <label for="editar_fecha_inicio">Fecha de inicio</label>
+          <input type="date" id="editar_fecha_inicio" />
+        </div>
+
+        <div>
+          <label for="editar_fecha_fin_estimada">Fecha de fin estimada</label>
+          <input type="date" id="editar_fecha_fin_estimada" />
+        </div>
+
+        <button type="submit">Guardar cambios</button>
+      </form>
+
+      <p id="mensajeEditar"></p>
+    </section>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/tratamientos.js"></script>
+  </body>
+</html>

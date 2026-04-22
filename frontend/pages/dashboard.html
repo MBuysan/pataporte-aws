@@ -2,10 +2,42 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Pataporte</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Pataporte</title>
   </head>
   <body>
-    <h1>Panel principal del tutor</h1>
-    <a href="crear_mascota.html"><button>Registrar mascota</button></a>
+    <a href="/index.html">Inicio</a>
+
+    <h1>Perfil del tutor</h1>
+    <p id="bienvenida">Cargando informacion del tutor...</p>
+
+    <section>
+      <h2>Notificacion simulada</h2>
+      <p id="notificacionTutor">No hay notificaciones simuladas pendientes.</p>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Mis mascotas</h2>
+      <div id="listaMascotas">
+        <p>Cargando mascotas y tratamientos activos...</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Acciones</h2>
+      <a href="crear_mascota.html">
+        <button>Registrar mascota</button>
+      </a>
+    </section>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/dashboard.js"></script>
+  </body>
+</html>
+    <hr />
   </body>
 </html>

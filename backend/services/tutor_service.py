@@ -7,7 +7,7 @@ from services import auth_service
 
 from datetime import datetime
 from schemas.tutor import TutorCreate, TutorUpdate
-from config.database import MascotaTutor, CodigoAccesoMascota, UsuarioTutor
+from config.database import Mascota, MascotaTutor, CodigoAccesoMascota, UsuarioTutor
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -57,7 +57,17 @@ def obtener_mascotas(db: Session, id_tutor: str):
     Retorna todas las mascotas vinculadas a un tutor.
     Hace un join entre MASCOTA_TUTOR y MASCOTA.
     """
-    pass
+    tutor = obtener_por_id(db, id_tutor)
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+
+    return (
+        db.query(Mascota)
+        .join(MascotaTutor, Mascota.id_mascota == MascotaTutor.id_mascota)
+        .filter(MascotaTutor.id_tutor == id_tutor)
+        .order_by(Mascota.fecha_registro.desc())
+        .all()
+    )
 
 
 def vincular_mascota(

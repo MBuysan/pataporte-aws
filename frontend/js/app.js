@@ -44,6 +44,7 @@ function inicializarPantallaLogin() {
       });
 
       localStorage.setItem("access_token", response.access_token);
+      localStorage.setItem("tutor", JSON.stringify(response.user));
 
       window.location.href = "dashboard.html";
     } catch (error) {

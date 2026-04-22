@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -19,6 +20,7 @@ router = APIRouter()
     summary="Agregar tratamiento a una mascota",
 )
 def agregar_tratamiento(data: TratamientoCreate, db: Session = Depends(get_db)):
+    # KEY-7 consume un id_consulta ya existente; su alta pertenece a otra HU.
     return tratamiento_service.agregar_tratamiento(db, data)
 
 
@@ -41,13 +43,26 @@ def listar_tratamientos(id_mascota: str, db: Session = Depends(get_db)):
 
 
 @router.patch(
-    "/tratamiento/{id_tratamiento}",
+    "/{id_tratamiento}",
     response_model=TratamientoResponse,
-    summary="Actualizar un tratamiento",
+    summary="Editar un tratamiento",
 )
 def actualizar_tratamiento(
     id_tratamiento: str,
     data: TratamientoUpdate,
     db: Session = Depends(get_db),
 ):
+    return tratamiento_service.actualizar(db, id_tratamiento, data)
+
+
+@router.patch(
+    "/{id_tratamiento}/finalizar",
+    response_model=TratamientoResponse,
+    summary="Marcar un tratamiento como finalizado",
+)
+def finalizar_tratamiento(
+    id_tratamiento: str,
+    db: Session = Depends(get_db),
+):
+    data = TratamientoUpdate(fecha_fin_real=date.today())
     return tratamiento_service.actualizar(db, id_tratamiento, data)
