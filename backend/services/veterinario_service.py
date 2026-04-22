@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import UsuarioTutor
-from services import tutor_service
+from services import tutor_service, mascota_service
 from schemas.mascota import MascotaResumen, ResultadoBusquedaTutor
 
 
@@ -27,9 +27,20 @@ def listar_mascotas_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTut
     # reutiliza la lógica de tutor_service 
     mascotas = tutor_service.obtener_mascotas(db, tutor.id_tutor)
 
-    # construye la respuesta completa que necesita el frontend
+    
+    resumenes = [
+        MascotaResumen(
+            id_mascota = m.id_mascota,
+            nombre     = m.nombre,
+            especie    = m.especie,
+            foto_url   = m.foto_url,
+            edad       = mascota_service.calcular_edad(m),
+        )
+        for m in mascotas
+    ]
+ 
     return ResultadoBusquedaTutor(
         nombre_tutor      = tutor.nombre,
-        cantidad_mascotas = len(mascotas),
-        mascotas          = [MascotaResumen.from_mascota(m) for m in mascotas],
+        cantidad_mascotas = len(resumenes),
+        mascotas          = resumenes,
     )
