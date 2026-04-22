@@ -1,21 +1,25 @@
-from schemas.mascota import MascotaResponse
-from services import veterinario_service
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db, Veterinaria
+from schemas.mascota import ResultadoBusquedaTutor
+from services import veterinario_service
 
 router = APIRouter()
+
+
+@router.get(
+    "/buscar/{cedula}",
+    response_model=ResultadoBusquedaTutor,
+    summary="Buscar mascotas por cédula del tutor",
+)
+def buscar_por_cedula(cedula: str, db: Session = Depends(get_db)):
+    return veterinario_service.buscar_por_cedula(db, cedula)
 
 
 @router.get("/", summary="Listar veterinarios")
 def listar_veterinarios(db: Session = Depends(get_db)):
     return db.query(Veterinaria).filter(Veterinaria.estado == "activo").all()
-
-
-@router.get("/buscar-mascotas/{cedula}", response_model=list[MascotaResponse]  )
-def listar_mascotas_por_tutor(cedula: str, db: Session = Depends(get_db)):
-    return veterinario_service.listar_mascotas_por_cedula(db, cedula)
 
 
 @router.get("/{id_veterinario}", summary="Obtener veterinario")
@@ -28,4 +32,3 @@ def obtener_veterinario(id_veterinario: str, db: Session = Depends(get_db)):
     if not vet:
         raise HTTPException(status_code=404, detail="Veterinario no encontrado")
     return vet
-
