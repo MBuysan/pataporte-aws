@@ -186,8 +186,6 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     2. La nueva contraseña es distinta a la anterior.
     3. Actualiza password_hash y marca el codigo como usado.
 
-    Nota: las validaciones de formato de contraseña (mayuscula, numero, etc.)
-    ya las hizo Pydantic en el schema antes de llegar hasta aca.
     """
 
     # Busca todos los codigos que tecnicamente podrian ser validos
