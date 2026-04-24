@@ -16,7 +16,6 @@ def _get_id_veterinaria(x_veterinaria_id: str = Header(...)) -> str:
     """
     return x_veterinaria_id
 
-
 @router.post(
     "/crear-carnet/{id_mascota}",
     response_model=EsquemaVacunacionResponse,
@@ -25,11 +24,23 @@ def _get_id_veterinaria(x_veterinaria_id: str = Header(...)) -> str:
 )
 def crear_carnet_vacunas(
     id_mascota: str,
+    db: Session = Depends(get_db),
+):
+    return vacuna_service.crear_esquema(db, id_mascota)
+
+@router.post(
+    "/{id_esquema}/vacunas/{id_vacuna}",
+    status_code=201,
+    summary="Agregar vacuna a un esquema",
+)
+def agregar_vacuna_a_esquema(
+    id_esquema: str,
     id_vacuna: str,
     db: Session = Depends(get_db),
 ):
-    return vacuna_service.crear_carnet_vacunas(db, id_mascota, id_vacuna)
-
+    return vacuna_service.agregar_vacuna_a_esquema(
+        db, id_esquema, id_vacuna
+    )
 
 @router.post(
     "/dosis",
@@ -42,8 +53,11 @@ def agregar_dosis(
     db: Session = Depends(get_db),
     id_veterinaria: str = Depends(_get_id_veterinaria),
 ):
-    return vacuna_service.agregar_dosis(db, data, id_veterinaria)
-
+    return vacuna_service.registrar_dosis(
+        db=db,
+        data=data,
+        id_veterinaria=id_veterinaria
+    )
 
 @router.get(
     "/{id_mascota}/carnet",
