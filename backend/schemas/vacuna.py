@@ -80,6 +80,11 @@ class EsquemaVacunacionResponse(BaseModel):
     fecha_inicio: date
     estado: EstadoEsquemaEnum
     fecha_proxima_dosis: Optional[date]
+    fecha_estimada_fin: Optional[date]
+    dosis_totales: int
+    dosis_dadas: int
+    esquema_completo: bool
+    proxima_a_vencer: bool = False
     dosis: list[DosisResponse] = []
 
     class Config:

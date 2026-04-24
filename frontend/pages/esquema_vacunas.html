@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Esquema de vacunas - Pataporte</title>
+  </head>
+  <body>
+    <h1>Esquema de vacunación</h1>
+    <section>
+      <h2>Buscar esquema</h2>
+
+      <label for="id_mascota">ID de la mascota</label>
+      <input type="text" id="id_mascota" />
+
+      <button id="btnBuscarEsquema" type="button">Buscar</button>
+
+      <p id="mensaje"></p>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Vacunas</h2>
+      <div id="listaEsquemas"></div>
+    </section>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/esquema_vacunas.js"></script>
+  </body>
+</html>
