@@ -1,0 +1,40 @@
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from config.database import UsuarioTutor
+from services import tutor_service, mascota_service
+from schemas.mascota import MascotaResumen, ResultadoBusquedaTutor
+
+
+def buscar_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTutor:
+    """
+    busca un tutor por cédula exacta y devuelve su nombre
+    junto con la lista completa de sus mascotas activas.
+    """
+    tutor = (
+        db.query(UsuarioTutor)
+        .filter(UsuarioTutor.cedula == cedula)
+        .first()
+    )
+
+    if not tutor:
+        raise HTTPException(
+            status_code=404,
+            detail="No se encontró ningún tutor con esa cédula"
+        )
+
+    mascotas = tutor_service.obtener_mascotas(db, tutor.id_tutor)
+
+    return ResultadoBusquedaTutor(
+        nombre_tutor = tutor.nombre,
+        mascotas     = [
+            MascotaResumen(
+                id_mascota = m.id_mascota,
+                nombre     = m.nombre,
+                especie    = m.especie,
+                foto_url   = m.foto_url,
+                edad       = mascota_service.calcular_edad(m),
+            )
+            for m in mascotas
+        ],
+    )

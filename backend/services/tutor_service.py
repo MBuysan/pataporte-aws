@@ -1,11 +1,11 @@
-import uuid
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from passlib.context import CryptContext
-from services import auth_service
-
 from datetime import datetime
+
+from services import auth_service
+from config.database import Mascota
 from schemas.tutor import TutorCreate, TutorUpdate
 from config.database import MascotaTutor, CodigoAccesoMascota, UsuarioTutor
 
@@ -55,9 +55,29 @@ def actualizar(db: Session, id_tutor: str, data: TutorUpdate):
 def obtener_mascotas(db: Session, id_tutor: str):
     """
     Retorna todas las mascotas vinculadas a un tutor.
-    Hace un join entre MASCOTA_TUTOR y MASCOTA.
+    Retorna todas las mascotas vinculadas a un tutor dado su id.
+    Hace un join entre MascotaTutor y Mascota para obtener
+    solo las mascotas activas del tutor.
+    Lanza 404 si el tutor no existe.
     """
-    pass
+
+
+    tutor = obtener_por_id(db, id_tutor)
+    
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+
+    # join entre la tabla intermedia y mascota, filtrando solo activas
+    return (
+        db.query(Mascota)
+        .join(MascotaTutor, Mascota.id_mascota == MascotaTutor.id_mascota)
+        .filter(
+            MascotaTutor.id_tutor == id_tutor,
+            Mascota.estado == "activo",
+        )
+        .all()
+    )
+
 
 
 def vincular_mascota(
