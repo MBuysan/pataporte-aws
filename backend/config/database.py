@@ -163,43 +163,41 @@ class TipoVacunas(Base):
 
 class EsquemaVacunacion(Base):
     __tablename__ = "esquema_vacunacion"
-    __table_args__ = (
-        #Una mascota no puede tener dos esquemas activos del mismo tipo de vacuna
-        UniqueConstraint("id_mascota", "id_vacuna", "estado", name="uq_esquema_activo"),
-    )
 
-    id_esquema:          Mapped[str]       = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_mascota:          Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota",     ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    id_vacuna:           Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("tipo_vacunas.id_vacuna", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    fecha_inicio:        Mapped[date]      = mapped_column(Date, nullable=False, default=date.today)
-    estado:              Mapped[str]       = mapped_column(estado_esquema_enum, nullable=False, default="activo")
-    fecha_proxima_dosis: Mapped[date|None] = mapped_column(Date, nullable=True)
+    id_esquema: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_mascota: Mapped[str] = mapped_column(ForeignKey("mascota.id_mascota"), nullable=False)
+    fecha_inicio: Mapped[date] = mapped_column(Date, default=date.today)
+    estado: Mapped[str] = mapped_column(estado_esquema_enum, default="activo")
 
-    mascota:     Mapped["Mascota"]      = relationship("Mascota",      back_populates="esquemas")
-    tipo_vacuna: Mapped["TipoVacunas"]  = relationship("TipoVacunas",  back_populates="esquemas")
-    dosis:       Mapped[list["Dosis"]]  = relationship("Dosis",        back_populates="esquema")
+    mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="esquemas")
+    vacunas: Mapped[list["EsquemaVacuna"]] = relationship("EsquemaVacuna", back_populates="esquema")
+
+class EsquemaVacuna(Base):
+    __tablename__ = "esquema_vacuna"
+
+    id_esquema_vacuna: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_esquema: Mapped[str] = mapped_column(ForeignKey("esquema_vacunacion.id_esquema"), nullable=False)
+    id_vacuna: Mapped[str] = mapped_column(ForeignKey("tipo_vacunas.id_vacuna"), nullable=False)
+
+    estado: Mapped[str] = mapped_column(estado_esquema_enum, default="activo")
+    fecha_proxima_dosis: Mapped[date | None] = mapped_column(Date)
+
+    esquema: Mapped["EsquemaVacunacion"] = relationship("EsquemaVacunacion", back_populates="vacunas")
+    tipo_vacuna: Mapped["TipoVacunas"] = relationship("TipoVacunas")
+
+    dosis: Mapped[list["Dosis"]] = relationship("Dosis", back_populates="esquema_vacuna")
 
 
 class Dosis(Base):
     __tablename__ = "dosis"
-    __table_args__ = (
-        UniqueConstraint("id_esquema", "numero_dosis", name="uq_dosis_numero_esquema"),
-    )
 
-    id_dosis:           Mapped[str]       = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_esquema:         Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("esquema_vacunacion.id_esquema", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    id_veterinaria:     Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("veterinaria.id_veterinaria",   ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    numero_dosis:       Mapped[int]       = mapped_column(SmallInteger, nullable=False)
-    fecha_aplicacion:   Mapped[date]      = mapped_column(Date, nullable=False, default=date.today)
-    fecha_programada:   Mapped[date|None] = mapped_column(Date, nullable=True)
-    lote_vacuna:        Mapped[str|None]  = mapped_column(VARCHAR(60), nullable=True)
-    via_administracion: Mapped[str|None]  = mapped_column(VARCHAR(60), nullable=True)
-    observaciones:      Mapped[str|None]  = mapped_column(Text, nullable=True)
-    es_externa:         Mapped[bool]      = mapped_column(Boolean, nullable=False, default=False)
+    id_dosis: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_esquema_vacuna: Mapped[str] = mapped_column(ForeignKey("esquema_vacuna.id_esquema_vacuna"), nullable=False)
 
-    esquema:     Mapped["EsquemaVacunacion"] = relationship("EsquemaVacunacion", back_populates="dosis")
-    veterinario: Mapped["Veterinaria"]       = relationship("Veterinaria",       back_populates="dosis")
-    certificado: Mapped["Certificado|None"]  = relationship("Certificado",       back_populates="dosis", uselist=False)
+    numero_dosis: Mapped[int] = mapped_column(SmallInteger)
+    fecha_aplicacion: Mapped[date] = mapped_column(Date)
+
+    esquema_vacuna: Mapped["EsquemaVacuna"] = relationship("EsquemaVacuna", back_populates="dosis")
 
 
 class Certificado(Base):
