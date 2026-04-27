@@ -7,7 +7,7 @@ from schemas.tratamiento import TratamientoCreate, TratamientoUpdate
 from config.database import Tratamiento, Mascota
 
 
-def agregar_tratamiento(db: Session, data: TratamientoCreate) -> Tratamiento:
+def editar_tratamiento(db: Session, data: TratamientoCreate) -> Tratamiento:
     """
     Registra un nuevo tratamiento para una mascota.
     Verifica que la mascota exista y esté activa.

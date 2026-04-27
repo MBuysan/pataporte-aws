@@ -8,8 +8,7 @@ class ConsultaCreate(BaseModel):
     id_mascota:           str
     motivo:               str
     diagnostico:          Optional[str]  = None
-    tratamiento_indicado: Optional[str]  = None
-    agregar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
+    editar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
     agregar_dosis:        Optional[bool] = False  # activa flujo de vacuna_service
  
     class Config:
@@ -18,18 +17,11 @@ class ConsultaCreate(BaseModel):
                 "id_mascota":           "uuid-de-la-mascota",
                 "motivo":               "Control anual",
                 "diagnostico":          "Animal sano",
-                "tratamiento_indicado": "Ninguno",
-                "agregar_tratamiento":  False,
+                "editar_tratamiento":  False,
                 "agregar_dosis":        False,
             }
         }
 
-
-# ── Lo que se recibe al EDITAR una consulta ────────────────
-# Solo diagnostico y tratamiento son editables post-creacion
-class ConsultaUpdate(BaseModel):
-    diagnostico: Optional[str] = None
-    tratamiento_indicado: Optional[str] = None
 
 
 # ── Lo que se DEVUELVE al consultar una consulta ───────────

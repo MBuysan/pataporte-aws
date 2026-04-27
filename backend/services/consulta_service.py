@@ -1,18 +1,58 @@
-import uuid
 from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from schemas.consulta import ConsultaCreate, ConsultaUpdate
+from config.database import Consulta, Mascota, Veterinaria, Tratamiento
 
 
 def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
     """
     Registra una consulta clinica.
     El id_veterinario viene del token JWT, no del body del request.
-    La fecha_hora la pone el sistema, no el usuario.
+    La fecha_hora la pone el sistema, el veterinario no puede manipularla.
     """
-    pass
+    
+    #verifica si la mascota existe y esté activa
+    mascota = db.query(Mascota).filter(
+        Mascota.id_mascota == data.id_mascota,
+        Mascota.estado == "activo"
+    ).first()
+    if not mascota:
+        raise HTTPException(status_code=404, detail="Mascota no encontrada o inactiva")
+ 
+    # verifica que el veterinario existe y esté activo
+    veterinario = db.query(Veterinaria).filter(
+        Veterinaria.id_veterinaria == id_veterinario,
+        Veterinaria.estado == "activo"
+    ).first()
+    if not veterinario:
+        raise HTTPException(status_code=404, detail="Veterinario no encontrado o inactivo")
+ 
+    # crea el objeto Consulta
+    consulta = Consulta(
+        id_mascota           = data.id_mascota,
+        id_veterinario       = id_veterinario,
+        fecha_hora           = datetime.utcnow(),
+        motivo               = data.motivo,
+        diagnostico          = data.diagnostico,
+        tratamiento_indicado = data.tratamiento_indicado,
+        editado              = False,
+        fecha_edicion        = None,
+    )
+    db.add(consulta)
+    db.commit()
+    db.refresh(consulta)  # actualiza el objeto con los datos generados por la BD 
+ 
+    #flujos opcionales
+ 
+    if data.editar_tratamiento:
+        pass  # llamar a tratamiento_service.crear() cuando este implementado
+ 
+    if data.agregar_dosis:
+        pass  # llamar a vacuna_service.registrar_dosis() cuando este implementado
+ 
+    return consulta
 
 
 def listar_por_mascota(db: Session, id_mascota: str):
@@ -20,13 +60,16 @@ def listar_por_mascota(db: Session, id_mascota: str):
     Retorna el historial completo de una mascota ordenado de mas reciente a mas antiguo.
     El historial pertenece a la mascota, no a la clinica (regla de negocio 3.8.1).
     """
-    return []
+   
+    #verifica si la mascota existe
+    mascota = db.query(Mascota).filter(Mascota.id_mascota == id_mascota).first()
+    if not mascota:
+        raise HTTPException(status_code=404, detail="Mascota no encontrada")
+ 
+    return (
+        db.query(Consulta)
+        .filter(Consulta.id_mascota == id_mascota)
+        .order_by(Consulta.fecha_hora.desc()) 
+        .all()
+    )
 
-
-def editar(db: Session, id_consulta: str, data: ConsultaUpdate):
-    """
-    Edita una consulta existente.
-    Regla de negocio 6.6: al editar se marca el campo 'editado = True'
-    y se registra la fecha de edicion. Esto queda visible para el tutor.
-    """
-    pass

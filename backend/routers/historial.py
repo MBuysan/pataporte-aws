@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from schemas.consulta import ConsultaResponse
-from schemas.historial import AgregarConsultaHistorialCreate, HistorialResponse
+from schemas.consulta import ConsultaCreate, ConsultaResponse
+from schemas.historial import HistorialResponse
 from services import historial_service
 
 router = APIRouter()
@@ -22,10 +22,10 @@ def _get_id_veterinario(x_veterinario_id: str = Header(...)) -> str:
     "/consultas",
     response_model=ConsultaResponse,
     status_code=201,
-    summary="Agregar consulta al historial",
+    summary="Agregar consulta al historial de una mascota",
 )
-def agregar_consulta_al_historial(
-    data: AgregarConsultaHistorialCreate,
+def agregar_consulta(
+    data: ConsultaCreate,
     db: Session = Depends(get_db),
     id_veterinario: str = Depends(_get_id_veterinario),
 ):
