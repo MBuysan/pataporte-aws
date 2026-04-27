@@ -55,21 +55,4 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
     return consulta
 
 
-def listar_por_mascota(db: Session, id_mascota: str):
-    """
-    Retorna el historial completo de una mascota ordenado de mas reciente a mas antiguo.
-    El historial pertenece a la mascota, no a la clinica (regla de negocio 3.8.1).
-    """
-   
-    #verifica si la mascota existe
-    mascota = db.query(Mascota).filter(Mascota.id_mascota == id_mascota).first()
-    if not mascota:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada")
- 
-    return (
-        db.query(Consulta)
-        .filter(Consulta.id_mascota == id_mascota)
-        .order_by(Consulta.fecha_hora.desc()) 
-        .all()
-    )
 
