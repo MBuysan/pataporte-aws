@@ -157,8 +157,7 @@ class TipoVacunas(Base):
     intervalo_entre_dosis_dias: Mapped[int|None] = mapped_column(SmallInteger, nullable=True)
     intervalo_refuerzo_dias:    Mapped[int|None] = mapped_column(SmallInteger, nullable=True)
     activo:                     Mapped[bool]     = mapped_column(Boolean, nullable=False, default=True)
-
-    esquemas: Mapped[list["EsquemaVacunacion"]] = relationship("EsquemaVacunacion", back_populates="tipo_vacuna")
+    esquemas_vacuna:            Mapped[list["EsquemaVacuna"]] = relationship("EsquemaVacuna",back_populates="tipo_vacuna")
 
 
 class EsquemaVacunacion(Base):
@@ -183,7 +182,7 @@ class EsquemaVacuna(Base):
     fecha_proxima_dosis: Mapped[date | None] = mapped_column(Date)
 
     esquema: Mapped["EsquemaVacunacion"] = relationship("EsquemaVacunacion", back_populates="vacunas")
-    tipo_vacuna: Mapped["TipoVacunas"] = relationship("TipoVacunas")
+    tipo_vacuna: Mapped["TipoVacunas"] = relationship("TipoVacunas", back_populates="esquemas_vacuna")
 
     dosis: Mapped[list["Dosis"]] = relationship("Dosis", back_populates="esquema_vacuna")
 
@@ -198,6 +197,7 @@ class Dosis(Base):
     fecha_aplicacion: Mapped[date] = mapped_column(Date)
 
     esquema_vacuna: Mapped["EsquemaVacuna"] = relationship("EsquemaVacuna", back_populates="dosis")
+    certificado: Mapped["Certificado | None"] = relationship("Certificado", back_populates="dosis")
 
 
 class Certificado(Base):
