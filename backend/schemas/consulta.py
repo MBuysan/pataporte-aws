@@ -5,18 +5,22 @@ from typing import Optional
 
 # ── Lo que se recibe al REGISTRAR una consulta ─────────────
 class ConsultaCreate(BaseModel):
-    id_mascota: str
-    motivo: str
-    diagnostico: Optional[str] = None
-    tratamiento_indicado: Optional[str] = None
-
+    id_mascota:           str
+    motivo:               str
+    diagnostico:          Optional[str]  = None
+    tratamiento_indicado: Optional[str]  = None
+    agregar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
+    agregar_dosis:        Optional[bool] = False  # activa flujo de vacuna_service
+ 
     class Config:
         json_schema_extra = {
             "example": {
-                "id_mascota": "uuid-de-la-mascota",
-                "motivo": "Control anual",
-                "diagnostico": "Animal sano",
+                "id_mascota":           "uuid-de-la-mascota",
+                "motivo":               "Control anual",
+                "diagnostico":          "Animal sano",
                 "tratamiento_indicado": "Ninguno",
+                "agregar_tratamiento":  False,
+                "agregar_dosis":        False,
             }
         }
 
