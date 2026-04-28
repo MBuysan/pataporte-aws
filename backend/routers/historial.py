@@ -33,18 +33,18 @@ def agregar_consulta(
 
 
 @router.get(
-    "/{id_mascota}",
-    response_model=HistorialResponse,
-    summary="Visualizar historial completo de una mascota",
-)
-def visualizar_historial(id_mascota: str, db: Session = Depends(get_db)):
-    return historial_service.visualizar_historial(db, id_mascota)
-
-
-@router.get(
     "/{id_mascota}/consultas",
     response_model=list[ConsultaResponse],
     summary="Ver consultas del historial de una mascota",
 )
 def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db)):
     return historial_service.ver_historial_consultas(db, id_mascota)
+
+
+@router.get(
+    "/{id_mascota}",
+    response_model=HistorialResponse,
+    summary="Visualizar historial completo de una mascota",
+)
+def visualizar_historial(id_mascota: str, db: Session = Depends(get_db)):
+    return historial_service.visualizar_historial(db, id_mascota)

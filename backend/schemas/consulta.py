@@ -33,8 +33,7 @@ class ConsultaResponse(BaseModel):
     motivo: str
     diagnostico: Optional[str]
     tratamiento_indicado: Optional[str]
-    editado: bool
-    fecha_edicion: Optional[datetime]
+
 
     class Config:
         from_attributes = True

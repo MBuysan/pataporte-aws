@@ -2,12 +2,12 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from schemas.historial import AgregarConsultaHistorialCreate
+from schemas.consulta import ConsultaCreate
 from config.database import Consulta, Mascota
 from services import consulta_service
 
 def agregar_consulta_al_historial(
-    db: Session, data: AgregarConsultaHistorialCreate, id_veterinario: str
+    db: Session, data: ConsultaCreate, id_veterinario: str
 ) -> Consulta:
     """
     Registra una consulta clínica en el historial de la mascota.
