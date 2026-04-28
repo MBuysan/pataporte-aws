@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
 from schemas.historial import HistorialResponse
-from services import historial_service
+from services import historial_service, consulta_service
 
 router = APIRouter()
 
@@ -30,6 +30,17 @@ def agregar_consulta(
     id_veterinario: str = Depends(_get_id_veterinario),
 ):
     return historial_service.agregar_consulta_al_historial(db, data, id_veterinario)
+
+
+@router.get(
+    "/{id_mascota}/detalle/{id_consulta}",
+    response_model=ConsultaResponse,
+    summary="Ver detalle completo de una consulta",
+    description="Devuelve la consulta con sus tratamientos y dosis asociadas.",
+)
+def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = Depends(get_db)):
+    return consulta_service.obtener_detalle(db, id_consulta)
+ 
 
 
 @router.get(
