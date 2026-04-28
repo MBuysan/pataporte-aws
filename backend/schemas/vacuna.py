@@ -1,8 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date, datetime
 from typing import Optional
 from enum import Enum
-from pydantic import Field
 from typing import List
 
 class EstadoEsquemaEnum(str, Enum):
@@ -51,6 +50,24 @@ class DosisCreate(BaseModel):
     es_externa: bool = False
 
 
+class CertificadoResponse(BaseModel):
+    id_certificado: str
+    id_dosis: str
+    estado: EstadoCertificadoEnum
+    fecha_emision: datetime
+    fecha_vencimiento: Optional[date]
+    hash_verificacion: str
+    url_documento: Optional[str]
+    certificacion_manual: bool
+
+    class Config:
+        from_attributes = True
+
+
+# ── Lo que se DEVUELVE al consultar un esquema completo ────
+# Incluye las dosis y el certificado de cada una
+
+
 class DosisResponse(BaseModel):
     id_dosis: str
     id_esquema_vacuna: str   
@@ -69,20 +86,4 @@ class DosisResponse(BaseModel):
 
 
 # ── Lo que se DEVUELVE al consultar un certificado ─────────
-class CertificadoResponse(BaseModel):
-    id_certificado: str
-    id_dosis: str
-    estado: EstadoCertificadoEnum
-    fecha_emision: datetime
-    fecha_vencimiento: Optional[date]
-    hash_verificacion: str
-    url_documento: Optional[str]
-    certificacion_manual: bool
-
-    class Config:
-        from_attributes = True
-
-
-# ── Lo que se DEVUELVE al consultar un esquema completo ────
-# Incluye las dosis y el certificado de cada una
 

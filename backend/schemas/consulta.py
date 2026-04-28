@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 
 # ── Lo que se recibe al REGISTRAR una consulta ─────────────
@@ -32,8 +32,8 @@ class ConsultaResponse(BaseModel):
     fecha_hora: datetime
     motivo: str
     diagnostico: Optional[str]
-    tratamiento_indicado: Optional[str]
-
-
+    tratamientos: Optional[List[dict]] = None
+    dosis:        Optional[List[dict]] = None
+    
     class Config:
         from_attributes = True

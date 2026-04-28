@@ -6,7 +6,6 @@ from schemas.tratamiento import TratamientoResponse
 
 
 
-
 # ── Lo que se DEVUELVE al visualizar el historial completo ─
 class HistorialResponse(BaseModel):
     id_mascota: str
