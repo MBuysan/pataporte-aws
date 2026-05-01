@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from services import tratamiento_service
 from schemas.consulta import ConsultaCreate
 from config.database import Consulta, Dosis, EsquemaVacuna, Mascota, TipoVacunas, Veterinaria, Tratamiento
 
@@ -36,7 +37,6 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
         fecha_hora           = datetime.utcnow(),
         motivo               = data.motivo,
         diagnostico          = data.diagnostico,
-        tratamiento_indicado = data.tratamiento_indicado,
         editado              = False,
         fecha_edicion        = None,
     )
@@ -46,8 +46,13 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
  
     #flujos opcionales
  
-    if data.editar_tratamiento:
-        pass  # llamar a tratamiento_service.crear() cuando este implementado
+    if data.editar_tratamiento and data.id_tratamiento and data.datos_tratamiento:
+        tratamiento_service.actualizar(
+            db,
+            id_tratamiento = data.id_tratamiento,
+            data           = data.datos_tratamiento,
+            id_consulta    = consulta.id_consulta,
+        )
  
     if data.agregar_dosis:
         pass  # llamar a vacuna_service.registrar_dosis() cuando este implementado

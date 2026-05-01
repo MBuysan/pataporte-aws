@@ -1,3 +1,4 @@
+from schemas.tratamiento import TratamientoUpdate
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
@@ -10,15 +11,24 @@ class ConsultaCreate(BaseModel):
     diagnostico:          Optional[str]  = None
     editar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
     agregar_dosis:        Optional[bool] = False  # activa flujo de vacuna_service
- 
+    id_tratamiento:     Optional[str]             = None
+    datos_tratamiento:  Optional[TratamientoUpdate] = None
+    
+    
     class Config:
         json_schema_extra = {
             "example": {
-                "id_mascota":           "uuid-de-la-mascota",
-                "motivo":               "Control anual",
-                "diagnostico":          "Animal sano",
-                "editar_tratamiento":  False,
-                "agregar_dosis":        False,
+                "id_mascota":       "uuid-mascota",
+                "motivo":           "Control anual",
+                "diagnostico":      "Animal sano",
+                "agregar_dosis":    False,
+                "editar_tratamiento": True,
+                "id_tratamiento":   "uuid-tratamiento",
+                "datos_tratamiento": {
+                    "nombre":       "Vitaminas diarias",
+                    "descripcion":  "Una pastilla por día",
+                    "finalizacion": None,
+                },
             }
         }
 

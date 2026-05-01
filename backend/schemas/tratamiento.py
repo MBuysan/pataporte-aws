@@ -23,7 +23,8 @@ class TratamientoCreate(BaseModel):
 
 # ── Lo que se recibe al ACTUALIZAR un tratamiento ─────────
 class TratamientoUpdate(BaseModel):
-    descripcion: Optional[str] = None
+    nombre:       Optional[str]      = None
+    descripcion:  Optional[str]      = None
     finalizacion: Optional[datetime] = None
 
 

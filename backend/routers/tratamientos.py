@@ -16,10 +16,10 @@ router = APIRouter()
     "/",
     response_model=TratamientoResponse,
     status_code=201,
-    summary="Agregar tratamiento a una mascota",
+    summary="Crear tratamiento para una mascota",
 )
-def editar_tratamiento(data: TratamientoCreate, db: Session = Depends(get_db)):
-    return tratamiento_service.editar_tratamiento(db, data)
+def crear_tratamiento(data: TratamientoCreate, db: Session = Depends(get_db)):
+    return tratamiento_service.crear(db, data)
 
 
 @router.get(
@@ -40,3 +40,15 @@ def listar_tratamientos(id_mascota: str, db: Session = Depends(get_db)):
     return tratamiento_service.listar_por_mascota(db, id_mascota)
 
 
+@router.patch(
+    "/{id_tratamiento}",
+    response_model=TratamientoResponse,
+    summary="Editar un tratamiento existente",
+    description="Modifica nombre, descripción o fecha de finalización. "
+)
+def actualizar_tratamiento(
+    id_tratamiento: str,
+    data: TratamientoUpdate,
+    db: Session = Depends(get_db),
+):
+    return tratamiento_service.actualizar(db, id_tratamiento, data)
