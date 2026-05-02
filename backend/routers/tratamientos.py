@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -51,4 +52,17 @@ def actualizar_tratamiento(
     data: TratamientoUpdate,
     db: Session = Depends(get_db),
 ):
+    return tratamiento_service.actualizar(db, id_tratamiento, data)
+
+
+@router.patch(
+    "/{id_tratamiento}/finalizar",
+    response_model=TratamientoResponse,
+    summary="Marcar un tratamiento como finalizado",
+)
+def finalizar_tratamiento(
+    id_tratamiento: str,
+    db: Session = Depends(get_db),
+):
+    data = TratamientoUpdate(finalizacion=datetime.utcnow())
     return tratamiento_service.actualizar(db, id_tratamiento, data)

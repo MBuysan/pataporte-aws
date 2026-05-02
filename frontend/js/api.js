@@ -22,6 +22,7 @@ const api = {
   get:    (endpoint)       => apiRequest("GET",    endpoint),
   post:   (endpoint, body) => apiRequest("POST",   endpoint, body),
   put:    (endpoint, body) => apiRequest("PUT",    endpoint, body),
+  patch:  (endpoint, body) => apiRequest("PATCH",  endpoint, body),
   delete: (endpoint)       => apiRequest("DELETE", endpoint),
 };
 
