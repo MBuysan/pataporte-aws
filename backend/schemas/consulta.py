@@ -1,31 +1,37 @@
+from schemas.tratamiento import TratamientoUpdate
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 
 # ── Lo que se recibe al REGISTRAR una consulta ─────────────
 class ConsultaCreate(BaseModel):
-    id_mascota: str
-    motivo: str
-    diagnostico: Optional[str] = None
-    tratamiento_indicado: Optional[str] = None
-
+    id_mascota:           str
+    motivo:               str
+    diagnostico:          Optional[str]  = None
+    editar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
+    agregar_dosis:        Optional[bool] = False  # activa flujo de vacuna_service
+    id_tratamiento:     Optional[str]             = None
+    datos_tratamiento:  Optional[TratamientoUpdate] = None
+    
+    
     class Config:
         json_schema_extra = {
             "example": {
-                "id_mascota": "uuid-de-la-mascota",
-                "motivo": "Control anual",
-                "diagnostico": "Animal sano",
-                "tratamiento_indicado": "Ninguno",
+                "id_mascota":       "uuid-mascota",
+                "motivo":           "Control anual",
+                "diagnostico":      "Animal sano",
+                "agregar_dosis":    False,
+                "editar_tratamiento": True,
+                "id_tratamiento":   "uuid-tratamiento",
+                "datos_tratamiento": {
+                    "nombre":       "Vitaminas diarias",
+                    "descripcion":  "Una pastilla por día",
+                    "finalizacion": None,
+                },
             }
         }
 
-
-# ── Lo que se recibe al EDITAR una consulta ────────────────
-# Solo diagnostico y tratamiento son editables post-creacion
-class ConsultaUpdate(BaseModel):
-    diagnostico: Optional[str] = None
-    tratamiento_indicado: Optional[str] = None
 
 
 # ── Lo que se DEVUELVE al consultar una consulta ───────────
@@ -36,9 +42,8 @@ class ConsultaResponse(BaseModel):
     fecha_hora: datetime
     motivo: str
     diagnostico: Optional[str]
-    tratamiento_indicado: Optional[str]
-    editado: bool
-    fecha_edicion: Optional[datetime]
-
+    tratamientos: Optional[List[dict]] = None
+    dosis:        Optional[List[dict]] = None
+    
     class Config:
         from_attributes = True

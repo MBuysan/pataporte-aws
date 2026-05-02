@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db
-from schemas.consulta import ConsultaResponse
-from schemas.historial import AgregarConsultaHistorialCreate, HistorialResponse
-from services import historial_service
+from schemas.consulta import ConsultaCreate, ConsultaResponse
+from schemas.historial import HistorialResponse
+from services import historial_service, consulta_service
 
 router = APIRouter()
 
@@ -22,10 +22,10 @@ def _get_id_veterinario(x_veterinario_id: str = Header(...)) -> str:
     "/consultas",
     response_model=ConsultaResponse,
     status_code=201,
-    summary="Agregar consulta al historial",
+    summary="Agregar consulta al historial de una mascota",
 )
-def agregar_consulta_al_historial(
-    data: AgregarConsultaHistorialCreate,
+def agregar_consulta(
+    data: ConsultaCreate,
     db: Session = Depends(get_db),
     id_veterinario: str = Depends(_get_id_veterinario),
 ):
@@ -33,12 +33,14 @@ def agregar_consulta_al_historial(
 
 
 @router.get(
-    "/{id_mascota}",
-    response_model=HistorialResponse,
-    summary="Visualizar historial completo de una mascota",
+    "/{id_mascota}/detalle/{id_consulta}",
+    response_model=ConsultaResponse,
+    summary="Ver detalle completo de una consulta",
+    description="Devuelve la consulta con sus tratamientos y dosis asociadas.",
 )
-def visualizar_historial(id_mascota: str, db: Session = Depends(get_db)):
-    return historial_service.visualizar_historial(db, id_mascota)
+def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = Depends(get_db)):
+    return consulta_service.obtener_detalle(db, id_consulta)
+ 
 
 
 @router.get(
@@ -48,3 +50,5 @@ def visualizar_historial(id_mascota: str, db: Session = Depends(get_db)):
 )
 def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db)):
     return historial_service.ver_historial_consultas(db, id_mascota)
+
+

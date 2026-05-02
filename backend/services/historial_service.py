@@ -1,15 +1,15 @@
-import uuid
 from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from schemas.historial import AgregarConsultaHistorialCreate
 from config.database import Consulta, Tratamiento, Mascota ,EsquemaVacunacion
-from services import mascota_service
+from services import mascota_service, consulta_service
 
+from schemas.consulta import ConsultaCreate
 
 def agregar_consulta_al_historial(
-    db: Session, data: AgregarConsultaHistorialCreate, id_veterinario: str
+    db: Session, data: ConsultaCreate, id_veterinario: str
 ) -> Consulta:
 
     mascota = mascota_service.obtener_por_id(db, Mascota.id_mascota)
