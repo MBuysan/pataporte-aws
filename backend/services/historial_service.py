@@ -2,36 +2,83 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from schemas.historial import AgregarConsultaHistorialCreate
+from config.database import Consulta, Tratamiento, Mascota ,EsquemaVacunacion
+from services import mascota_service, consulta_service
+
 from schemas.consulta import ConsultaCreate
-from config.database import Consulta, Mascota
-from services import consulta_service
 
 def agregar_consulta_al_historial(
     db: Session, data: ConsultaCreate, id_veterinario: str
 ) -> Consulta:
-    """
-    Registra una consulta clínica en el historial de la mascota.
-    El id_veterinario proviene del token JWT (no del body).
-    La fecha_hora la asigna el sistema automáticamente.
-    Regla de negocio 3.8.1: el historial pertenece a la mascota.
-    """
-    return consulta_service.crear(db, data, id_veterinario)
+
+    mascota = mascota_service.obtener_por_id(db, Mascota.id_mascota)
+    if not mascota:
+        raise HTTPException(status_code=404, detail="Mascota no encontrada")
+
+    nueva_consulta = Consulta(
+        id_mascota=data.id_mascota,
+        id_veterinario=id_veterinario,
+        fecha_hora=datetime.utcnow(),
+        motivo=data.motivo,
+        diagnostico=data.diagnostico,
+        tratamiento_indicado=data.tratamiento_indicado,
+    )
+
+    db.add(nueva_consulta)
+
+    try:
+        db.commit()
+        db.refresh(nueva_consulta)
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al registrar la consulta")
+
+    return nueva_consulta
 
 
 def ver_historial_consultas(db: Session, id_mascota: str) -> list[Consulta]:
-    """
-    Retorna todas las consultas de una mascota, ordenadas de más reciente a más antigua.
-    Regla de negocio 3.8.1: el historial pertenece a la mascota, no a la clínica.
-    """
-    #verifica si la mascota existe
-    mascota = db.query(Mascota).filter(Mascota.id_mascota == id_mascota).first()
-    if not mascota:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada")
- 
-    return (
+
+    consultas = (
         db.query(Consulta)
         .filter(Consulta.id_mascota == id_mascota)
-        .order_by(Consulta.fecha_hora.desc()) 
+        .order_by(Consulta.fecha_hora.desc())
         .all()
     )
 
+    return consultas
+
+
+def visualizar_historial(db: Session, id_mascota: str) -> dict:
+
+    mascota = mascota_service.obtener_por_id(db, id_mascota)
+    if not mascota:
+        raise HTTPException(status_code=404, detail="Mascota no encontrada")
+
+    #  Consultas 
+    consultas = ver_historial_consultas(db, id_mascota)
+
+    #  Tratamientos activos 
+    tratamientos = (
+        db.query(Tratamiento)
+        .filter(
+            Tratamiento.id_mascota == id_mascota,
+            Tratamiento.finalizacion == None  # activos
+        )
+        .all()
+    )
+
+    #  Vacunas 
+    esquemas = (
+        db.query(EsquemaVacunacion)
+        .filter(EsquemaVacunacion.id_mascota == id_mascota)
+        .all()
+    )
+
+    return {
+        "id_mascota": mascota.id_mascota,
+        "nombre_mascota": mascota.nombre,
+        "consultas": consultas,
+        "tratamientos": tratamientos,
+        "vacunas": esquemas,
+    }
