@@ -65,4 +65,4 @@ def agregar_dosis(
     summary="Ver carnet de vacunas de una mascota",
 )
 def ver_carnet_vacunas(id_mascota: str, db: Session = Depends(get_db)):
-    return vacuna_service.ver_carnet_vacunas(db, id_mascota)
+    return vacuna_service.esquema_por_mascota(db, id_mascota)

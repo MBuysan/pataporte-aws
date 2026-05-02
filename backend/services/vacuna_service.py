@@ -100,8 +100,48 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
 
 
 def esquema_por_mascota(db: Session, id_mascota: str):
-    """Retorna todos los esquemas de vacunacion de una mascota con sus dosis."""
-    pass
+    esquemas = db.query(EsquemaVacunacion).filter_by(
+        id_mascota=id_mascota
+    ).all()
+
+    if not esquemas:
+        return []
+
+    resultado = []
+
+    for esquema in esquemas:
+        vacunas = db.query(EsquemaVacuna).filter_by(
+            id_esquema=esquema.id_esquema
+        ).all()
+
+        vacunas_response = []
+
+        for ev in vacunas:
+            tipo = db.query(TipoVacunas).filter_by(
+                id_vacuna=ev.id_vacuna
+            ).first()
+
+            dosis = db.query(Dosis).filter_by(
+                id_esquema_vacuna=ev.id_esquema_vacuna
+            ).all()
+
+            vacunas_response.append({
+                "id_esquema_vacuna": ev.id_esquema_vacuna,
+                "id_vacuna": ev.id_vacuna,
+                "nombre": tipo.nombre if tipo else "Sin nombre",
+                "estado": ev.estado,
+                "fecha_inicio": esquema.fecha_inicio,
+                "fecha_proxima_dosis": ev.fecha_proxima_dosis,
+                "dosis": dosis
+            })
+
+        resultado.append({
+            "id_esquema": esquema.id_esquema,
+            "id_mascota": esquema.id_mascota,
+            "vacunas": vacunas_response
+        })
+
+    return resultado
 
 
 def _generar_certificado(db: Session, dosis: Dosis):

@@ -54,7 +54,6 @@ class CertificadoResponse(BaseModel):
         from_attributes = True
 
 
-# ── Lo que se recibe al REGISTRAR una dosis ────────────────
 class DosisCreate(BaseModel):
     id_esquema_vacuna: str   #antes era id_esquema
     numero_dosis: int
@@ -72,10 +71,6 @@ class DosisResponse(BaseModel):
     id_veterinaria: str
     numero_dosis: int
     fecha_aplicacion: date
-    fecha_programada: Optional[date]
-    lote_vacuna: Optional[str]
-    via_administracion: Optional[str]
-    es_externa: bool
 
     certificado: Optional[CertificadoResponse] = None
 
