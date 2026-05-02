@@ -144,6 +144,7 @@ class Tratamiento(Base):
     finalizacion:   Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
 
     mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="tratamientos")
+    id_consulta: Mapped[str|None] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta", ondelete="SET NULL", onupdate="CASCADE"),nullable=True)
 
 
 class TipoVacunas(Base):
@@ -197,6 +198,7 @@ class Dosis(Base):
     fecha_aplicacion: Mapped[date] = mapped_column(Date)
 
     esquema_vacuna: Mapped["EsquemaVacuna"] = relationship("EsquemaVacuna", back_populates="dosis")
+    id_consulta: Mapped[str|None] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta", ondelete="SET NULL", onupdate="CASCADE"),nullable=True)
     certificado: Mapped["Certificado | None"] = relationship("Certificado", back_populates="dosis")
 
 

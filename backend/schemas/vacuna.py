@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import date, datetime
 from typing import Optional, List
 from enum import Enum
-
+from typing import List
 
 class EstadoEsquemaEnum(str, Enum):
     activo = "activo"
@@ -16,6 +16,28 @@ class EstadoCertificadoEnum(str, Enum):
     vencido = "vencido"
     revocado = "revocado"
 
+class VacunaResponse(BaseModel):
+    id_esquema_vacuna: str
+    id_vacuna: str
+    nombre: str
+
+    estado: str   
+    fecha_inicio: date
+    fecha_proxima_dosis: Optional[date]
+
+    dosis: List[DosisResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+class EsquemaVacunacionResponse(BaseModel):
+    id_esquema: str
+    id_mascota: str
+
+    vacunas: List[VacunaResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
 
 # ── Certificado primero (lo usa DosisResponse) ─────────────
 class CertificadoResponse(BaseModel):
@@ -33,7 +55,7 @@ class CertificadoResponse(BaseModel):
 
 
 class DosisCreate(BaseModel):
-    id_esquema_vacuna: str
+    id_esquema_vacuna: str   #antes era id_esquema
     numero_dosis: int
     fecha_aplicacion: date
     lote_vacuna: Optional[str] = None
