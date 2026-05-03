@@ -309,7 +309,6 @@ def login_veterinaria(db: Session, identificador: str, password: str):
     vet = (
         db.query(Veterinaria)
         .filter(
-            Veterinaria.estado == "activo",
             or_(
                 Veterinaria.email == identificador,
                 Veterinaria.rut == identificador,
@@ -323,6 +322,9 @@ def login_veterinaria(db: Session, identificador: str, password: str):
 
     if not verificar_password(password, vet.password_hash):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    if vet.estado == "inactivo":
+        raise HTTPException(status_code=403, detail="Su cuenta está pendiente de aprobación")
 
     access_token = crear_access_token(
         {
