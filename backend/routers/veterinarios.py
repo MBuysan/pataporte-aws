@@ -7,6 +7,18 @@ from services import veterinario_service
 
 router = APIRouter()
 
+from schemas.veterinaria import VeterinariaCreate, VeterinariaResponse
+
+@router.post(
+    "/",
+    response_model=VeterinariaResponse,
+    status_code=201,
+    summary="Registrar una organización/veterinaria",
+)
+def registrar_veterinaria(data: VeterinariaCreate, db: Session = Depends(get_db)):
+    return veterinario_service.registrar_veterinaria(db, data)
+
+
 
 @router.get(
     "/buscar/{cedula}",

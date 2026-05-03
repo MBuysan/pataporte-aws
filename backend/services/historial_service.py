@@ -2,7 +2,6 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from schemas.historial import AgregarConsultaHistorialCreate
 from config.database import Consulta, Tratamiento, Mascota ,EsquemaVacunacion
 from services import mascota_service, consulta_service
 
