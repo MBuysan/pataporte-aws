@@ -91,8 +91,7 @@ class Veterinaria(Base):
     __tablename__ = "veterinaria"
 
     id_veterinaria:        Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    cedula_veterinario:    Mapped[str]      = mapped_column(VARCHAR(20),  nullable=False, unique=True)
-    matricula_profesional: Mapped[str]      = mapped_column(VARCHAR(40),  nullable=False, unique=True)
+    rut:                   Mapped[str]      = mapped_column(VARCHAR(20),  nullable=False, unique=True)
     nombre:                Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:                 Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
@@ -103,6 +102,18 @@ class Veterinaria(Base):
     dosis:                  Mapped[list["Dosis"]]       = relationship("Dosis",       back_populates="veterinario")
     certificados_emitidos:  Mapped[list["Certificado"]] = relationship("Certificado", back_populates="emisor",  foreign_keys="Certificado.id_veterinario_emisor")
     certificados_revisados: Mapped[list["Certificado"]] = relationship("Certificado", back_populates="revisor", foreign_keys="Certificado.id_revisor")
+    sucursales:             Mapped[list["Sucursal"]]    = relationship("Sucursal",    back_populates="veterinaria")
+
+
+class Sucursal(Base):
+    __tablename__ = "sucursal"
+    
+    id_sucursal:     Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_veterinaria:  Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("veterinaria.id_veterinaria", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+    nombre:          Mapped[str] = mapped_column(VARCHAR(150), nullable=False)
+    estado:          Mapped[str] = mapped_column(estado_general_enum, nullable=False, default="activo")
+    
+    veterinaria: Mapped["Veterinaria"] = relationship("Veterinaria", back_populates="sucursales")
 
 
 class Consulta(Base):
@@ -193,11 +204,13 @@ class Dosis(Base):
 
     id_dosis: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_esquema_vacuna: Mapped[str] = mapped_column(ForeignKey("esquema_vacuna.id_esquema_vacuna"), nullable=False)
+    id_veterinaria: Mapped[str] = mapped_column(ForeignKey("veterinaria.id_veterinaria"), nullable=False)
 
     numero_dosis: Mapped[int] = mapped_column(SmallInteger)
     fecha_aplicacion: Mapped[date] = mapped_column(Date)
 
     esquema_vacuna: Mapped["EsquemaVacuna"] = relationship("EsquemaVacuna", back_populates="dosis")
+    veterinario: Mapped["Veterinaria"] = relationship("Veterinaria", back_populates="dosis")
     id_consulta: Mapped[str|None] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta", ondelete="SET NULL", onupdate="CASCADE"),nullable=True)
     certificado: Mapped["Certificado | None"] = relationship("Certificado", back_populates="dosis")
 

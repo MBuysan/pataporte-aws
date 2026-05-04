@@ -7,7 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from config.database import UsuarioTutor, RecuperacionPassword
+from config.database import UsuarioTutor, RecuperacionPassword, Veterinaria
 from schemas.recuperacion_password import (
     SolicitarRecuperacionRequest,
     ResetPasswordRequest,
@@ -302,5 +302,46 @@ def login_tutor(db: Session, identificador: str, password: str):
             "nombre": tutor.nombre,
             "email": tutor.email,
             "cedula": tutor.cedula,
+        },
+    }
+
+def login_veterinaria(db: Session, identificador: str, password: str):
+    vet = (
+        db.query(Veterinaria)
+        .filter(
+            or_(
+                Veterinaria.email == identificador,
+                Veterinaria.rut == identificador,
+            ),
+        )
+        .first()
+    )
+
+    if not vet:
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    if not verificar_password(password, vet.password_hash):
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    if vet.estado == "inactivo":
+        raise HTTPException(status_code=403, detail="Su cuenta está pendiente de aprobación")
+
+    access_token = crear_access_token(
+        {
+            "sub": vet.id_veterinaria,
+            "rol": "veterinaria",
+            "nombre": vet.nombre,
+            "email": vet.email,
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id_veterinaria": vet.id_veterinaria,
+            "nombre": vet.nombre,
+            "email": vet.email,
+            "rut": vet.rut,
         },
     }
