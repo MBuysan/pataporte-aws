@@ -10,9 +10,9 @@ tambien hereda de str para poder manejarse en json y la base de datos
 
 
 class SexoEnum(str, Enum):
-    macho = "macho"
-    hembra = "hembra"
-    desconocido = "desconocido"
+    macho = "Macho"
+    hembra = "Hembra"
+    desconocido = "Desconocido"
 
 
 class EstadoEnum(str, Enum):
@@ -22,6 +22,7 @@ class EstadoEnum(str, Enum):
 
 # ── Lo que se recibe al CREAR una mascota ──────────────────
 class MascotaCreate(BaseModel):
+    id_tutor: str
     nombre: str
     especie: str
     raza: Optional[str] = None

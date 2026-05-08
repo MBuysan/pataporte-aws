@@ -45,6 +45,9 @@ function inicializarPantallaLogin() {
 
       localStorage.setItem("access_token", response.access_token);
 
+      const tutor = await api.get(`/tutores/${response.user.id_tutor}`);
+      localStorage.setItem("tutor", JSON.stringify(tutor));
+
       window.location.href = "dashboard.html";
     } catch (error) {
       console.error("Error al iniciar sesión:", error.message);
