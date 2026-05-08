@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from services import tratamiento_service
+from services import tratamiento_service, vacuna_service
 from schemas.consulta import ConsultaCreate
 from config.database import Consulta, Dosis, EsquemaVacuna, Mascota, TipoVacunas, Veterinaria, Tratamiento
 
@@ -46,16 +46,36 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
  
     #flujos opcionales
  
-    if data.editar_tratamiento and data.id_tratamiento and data.datos_tratamiento:
-        tratamiento_service.actualizar(
-            db,
-            id_tratamiento = data.id_tratamiento,
-            data           = data.datos_tratamiento,
-            id_consulta    = consulta.id_consulta,
+    if data.crear_tratamiento and data.datos_tratamiento:
+
+        tratamiento_service.crear_tratamiento(
+            db=db,
+            data=data.datos_tratamiento,
+            id_consulta=consulta.id_consulta,
+        )
+        
+    if (
+        data.editar_tratamiento
+        and data.id_tratamiento
+        and data.datos_tratamiento
+    ):
+
+        tratamiento_service.actualizar_tratamiento(
+            db=db,
+            id_tratamiento=data.id_tratamiento,
+            data=data.datos_tratamiento,
+            id_consulta=consulta.id_consulta,
         )
  
-    if data.agregar_dosis:
-        pass  # llamar a vacuna_service.registrar_dosis() cuando este implementado
+    if data.agregar_dosis and data.datos_dosis:
+
+        vacuna_service.registrar_dosis(
+            db=db,
+            data=data.datos_dosis,
+            id_veterinaria=id_veterinario,
+            id_consulta=consulta.id_consulta,
+        )
+
  
     return consulta
 
@@ -72,7 +92,7 @@ def obtener_detalle(db: Session, id_consulta: str) -> dict:
     # trae solo los tratamientos creados en esta consulta
     tratamientos = (
         db.query(Tratamiento)
-        .filter(Tratamiento.id_consulta == id_consulta)
+        .filter(Tratamiento.id_consulta_creacion == id_consulta)
         .order_by(Tratamiento.creacion.desc())
         .all()
     )
@@ -93,12 +113,13 @@ def obtener_detalle(db: Session, id_consulta: str) -> dict:
         "fecha_hora":           consulta.fecha_hora,
         "motivo":               consulta.motivo,
         "diagnostico":          consulta.diagnostico,
-        "tratamiento_indicado": consulta.tratamiento_indicado,
+        
         "tratamientos": [
             {
+                "id_tratamiento": t.id_tratamiento,
                 "nombre":      t.nombre,
                 "descripcion": t.descripcion,
-                "finalizacion": str(t.finalizacion.date()) if t.finalizacion else None,
+                "finalizacion": (str(t.finalizacion.date()) if t.finalizacion else None)
             }
             for t in tratamientos
         ],

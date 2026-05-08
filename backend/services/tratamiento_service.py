@@ -6,54 +6,11 @@ from fastapi import HTTPException
 from schemas.tratamiento import TratamientoCreate, TratamientoUpdate
 from config.database import Tratamiento, Mascota
 
-
-def crear(db: Session, data: TratamientoCreate) -> Tratamiento:
-    """Registra un nuevo tratamiento para una mascota."""
-    mascota = db.query(Mascota).filter(
-        Mascota.id_mascota == data.id_mascota,
-        Mascota.estado     == "activo"
-    ).first()
-    if not mascota:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada o inactiva")
  
-    tratamiento = Tratamiento(
-        id_mascota   = data.id_mascota,
-        nombre       = data.nombre,
-        descripcion  = data.descripcion,
-        finalizacion = data.finalizacion,
-    )
-    db.add(tratamiento)
-    db.commit()
-    db.refresh(tratamiento)
-    return tratamiento
-
-
-
-def editar_tratamiento(db: Session, data: TratamientoCreate) -> Tratamiento:
+def crear_tratamiento(db: Session,data: TratamientoCreate,id_consulta: str) -> Tratamiento:
     """
-    Registra un nuevo tratamiento para una mascota.
-    Verifica que la mascota exista y esté activa.
-    Regla: no puede haber dos tratamientos con el mismo nombre para la misma mascota.
+    Crea un nuevo tratamiento asociado a una consulta.
     """
-    mascota = db.query(Mascota).filter(
-        Mascota.id_mascota == data.id_mascota,
-        Mascota.estado     == "activo"
-    ).first()
-    if not mascota:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada o inactiva")
- 
-    tratamiento = Tratamiento(
-        id_mascota   = data.id_mascota,
-        nombre       = data.nombre,
-        descripcion  = data.descripcion,
-        finalizacion = data.finalizacion,
-    )
-    db.add(tratamiento)
-    db.commit()
-    db.refresh(tratamiento)
-    return tratamiento
- 
-def agregar_tratamiento(db: Session, data: TratamientoCreate) -> Tratamiento:
 
     mascota = (
         db.query(Mascota)
@@ -65,7 +22,10 @@ def agregar_tratamiento(db: Session, data: TratamientoCreate) -> Tratamiento:
     )
 
     if not mascota:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada o inactiva")
+        raise HTTPException(
+            status_code=404,
+            detail="Mascota no encontrada o inactiva"
+        )
 
     duplicado = (
         db.query(Tratamiento)
@@ -82,21 +42,20 @@ def agregar_tratamiento(db: Session, data: TratamientoCreate) -> Tratamiento:
             detail="Ya existe un tratamiento con ese nombre para esta mascota"
         )
 
-    nuevo = Tratamiento(
+    tratamiento = Tratamiento(
         id_mascota=data.id_mascota,
         nombre=data.nombre,
         descripcion=data.descripcion,
-        finalizacion=data.finalizacion
+        finalizacion=data.finalizacion,
+        id_consulta_creacion=id_consulta,
+        id_consulta_ultima_edicion=id_consulta,
     )
 
-    db.add(nuevo)
+    db.add(tratamiento)
     db.commit()
-    db.refresh(nuevo)
+    db.refresh(tratamiento)
 
-    # mock notificación
-    print(f"NOTIFICACIÓN: nuevo tratamiento '{nuevo.nombre}' para mascota {data.id_mascota}")
-
-    return nuevo
+    return tratamiento
 
 
 def ver_tratamientos_activos(db: Session, id_mascota: str) -> list[Tratamiento]:
@@ -148,15 +107,38 @@ def obtener_por_id(db: Session, id_tratamiento: str) -> Tratamiento:
     return tratamiento
 
 
-def actualizar(db: Session, id_tratamiento: str, data: TratamientoUpdate) -> Tratamiento:
+def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUpdate, id_consulta: str ) -> Tratamiento:
 
     tratamiento = obtener_por_id(db, id_tratamiento)
+
+    if (data.nombre is not None and data.nombre != tratamiento.nombre):
+
+        colision = (
+            db.query(Tratamiento)
+            .filter(
+                Tratamiento.id_mascota == tratamiento.id_mascota,
+                Tratamiento.nombre == data.nombre,
+                Tratamiento.id_tratamiento != id_tratamiento
+            )
+            .first()
+        )
+
+        if colision:
+            raise HTTPException(
+                status_code=409,
+                detail="Ya existe un tratamiento con ese nombre para esta mascota"
+            )
+
+        tratamiento.nombre = data.nombre
 
     if data.descripcion is not None:
         tratamiento.descripcion = data.descripcion
 
     if data.finalizacion is not None:
         tratamiento.finalizacion = data.finalizacion
+
+    # solo se actualiza la ultima edicion
+    tratamiento.id_consulta_ultima_edicion = id_consulta
 
     db.commit()
     db.refresh(tratamiento)

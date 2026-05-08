@@ -155,9 +155,9 @@ class Tratamiento(Base):
     finalizacion:   Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
 
     mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="tratamientos")
-    id_consulta: Mapped[str|None] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta", ondelete="SET NULL", onupdate="CASCADE"),nullable=True)
-
-
+    id_consulta_creacion: Mapped[str] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta",ondelete="RESTRICT",onupdate="CASCADE"), nullable=False)
+    id_consulta_ultima_edicion: Mapped[str] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta",ondelete="RESTRICT",onupdate="CASCADE"),nullable=False)
+    
 class TipoVacunas(Base):
     __tablename__ = "tipo_vacunas"
 

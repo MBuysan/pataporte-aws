@@ -9,10 +9,12 @@ class ConsultaCreate(BaseModel):
     id_mascota:           str
     motivo:               str
     diagnostico:          Optional[str]  = None
-    editar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
-    agregar_dosis:        Optional[bool] = False  # activa flujo de vacuna_service
+    crear_tratamiento: bool = False
+    editar_tratamiento: bool = False
+    agregar_dosis: bool = False
+    nuevo_tratamiento: Optional[TratamientoCreate] = None
     id_tratamiento:     Optional[str]             = None
-    datos_tratamiento:  Optional[TratamientoUpdate] = None
+    tratamiento_actualizado: Optional[TratamientoUpdate] = None
     
     
     class Config:
