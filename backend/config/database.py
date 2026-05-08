@@ -23,7 +23,7 @@ class Base(DeclarativeBase):
 estado_general_enum = SAEnum("activo", "inactivo",                                    name="estado_general")
 estado_esquema_enum = SAEnum("activo", "completado", "atrasado",                      name="estado_esquema")
 estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
-sexo_mascota_enum   = SAEnum("macho", "hembra", "desconocido",                        name="sexo_mascota")
+sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
 rol_tutor_enum      = SAEnum("principal", "secundario",                               name="rol_tutor")
 
 # ── MODELOS ───────────────────────────────────────────────────────────────────

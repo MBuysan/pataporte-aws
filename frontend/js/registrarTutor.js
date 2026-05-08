@@ -31,7 +31,7 @@ form.addEventListener("submit", async (e) => {
             mensaje.style.color = "green";
             form.reset();
         }
-
+        window.location.href = "dashboard.html";
     } catch (error) {
         mensaje.innerText = "Error de conexión con el servidor";
         mensaje.style.color = "red";
