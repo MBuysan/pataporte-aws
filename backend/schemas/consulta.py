@@ -1,4 +1,4 @@
-from backend.schemas.vacuna import DosisResponse
+from schemas.vacuna import DosisResponse
 from schemas.tratamiento import TratamientoResponse, TratamientoUpdate
 from pydantic import BaseModel
 from datetime import datetime
