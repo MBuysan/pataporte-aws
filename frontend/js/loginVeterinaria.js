@@ -39,7 +39,7 @@ function inicializarPantallaLogin() {
             }
 
             // Redirigir al dashboard
-            window.location.href = "dashboard.html";
+            window.location.href = "buscar-mascotas.html";
         } catch (error) {
             console.error("Error al iniciar sesión:", error.message);
             // El backend ya devuelve "Su cuenta está pendiente de aprobación" o "Credenciales inválidas" en el error.detail

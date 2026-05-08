@@ -1,21 +1,28 @@
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
-
+import jwt
+from jwt import PyJWTError
+import os
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
 from schemas.historial import HistorialResponse
 from services import historial_service, consulta_service
 
+from utils import password_utils
+
 router = APIRouter()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
+def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
-# TODO: reemplazar por dependencia real de autenticación JWT
-def _get_id_veterinario(x_veterinario_id: str = Header(...)) -> str:
-    """
-    Dependencia temporal: el id del veterinario se pasa en el header X-Veterinario-Id.
-    En producción debe extraerse del token JWT.
-    """
-    return x_veterinario_id
+    id_veterinario = payload.get("sub")
+
+    if not id_veterinario:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
+    return id_veterinario
 
 
 @router.post(
@@ -27,9 +34,8 @@ def _get_id_veterinario(x_veterinario_id: str = Header(...)) -> str:
 def agregar_consulta(
     data: ConsultaCreate,
     db: Session = Depends(get_db),
-    id_veterinario: str = Depends(_get_id_veterinario),
-):
-    return historial_service.agregar_consulta_al_historial(db, data, id_veterinario)
+    id_veterinario: str = Depends(get_current_vet)):
+    return consulta_service.crear(db, data, id_veterinario)
 
 
 @router.get(

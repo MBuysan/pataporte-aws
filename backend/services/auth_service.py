@@ -328,7 +328,7 @@ def login_veterinaria(db: Session, identificador: str, password: str):
 
     access_token = crear_access_token(
         {
-            "sub": vet.id_veterinaria,
+            "sub": str(vet.id_veterinaria),
             "rol": "veterinaria",
             "nombre": vet.nombre,
             "email": vet.email,
@@ -338,7 +338,6 @@ def login_veterinaria(db: Session, identificador: str, password: str):
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "id_veterinario": Veterinaria.id_veterinaria, #atado con alambre
         "user": {
             "id_veterinaria": vet.id_veterinaria,
             "nombre": vet.nombre,

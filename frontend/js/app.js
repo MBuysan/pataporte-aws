@@ -44,8 +44,6 @@ function inicializarPantallaLogin() {
       });
 
       localStorage.setItem("access_token", response.access_token);
-      localStorage.setItem("veterinario_id", response.id_veterinario); //atado con alambre
-
       const tutor = await api.get(`/tutores/${response.user.id_tutor}`);
       localStorage.setItem("tutor", JSON.stringify(tutor));
 
