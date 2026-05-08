@@ -1,5 +1,5 @@
-from schemas.vacuna import DosisResponse
-from schemas.tratamiento import TratamientoResponse, TratamientoUpdate
+from schemas.vacuna import DosisResponse, DosisCreate
+from schemas.tratamiento import TratamientoResponse, TratamientoUpdate, TratamientoCreate
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
