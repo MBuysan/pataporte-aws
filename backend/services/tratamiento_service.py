@@ -7,7 +7,7 @@ from schemas.tratamiento import TratamientoCreate, TratamientoUpdate
 from config.database import Tratamiento, Mascota
 
  
-def crear_tratamiento(db: Session,data: TratamientoCreate,id_consulta: str) -> Tratamiento:
+def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate,id_consulta: str) -> Tratamiento:
     """
     Crea un nuevo tratamiento asociado a una consulta.
     """
@@ -15,7 +15,7 @@ def crear_tratamiento(db: Session,data: TratamientoCreate,id_consulta: str) -> T
     mascota = (
         db.query(Mascota)
         .filter(
-            Mascota.id_mascota == data.id_mascota,
+            Mascota.id_mascota == id_mascota,
             Mascota.estado == "activo"
         )
         .first()
