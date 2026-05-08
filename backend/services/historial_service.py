@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from config.database import Consulta, Tratamiento, Mascota ,EsquemaVacunacion
-from services import mascota_service, consulta_service
+from services import mascota_service
 
 from schemas.consulta import ConsultaCreate
 
@@ -21,7 +21,6 @@ def agregar_consulta_al_historial(
         fecha_hora=datetime.utcnow(),
         motivo=data.motivo,
         diagnostico=data.diagnostico,
-        tratamiento_indicado=data.tratamiento_indicado,
     )
 
     db.add(nueva_consulta)

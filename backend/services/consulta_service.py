@@ -37,6 +37,7 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
         fecha_hora           = datetime.utcnow(),
         motivo               = data.motivo,
         diagnostico          = data.diagnostico,
+        tratamiento_indicado = None,
         editado              = False,
         fecha_edicion        = None,
     )

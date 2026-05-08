@@ -44,6 +44,7 @@ function inicializarPantallaLogin() {
       });
 
       localStorage.setItem("access_token", response.access_token);
+      localStorage.setItem("veterinario_id", response.id_veterinario); //atado con alambre
 
       window.location.href = "dashboard.html";
     } catch (error) {
