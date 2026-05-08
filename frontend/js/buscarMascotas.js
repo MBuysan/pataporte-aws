@@ -1,4 +1,3 @@
-// buscar-mascota.js
 // El veterinario ingresa la cédula del tutor, presiona Buscar,
 // y ve directamente el nombre del tutor y la lista de sus mascotas.
 
@@ -82,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : `<div class="foto-placeholder">${mascota.nombre.charAt(0).toUpperCase()}</div>`;
 
     return `
-      <a href="perfil-mascota.html?id=${mascota.id_mascota}" class="fila-mascota">
+      <a href="perfil-mascota-vet.html?id=${mascota.id_mascota}" class="fila-mascota">
         ${foto}
         <div class="info-mascota">
           <span class="nombre-mascota">${mascota.nombre}</span>
