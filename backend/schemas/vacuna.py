@@ -49,8 +49,9 @@ class DosisResponse(BaseModel):
     id_veterinaria: str
     numero_dosis: int
     fecha_aplicacion: date
-
+    id_consulta: Optional[str]
     certificado: Optional[CertificadoResponse] = None
+    
 
     class Config:
         from_attributes = True
@@ -61,7 +62,7 @@ class VacunaResponse(BaseModel):
     id_esquema_vacuna: str
     id_vacuna: str
     nombre: str
-    estado: str
+    estado: EstadoEsquemaEnum
     fecha_inicio: date
     fecha_proxima_dosis: Optional[date]
 

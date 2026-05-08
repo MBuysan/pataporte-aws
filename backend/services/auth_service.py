@@ -338,6 +338,7 @@ def login_veterinaria(db: Session, identificador: str, password: str):
     return {
         "access_token": access_token,
         "token_type": "bearer",
+        "id_veterinario": Veterinaria.id_veterinaria, #atado con alambre
         "user": {
             "id_veterinaria": vet.id_veterinaria,
             "nombre": vet.nombre,

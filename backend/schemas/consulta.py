@@ -1,4 +1,5 @@
-from schemas.tratamiento import TratamientoUpdate
+from schemas.vacuna import DosisResponse, DosisCreate
+from schemas.tratamiento import TratamientoResponse, TratamientoUpdate, TratamientoCreate
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
@@ -9,11 +10,15 @@ class ConsultaCreate(BaseModel):
     id_mascota:           str
     motivo:               str
     diagnostico:          Optional[str]  = None
-    editar_tratamiento:  Optional[bool] = False  # activa flujo de tratamiento_service
-    agregar_dosis:        Optional[bool] = False  # activa flujo de vacuna_service
-    id_tratamiento:     Optional[str]             = None
-    datos_tratamiento:  Optional[TratamientoUpdate] = None
     
+    crear_tratamiento: bool = False
+    editar_tratamiento: bool = False
+    agregar_dosis: bool = False
+    
+    nuevo_tratamiento: Optional[TratamientoCreate] = None
+    tratamiento_actualizado: Optional[TratamientoUpdate] = None
+    nueva_dosis: Optional[DosisCreate] = None
+
     
     class Config:
         json_schema_extra = {
@@ -42,8 +47,8 @@ class ConsultaResponse(BaseModel):
     fecha_hora: datetime
     motivo: str
     diagnostico: Optional[str]
-    tratamientos: Optional[List[dict]] = None
-    dosis:        Optional[List[dict]] = None
+    tratamientos: List[TratamientoResponse] = []
+    dosis:        List[DosisResponse] = []
     
     class Config:
         from_attributes = True
