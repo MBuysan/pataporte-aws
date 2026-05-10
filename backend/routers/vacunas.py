@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from config.database import get_db
 from schemas.vacuna import DosisCreate, DosisResponse, EsquemaVacunacionResponse
 from services import vacuna_service
+from config.database import TipoVacunas, Dosis, EsquemaVacunacion, EsquemaVacuna
 
 router = APIRouter()
 
@@ -82,3 +83,26 @@ def agregar_dosis(
 )
 def ver_carnet_vacunas(id_mascota: str, db: Session = Depends(get_db)):
     return vacuna_service.esquema_por_mascota(db, id_mascota)
+
+@router.get("/tipos")
+def ver_vacunas(db: Session = Depends(get_db)):
+    return db.query(TipoVacunas).all()
+
+@router.get("/consulta/{id_consulta}")
+def vacunas_por_consulta(id_consulta: str, db: Session = Depends(get_db)):
+
+    return (
+        db.query(Dosis)
+        .filter(Dosis.id_consulta == id_consulta)
+        .all()
+    )
+
+@router.get("/mascota/{id_mascota}")
+def vacunas_mascota(id_mascota: str, db: Session = Depends(get_db)):
+
+    return (
+        db.query(EsquemaVacuna)
+        .join(EsquemaVacunacion)
+        .filter(EsquemaVacunacion.id_mascota == id_mascota)
+        .all()
+    )

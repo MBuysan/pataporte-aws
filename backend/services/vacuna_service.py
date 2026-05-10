@@ -67,25 +67,19 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     if not esquema_vacuna:
         raise HTTPException(status_code=404, detail="Vacuna no encontrada en el esquema")
 
-    existe = db.query(Dosis).filter_by(
-        id_esquema_vacuna=data.id_esquema_vacuna,
-        numero_dosis=data.numero_dosis
-    ).first()
-
-    if existe:
-        raise HTTPException(status_code=400, detail="Dosis ya registrada")
+    # ✅ Contar dosis ya aplicadas para esta vacuna en el esquema
+    cantidad_actual = db.query(Dosis).filter_by(
+        id_esquema_vacuna=data.id_esquema_vacuna
+    ).count()
 
     dosis = Dosis(
         id_dosis=str(uuid.uuid4()),
         id_esquema_vacuna=data.id_esquema_vacuna,
         id_veterinaria=id_veterinaria,
         id_consulta=data.id_consulta,
-        numero_dosis=data.numero_dosis,
+        numero_dosis=cantidad_actual + 1,  # Número calculado automáticamente
         fecha_aplicacion=data.fecha_aplicacion,
-        lote_vacuna=data.lote_vacuna,
-        via_administracion=data.via_administracion,
-        observaciones=data.observaciones,
-        es_externa=data.es_externa
+ 
     )
 
     db.add(dosis)
@@ -96,7 +90,6 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
 
     db.commit()
     db.refresh(dosis)
-
     return dosis
 
 
@@ -155,8 +148,20 @@ def _generar_certificado(db: Session, dosis: Dosis):
 
 
 def _actualizar_proxima_dosis(db: Session, dosis: Dosis):
-    """
-    Funcion privada. Recalcula la fecha de la proxima dosis en el esquema
-    usando el intervalo definido en TipoVacunas.
-    """
-    pass
+    esquema_vacuna = dosis.esquema_vacuna
+    tipo_vacuna = esquema_vacuna.tipo_vacuna
+
+    cantidad_actual = db.query(Dosis).filter_by(
+        id_esquema_vacuna=esquema_vacuna.id_esquema_vacuna
+    ).count()
+
+    if cantidad_actual < tipo_vacuna.cantidad_dosis_requeridas:
+        # Si quedan dosis por aplicar, calcular fecha de la próxima
+        intervalo = tipo_vacuna.intervalo_entre_dosis_dias or 0
+        esquema_vacuna.fecha_proxima_dosis = dosis.fecha_aplicacion + timedelta(days=intervalo)
+    else:
+        # Todas las dosis aplicadas
+        esquema_vacuna.fecha_proxima_dosis = None
+        esquema_vacuna.estado = "completado"
+
+    db.add(esquema_vacuna)
