@@ -5,8 +5,7 @@ async function apiRequest(method, endpoint, body = null) {
     method,
     headers: {
       "Content-Type": "application/json",
-      // reemplazar por extracción desde JWT cuando esté implementado
-      "X-Veterinario-Id": localStorage.getItem("veterinario_id") ?? "",
+      Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
     },
   };
   if (body) options.body = JSON.stringify(body);

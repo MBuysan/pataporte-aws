@@ -59,7 +59,7 @@ def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str):
 
     return esquema_vacuna
 
-def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str, id_consulta: str):
+def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     esquema_vacuna = db.query(EsquemaVacuna).filter_by(
         id_esquema_vacuna=data.id_esquema_vacuna
     ).first()
@@ -79,7 +79,7 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str, id_cons
         id_dosis=str(uuid.uuid4()),
         id_esquema_vacuna=data.id_esquema_vacuna,
         id_veterinaria=id_veterinaria,
-        id_consulta=id_consulta,
+        id_consulta=data.id_consulta,
         numero_dosis=data.numero_dosis,
         fecha_aplicacion=data.fecha_aplicacion,
         lote_vacuna=data.lote_vacuna,

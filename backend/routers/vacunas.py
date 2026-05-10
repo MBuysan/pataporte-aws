@@ -7,6 +7,22 @@ from services import vacuna_service
 
 router = APIRouter()
 
+@router.get(
+    "/mascota/{id_mascota}",
+    summary="Obtener carnet de vacunas de una mascota"
+)
+def obtener_carnet(
+    id_mascota: str,
+    db: Session = Depends(get_db),
+):
+
+    esquemas = vacuna_service.esquema_por_mascota(db, id_mascota)
+
+    if not esquemas:
+        vacuna_service.crear_esquema(db, id_mascota)
+        esquemas = vacuna_service.esquema_por_mascota(db, id_mascota)
+
+    return esquemas
 
 # TODO: reemplazar por dependencia real de autenticación JWT
 def _get_id_veterinaria(x_veterinaria_id: str = Header(...)) -> str:
