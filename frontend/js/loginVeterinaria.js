@@ -36,6 +36,14 @@ function inicializarPantallaLogin() {
             if (response.user) {
                 localStorage.setItem("user", JSON.stringify(response.user));
                 localStorage.setItem("rol", "veterinaria");
+                const vetId = response.user?.id_veterinaria;
+
+                if (!vetId) {
+                    console.error("LOGIN RESPONSE:", response);
+                    throw new Error("No se recibió id_veterinaria");
+                }
+
+                localStorage.setItem("veterinaria_id", vetId);
             }
 
             // Redirigir al dashboard

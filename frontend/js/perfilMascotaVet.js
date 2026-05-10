@@ -1,308 +1,216 @@
-// Vista del veterinario — puede ver info, tratamientos, historial y agregar consulta.
-// Secciones desplegables: tratamientos e historial. Modal para nueva consulta y detalle.
-
 document.addEventListener("DOMContentLoaded", async () => {
 
-  const params    = new URLSearchParams(window.location.search);
-  const idMascota = params.get("id");
+  let idConsultaActual = null;
+  let vacunasCache = [];
+  let carnetCache = [];
 
-  const nombreEl      = document.getElementById("nombre-mascota");
-  const detalleEl     = document.getElementById("detalle-mascota");
-  const fotoEl        = document.getElementById("foto-mascota");
-  const mensajePagina = document.getElementById("mensaje-pagina");
-  const seccionTrat   = document.getElementById("seccion-tratamientos");
-  const seccionHist   = document.getElementById("seccion-historial");
-  const btnTrat       = document.getElementById("btn-tratamientos");
-  const btnHist       = document.getElementById("btn-historial");
-  const btnAgregar    = document.getElementById("btn-agregar-consulta");
-  const modalCrear    = document.getElementById("modal-crear");
-  const formCrear     = document.getElementById("form-crear-consulta");
-  const cerrarCrear   = document.getElementById("cerrar-modal-crear");
-  const cancelarCrear = document.getElementById("cancelar-crear");
-  const btnGuardar    = document.getElementById("btn-guardar");
-  const mensajeCrear  = document.getElementById("mensaje-modal-crear");
-  const modalDetalle     = document.getElementById("modal-detalle");
-  const contenidoDetalle = document.getElementById("contenido-detalle");
-  const cerrarDetalle    = document.getElementById("cerrar-modal-detalle");
-  const cerrarDetallBtn  = document.getElementById("cerrar-detalle-btn");
+  let vacunasPendientes = new Set();
+  let dosisPendientes = []; // ahora es un array de objetos completos
 
-  let tratamientosActivos  = [];
-  let tratamientosCargados = false;
-  let historialCargado     = false;
+  const idMascota = new URLSearchParams(location.search).get("id");
 
-  if (!idMascota) {
-    mostrarMensaje(mensajePagina, "No se especificó una mascota.", "error");
+  const nombre = document.getElementById("nombre");
+  const detalle = document.getElementById("detalle");
+  const foto = document.getElementById("foto");
+
+  const modal = document.getElementById("modal");
+  const form = document.getElementById("form");
+
+  const historial = document.getElementById("historial");
+  const tratamientos = document.getElementById("tratamientos");
+
+  const vacunasDiv = document.getElementById("vacunas");
+
+  // ───────── MASCOTA ─────────
+  try {
+    const m = await api.get(`/mascotas/${idMascota}`);
+    nombre.textContent = m.nombre;
+    detalle.textContent = `${m.especie} · ${m.raza}`;
+    if (m.foto_url) {
+      foto.outerHTML = `<img src="${m.foto_url}" style="width:60px;height:60px;border-radius:50%;">`;
+    }
+  } catch (e) {
+    console.error("Error cargando mascota", e);
     return;
   }
 
-  await cargarMascota();
+  // ───────── ABRIR CONSULTA ─────────
+  document.getElementById("btn-consulta").onclick = async () => {
 
+    vacunasPendientes = new Set();
+    dosisPendientes = [];
 
-  // ── Carga de datos ─────────────────────────────────────
+    modal.classList.add("activo");
 
-  async function cargarMascota() {
-    try {
-      const m = await api.get(`/mascotas/${idMascota}`);
-      nombreEl.textContent  = m.nombre;
-      detalleEl.textContent = [m.especie, m.raza, m.sexo !== "desconocido" ? m.sexo : null].filter(Boolean).join(" · ");
-      if (m.foto_url) {
-        fotoEl.outerHTML = `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`;
-      } else {
-        fotoEl.textContent = m.nombre.charAt(0).toUpperCase();
-      }
-    } catch (error) {
-      mostrarMensaje(mensajePagina, `No se pudo cargar la mascota: ${error.message}`, "error");
+    if (!document.getElementById("cerrar-modal")) {
+      const btnCerrar = document.createElement("button");
+      btnCerrar.id = "cerrar-modal";
+      btnCerrar.textContent = "✕";
+      btnCerrar.style.position = "absolute";
+      btnCerrar.style.top = "10px";
+      btnCerrar.style.right = "10px";
+      btnCerrar.style.background = "none";
+      btnCerrar.style.border = "none";
+      btnCerrar.style.fontSize = "20px";
+      btnCerrar.style.cursor = "pointer";
+      modal.appendChild(btnCerrar);
+      btnCerrar.onclick = () => modal.classList.remove("activo");
     }
-  }
 
+    vacunasCache = await api.get("/vacunas/tipos");
+    carnetCache = await api.get(`/vacunas/mascota/${idMascota}`);
 
-  // ── Tratamientos desplegables ──────────────────────────
+    renderVacunas();
+  };
 
-  btnTrat.addEventListener("click", async () => {
-    const abierto = seccionTrat.style.display === "block";
-    seccionTrat.style.display = abierto ? "none" : "block";
-    btnTrat.textContent = abierto ? "Tratamientos" : "Cerrar tratamientos";
+  // ───────── RENDER VACUNAS ─────────
+  function renderVacunas() {
+    const esquema = carnetCache?.[0];
+    vacunasDiv.innerHTML = `
+      <hr>
+      <h4>Vacunas</h4>
+      <button type="button" id="btn-add-vacuna">Agregar vacuna</button>
+      <button type="button" id="btn-add-dosis">Agregar dosis</button>
+      <div id="lista" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+    `;
+    const lista = document.getElementById("lista");
 
-    if (!abierto && !tratamientosCargados) {
-      seccionTrat.innerHTML = `<p class="cargando">Cargando...</p>`;
-      try {
-        const tratamientos   = await api.get(`/tratamientos/${idMascota}/activos`);
-        tratamientosActivos  = tratamientos;
-        tratamientosCargados = true;
-        renderizarTratamientos(tratamientos);
-      } catch (e) {
-        seccionTrat.innerHTML = `<p class="error-seccion">${e.message}</p>`;
-      }
-    }
-  });
+    // ── AGREGAR VACUNA
+    document.getElementById("btn-add-vacuna").onclick = () => {
+      lista.innerHTML = "";
+      const yaTiene = new Set((esquema?.vacunas || []).map(v => v.id_vacuna));
+      const disponibles = vacunasCache.filter(v => !yaTiene.has(v.id_vacuna));
 
+      disponibles.forEach(v => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = v.nombre;
+        btn.dataset.id = v.id_vacuna;
+        btn.style.padding = "6px";
+        btn.style.margin = "4px";
+        btn.style.cursor = "pointer";
+        if (vacunasPendientes.has(v.id_vacuna)) btn.style.background = "#c8f7c5";
 
-  function renderizarTratamientos(list) {
-    seccionTrat.innerHTML = list.length === 0
-      ? `<p class="sin-datos">Sin tratamientos activos.</p>`
-      : list.map(t => `
-          <div class="item-card">
-            <strong>${t.nombre}</strong>
-            <small>${t.descripcion || "Sin descripción"}</small>
-            ${t.finalizacion ? `<small>Finaliza: ${new Date(t.finalizacion).toLocaleDateString("es-UY")}</small>` : ""}
-          </div>`).join("");
-  }
+        btn.onclick = () => {
+          if (vacunasPendientes.has(v.id_vacuna)) {
+            vacunasPendientes.delete(v.id_vacuna);
+            btn.style.background = "";
+          } else {
+            vacunasPendientes.add(v.id_vacuna);
+            btn.style.background = "#c8f7c5";
+          }
+        };
 
-
-  // ── Historial desplegable ──────────────────────────────
-
-  btnHist.addEventListener("click", async () => {
-    const abierto = seccionHist.style.display === "block";
-    seccionHist.style.display = abierto ? "none" : "block";
-    btnHist.textContent = abierto ? "Historial clínico" : "Cerrar historial";
-
-    if (!abierto && !historialCargado) {
-      seccionHist.innerHTML = `<p class="cargando">Cargando...</p>`;
-      try {
-        const consultas  = await api.get(`/historial/${idMascota}/consultas`);
-        historialCargado = true;
-        renderizarHistorial(consultas);
-      } catch (e) {
-        seccionHist.innerHTML = `<p class="error-seccion">${e.message}</p>`;
-      }
-    }
-  });
-
-
-  function renderizarHistorial(consultas) {
-    seccionHist.innerHTML = consultas.length === 0
-      ? `<p class="sin-datos">No hay consultas registradas.</p>`
-      : consultas.map(c => {
-          const f = new Date(c.fecha_hora);
-          const fecha = f.toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-                      + ", " + f.toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit" });
-          return `
-            <button class="fila-consulta" data-id="${c.id_consulta}">
-              <span class="consulta-fecha">${fecha}</span>
-              <span class="consulta-motivo">${c.motivo}</span>
-              <span class="consulta-flecha">›</span>
-            </button>`;
-        }).join("");
-  }
-
-  // delegación en historial
-  seccionHist.addEventListener("click", async (e) => {
-    const fila = e.target.closest(".fila-consulta");
-    if (fila) await abrirModalDetalle(fila.dataset.id);
-  });
-
-
-  // ── Modal agregar consulta ─────────────────────────────
-
-  btnAgregar.addEventListener("click",    () => abrirModalCrear());
-  cerrarCrear.addEventListener("click",   () => cerrarModalCrear());
-  cancelarCrear.addEventListener("click", () => cerrarModalCrear());
-  modalCrear.addEventListener("click", (e) => { if (e.target === modalCrear) cerrarModalCrear(); });
-
-
-  async function abrirModalCrear() {
-    formCrear.reset();
-    ocultarMensaje(mensajeCrear);
-    const ct = document.getElementById("contenedor-tratamiento");
-    ct.innerHTML = `<p class="cargando">Cargando tratamientos...</p>`;
-    modalCrear.classList.add("activo");
-    try {
-      tratamientosActivos = await api.get(`/tratamientos/${idMascota}/activos`);
-      renderizarTratamientosEnModal(tratamientosActivos);
-    } catch {
-      ct.innerHTML = `<p class="sin-datos">No se pudieron cargar los tratamientos.</p>`;
-    }
-  }
-
-
-  function renderizarTratamientosEnModal(trats) {
-    const ct = document.getElementById("contenedor-tratamiento");
-    if (trats.length === 0) { ct.innerHTML = `<p class="sin-datos">Sin tratamientos activos.</p>`; return; }
-
-    const t0      = trats.length === 1 ? trats[0] : null;
-    const selector = trats.length > 1
-      ? trats.map(t => `<label class="campo-check"><input type="radio" name="trat-sel" value="${t.id_tratamiento}" /><span>${t.nombre}<small>${t.descripcion || ""}</small></span></label>`).join("")
-      : `<input type="hidden" name="trat-sel" value="${trats[0].id_tratamiento}" />`;
-
-    ct.innerHTML = `
-      <label class="campo-check">
-        <input type="checkbox" id="check-tratamiento" />
-        <span>Editar tratamiento activo<small>Modificá el tratamiento durante esta consulta</small></span>
-      </label>
-      <div id="form-editar-trat" style="display:none;margin-top:12px;">
-        ${trats.length > 1 ? `<p style="font-size:13px;color:#666;margin-bottom:8px;">Seleccioná el tratamiento a editar:</p>` : ""}
-        ${selector}
-        <div class="campo" style="margin-top:10px;">
-          <label for="trat-nombre">Nombre</label>
-          <input type="text" id="trat-nombre" value="${t0 ? t0.nombre : ""}" placeholder="Nombre del tratamiento" />
-        </div>
-        <div class="campo">
-          <label for="trat-descripcion">Descripción</label>
-          <textarea id="trat-descripcion" rows="2" placeholder="Indicaciones...">${t0 ? (t0.descripcion || "") : ""}</textarea>
-        </div>
-      </div>`;
-
-    document.getElementById("check-tratamiento").addEventListener("change", (e) => {
-      document.getElementById("form-editar-trat").style.display = e.target.checked ? "block" : "none";
-      if (e.target.checked && trats.length > 1) {
-        const r = document.querySelector("input[name='trat-sel']");
-        if (r) { r.checked = true; rellenarCampos(trats[0]); }
-      }
-    });
-
-    if (trats.length > 1) {
-      ct.querySelectorAll("input[name='trat-sel']").forEach(r => {
-        r.addEventListener("change", () => {
-          const t = trats.find(x => x.id_tratamiento === r.value);
-          if (t) rellenarCampos(t);
-        });
+        lista.appendChild(btn);
       });
-    }
-  }
-
-  function rellenarCampos(t) {
-    const n = document.getElementById("trat-nombre");
-    const d = document.getElementById("trat-descripcion");
-    if (n) n.value = t.nombre;
-    if (d) d.value = t.descripcion || "";
-  }
-
-  function cerrarModalCrear() {
-    modalCrear.classList.remove("activo");
-    tratamientosActivos = [];
-  }
-
-
-  formCrear.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const motivo = document.getElementById("input-motivo").value.trim();
-    if (!motivo) { mostrarMensaje(mensajeCrear, "El motivo es obligatorio.", "error"); return; }
-
-    const check = document.getElementById("check-tratamiento");
-    const editar = check ? check.checked : false;
-
-    const body = {
-      id_mascota:         idMascota,
-      motivo,
-      diagnostico:        document.getElementById("input-diagnostico").value.trim() || null,
-      agregar_dosis:      document.getElementById("check-dosis").checked,
-      editar_tratamiento: editar,
     };
 
-    if (editar) {
-      const radio = document.querySelector("input[name='trat-sel']:checked")
-                 || document.querySelector("input[name='trat-sel'][type='hidden']");
-      if (!radio) { mostrarMensaje(mensajeCrear, "Seleccioná el tratamiento a editar.", "error"); return; }
-      body.id_tratamiento    = radio.value;
-      body.datos_tratamiento = {
-        nombre:      document.getElementById("trat-nombre")?.value.trim()      || null,
-        descripcion: document.getElementById("trat-descripcion")?.value.trim() || null,
-      };
-    }
+    // ── AGREGAR DOSIS
+    document.getElementById("btn-add-dosis").onclick = () => {
+      lista.innerHTML = "";
+      const vacunasActivas = carnetCache?.[0]?.vacunas || [];
 
-    btnGuardar.disabled = true;
-    btnGuardar.textContent = "Guardando...";
+      vacunasActivas.forEach(v => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = v.nombre;
+        btn.dataset.id = v.id_esquema_vacuna;
+        btn.style.padding = "6px";
+        btn.style.margin = "4px";
+        btn.style.cursor = "pointer";
+
+        const seleccionado = dosisPendientes.find(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
+        if (seleccionado) btn.style.background = "#ffd699";
+
+        btn.onclick = () => {
+          const index = dosisPendientes.findIndex(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
+          if (index >= 0) {
+            dosisPendientes.splice(index, 1);
+            btn.style.background = "";
+          } else {
+            dosisPendientes.push({
+              id_esquema_vacuna: v.id_esquema_vacuna,
+              fecha_aplicacion: new Date().toISOString().split("T")[0],
+              id_consulta: null
+            });
+            btn.style.background = "#ffd699";
+          }
+        };
+
+        lista.appendChild(btn);
+      });
+    };
+  }
+
+  // ───────── GUARDAR CONSULTA ─────────
+  form.onsubmit = async (e) => {
+    e.preventDefault();
 
     try {
-      await api.post("/historial/consultas", body);
-      cerrarModalCrear();
-      historialCargado = false;
-      tratamientosCargados = false;
-      seccionHist.style.display = "none";
-      seccionTrat.style.display = "none";
-      btnHist.textContent = "Historial clínico";
-      btnTrat.textContent = "Tratamientos";
-    } catch (error) {
-      mostrarMensaje(mensajeCrear, error.message, "error");
-    } finally {
-      btnGuardar.disabled    = false;
-      btnGuardar.textContent = "Guardar consulta";
+      // 1️⃣ Crear consulta
+      const res = await api.post("/historial/consultas", {
+        id_mascota: idMascota,
+        motivo: document.getElementById("motivo").value,
+        diagnostico: document.getElementById("diag").value
+      });
+
+      idConsultaActual = res?.id_consulta;
+      if (!idConsultaActual) throw new Error("No se generó idConsultaActual");
+
+      const esquemaId = carnetCache?.[0]?.id_esquema;
+
+      // 2️⃣ Guardar vacunas
+      for (let idVacuna of vacunasPendientes) {
+        await api.post(`/vacunas/${esquemaId}/vacunas/${idVacuna}`);
+      }
+
+            // 3️⃣ Guardar dosis
+      for (let dosisObj of dosisPendientes) {
+
+          const vetId = localStorage.getItem("veterinaria_id");
+
+          if (!vetId || vetId === "null" || vetId === "undefined") {
+              console.error("VET ID INVALIDO:", vetId);
+              throw new Error("Veterinaria no válida en sesión");
+          }
+
+          const payload = {
+              id_esquema_vacuna: dosisObj.id_esquema_vacuna,
+              fecha_aplicacion: dosisObj.fecha_aplicacion,
+              id_consulta: idConsultaActual
+          };
+
+          await api.post("/vacunas/dosis", payload, {
+              headers: {
+                  "x-veterinaria-id": vetId
+              }
+          });
+      }
+
+      modal.classList.remove("activo");
+      vacunasPendientes.clear();
+      dosisPendientes = [];
+      vacunasCache = [];
+      carnetCache = [];
+
+    } catch (err) {
+      console.error("Error guardando consulta", err);
+      alert("Error guardando consulta. Revisa la consola.");
     }
-  });
+  };
 
+  // ───────── HISTORIAL ─────────
+  document.getElementById("btn-historial").onclick = async () => {
+    const data = await api.get(`/historial/${idMascota}/consultas`);
+    historial.style.display = "block";
+    historial.innerHTML = data.map(c => `<div class="fila">${c.fecha_hora} - ${c.motivo}</div>`).join("");
+  };
 
-  // ── Modal detalle consulta ─────────────────────────────
+  // ───────── TRATAMIENTOS ─────────
+  document.getElementById("btn-tratamientos").onclick = async () => {
+    const data = await api.get(`/tratamientos/${idMascota}/activos`);
+    tratamientos.style.display = "block";
+    tratamientos.innerHTML = data.map(t => `<div class="card"><b>${t.nombre}</b><div>${t.descripcion || ""}</div></div>`).join("");
+  };
 
-  cerrarDetalle.addEventListener("click",   () => cerrarModalDetalle());
-  cerrarDetallBtn.addEventListener("click", () => cerrarModalDetalle());
-  modalDetalle.addEventListener("click", (e) => { if (e.target === modalDetalle) cerrarModalDetalle(); });
-
-  async function abrirModalDetalle(idConsulta) {
-    contenidoDetalle.innerHTML = `<p style="color:#aaa;text-align:center;padding:20px 0">Cargando...</p>`;
-    modalDetalle.classList.add("activo");
-    try {
-      const c = await api.get(`/historial/${idMascota}/detalle/${idConsulta}`);
-      renderizarDetalle(c);
-    } catch (error) {
-      contenidoDetalle.innerHTML = `<p style="color:#c0392b">${error.message}</p>`;
-    }
-  }
-
-  function cerrarModalDetalle() { modalDetalle.classList.remove("activo"); }
-
-  function renderizarDetalle(c) {
-    const fecha = new Date(c.fecha_hora).toLocaleString("es-UY", {
-      day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
-    });
-    const secTrat = c.tratamientos?.length > 0
-      ? `<hr class="separador"/><p class="detalle-etiqueta">Tratamientos</p><div class="lista-items">${c.tratamientos.map(t => `<div class="item-card"><strong>${t.nombre}</strong><small>${t.descripcion || "Sin descripción"}</small>${t.finalizacion ? `<small>Fin: ${t.finalizacion}</small>` : ""}</div>`).join("")}</div>` : "";
-    const secDosis = c.dosis?.length > 0
-      ? `<hr class="separador"/><p class="detalle-etiqueta">Vacunas aplicadas</p><div class="lista-items">${c.dosis.map(d => `<div class="item-card"><strong>${d.nombre_vacuna}</strong><small>Dosis ${d.numero_dosis} — ${d.fecha_aplicacion}</small></div>`).join("")}</div>` : "";
-
-    contenidoDetalle.innerHTML = `
-      <div class="detalle-campo"><p class="detalle-etiqueta">Fecha</p><p class="detalle-valor">${fecha}</p></div>
-      <div class="detalle-campo"><p class="detalle-etiqueta">Motivo</p><p class="detalle-valor">${c.motivo}</p></div>
-      <div class="detalle-campo"><p class="detalle-etiqueta">Diagnóstico</p>
-        ${c.diagnostico ? `<p class="detalle-valor">${c.diagnostico}</p>` : `<p class="detalle-vacio">No registrado</p>`}
-      </div>${secTrat}${secDosis}`;
-  }
-
-  function mostrarMensaje(el, texto, tipo) {
-    el.textContent = texto;
-    el.classList.remove("mensaje-exito", "mensaje-error");
-    el.classList.add(tipo === "exito" ? "mensaje-exito" : "mensaje-error");
-    el.style.display = "block";
-  }
-
-  function ocultarMensaje(el) { el.style.display = "none"; el.textContent = ""; }
 });

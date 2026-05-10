@@ -33,13 +33,11 @@ class CertificadoResponse(BaseModel):
 
 
 class DosisCreate(BaseModel):
-    id_esquema_vacuna: str   #antes era id_esquema
-    numero_dosis: int
+
+    id_esquema_vacuna: str
     fecha_aplicacion: date
-    lote_vacuna: Optional[str] = None
-    via_administracion: Optional[str] = None
-    observaciones: Optional[str] = None
-    es_externa: bool = False
+
+    id_consulta: Optional[str] = None
 
 
 # ── Dosis (usa CertificadoResponse) ───────────────────────

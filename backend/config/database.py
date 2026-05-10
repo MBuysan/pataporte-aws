@@ -277,8 +277,59 @@ def get_db():
 
 
 def create_tables():
-    """
-    Crea todas las tablas en la BD si no existen.
-    Solo para desarrollo rapido. En produccion usar: alembic upgrade head
-    """
     Base.metadata.create_all(bind=engine)
+
+    # 🔥 SEED INICIAL DE VACUNAS
+    from sqlalchemy.orm import Session
+
+    db = SessionLocal()
+    try:
+        # si ya hay vacunas, no insertar de nuevo
+        existe = db.query(TipoVacunas).first()
+        if existe:
+            return
+
+        vacunas_base = [
+            TipoVacunas(
+                nombre="Antirrábica",
+                descripcion="Prevención de rabia",
+                especie_objetivo="canino/felino",
+                cantidad_dosis_requeridas=1,
+                intervalo_entre_dosis_dias=None,
+                intervalo_refuerzo_dias=365,
+                activo=True,
+            ),
+            TipoVacunas(
+                nombre="Moquillo",
+                descripcion="Distemper canino",
+                especie_objetivo="canino",
+                cantidad_dosis_requeridas=3,
+                intervalo_entre_dosis_dias=21,
+                intervalo_refuerzo_dias=365,
+                activo=True,
+            ),
+            TipoVacunas(
+                nombre="Parvovirus",
+                descripcion="Protección contra parvovirus",
+                especie_objetivo="canino",
+                cantidad_dosis_requeridas=3,
+                intervalo_entre_dosis_dias=21,
+                intervalo_refuerzo_dias=365,
+                activo=True,
+            ),
+            TipoVacunas(
+                nombre="Triple felina",
+                descripcion="Rinotraqueitis + Calicivirus + Panleucopenia",
+                especie_objetivo="felino",
+                cantidad_dosis_requeridas=2,
+                intervalo_entre_dosis_dias=21,
+                intervalo_refuerzo_dias=365,
+                activo=True,
+            ),
+        ]
+
+        db.add_all(vacunas_base)
+        db.commit()
+
+    finally:
+        db.close()

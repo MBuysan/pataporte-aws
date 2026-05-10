@@ -1,196 +1,121 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Perfil mascota — Pataporte</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; background: #f5f5f5; min-height: 100vh; padding: 40px 16px; }
-      .contenedor { max-width: 580px; margin: 0 auto; }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil mascota</title>
 
-      /* ── Header mascota ─────────────────────────────────── */
-      .header-mascota {
-        background: white; border-radius: 12px; padding: 24px;
-        margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        display: flex; align-items: center; gap: 16px;
-      }
-      .foto-mascota { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-      .foto-placeholder {
-        width: 64px; height: 64px; border-radius: 50%; background: #dde8f8;
-        color: #4a90e2; font-size: 26px; font-weight: bold;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      }
-      .info-header { flex: 1; }
-      .nombre-mascota { font-size: 22px; font-weight: bold; color: #222; margin-bottom: 4px; }
-      .detalle-mascota { font-size: 14px; color: #888; }
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial; background: #f5f5f5; padding: 30px; }
 
-      /* ── Botones de acción ──────────────────────────────── */
-      .acciones {
-        display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
-      }
-      .btn-accion {
-        padding: 10px 18px; border: none; border-radius: 8px;
-        font-size: 14px; font-weight: bold; cursor: pointer; transition: background 0.2s;
-      }
-      .btn-primario   { background: #4a90e2; color: white; }
-      .btn-primario:hover { background: #357abd; }
-      .btn-secundario { background: #f0f0f0; color: #444; }
-      .btn-secundario:hover { background: #e0e0e0; }
+    .contenedor { max-width: 650px; margin: auto; }
 
-      /* ── Secciones desplegables ─────────────────────────── */
-      .seccion-titulo { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 10px; }
-      .seccion-contenido { display: none; margin-bottom: 16px; }
+    .header {
+      background: white; padding: 20px; border-radius: 12px;
+      display: flex; gap: 15px; align-items: center;
+      margin-bottom: 15px;
+    }
 
-      /* ── Items ──────────────────────────────────────────── */
-      .item-card {
-        background: white; border-radius: 10px; padding: 12px 16px;
-        margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      }
-      .item-card strong { display: block; font-size: 15px; color: #222; margin-bottom: 2px; }
-      .item-card small  { display: block; font-size: 13px; color: #888; }
+    .foto {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: #ddd; display:flex; align-items:center;
+      justify-content:center; font-weight:bold;
+    }
 
-      /* ── Fila consulta ──────────────────────────────────── */
-      .fila-consulta {
-        width: 100%; background: white; border: none; border-radius: 10px;
-        padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-        cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        transition: box-shadow 0.15s, transform 0.1s; text-align: left; margin-bottom: 8px;
-      }
-      .fila-consulta:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.12); transform: translateY(-1px); }
-      .consulta-fecha  { font-size: 13px; font-weight: bold; color: #4a90e2; white-space: nowrap; min-width: 110px; }
-      .consulta-motivo { flex: 1; font-size: 14px; color: #333; }
-      .consulta-flecha { font-size: 18px; color: #ccc; }
+    .acciones { display:flex; gap:10px; margin-bottom: 15px; }
 
-      /* ── Mensajes ───────────────────────────────────────── */
-      .mensaje { display: none; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
-      .mensaje-error { background: #fce8e8; color: #c0392b; }
-      .mensaje-exito { background: #e6f4ea; color: #2d6a4f; }
-      .cargando, .sin-datos { color: #aaa; font-size: 14px; text-align: center; padding: 16px 0; }
-      .error-seccion { color: #c0392b; font-size: 14px; padding: 12px 0; }
+    button {
+      border: none; padding: 10px 14px;
+      border-radius: 8px; cursor: pointer;
+    }
 
-      /* ── Modal overlay ──────────────────────────────────── */
-      .modal-overlay {
-        display: none; position: fixed; inset: 0;
-        background: rgba(0,0,0,0.45); z-index: 100;
-        align-items: center; justify-content: center;
-      }
-      .modal-overlay.activo { display: flex; }
-      .modal {
-        background: white; border-radius: 14px; padding: 28px;
-        width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.18); position: relative;
-      }
-      .modal-titulo  { font-size: 18px; font-weight: bold; color: #222; margin-bottom: 20px; }
-      .modal-cerrar  { position: absolute; top: 16px; right: 18px; background: none; border: none; font-size: 22px; color: #aaa; cursor: pointer; }
-      .modal-cerrar:hover { color: #555; }
+    .primary { background:#4a90e2; color:white; }
+    .sec { background:#eee; }
 
-      /* ── Campos formulario ──────────────────────────────── */
-      .campo { margin-bottom: 16px; }
-      label  { display: block; font-size: 13px; font-weight: bold; color: #444; margin-bottom: 6px; }
-      input[type="text"], textarea {
-        width: 100%; padding: 10px 12px; border: 1px solid #ddd;
-        border-radius: 8px; font-size: 14px; font-family: inherit;
-        outline: none; transition: border-color 0.2s; resize: vertical;
-      }
-      input[type="text"]:focus, textarea:focus { border-color: #4a90e2; }
-      .campo-check {
-        display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px;
-        background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; cursor: pointer;
-      }
-      .campo-check input[type="checkbox"], .campo-check input[type="radio"] { flex-shrink: 0; margin-top: 2px; }
-      .campo-check span { font-size: 14px; color: #444; }
-      .campo-check small { display: block; font-size: 12px; color: #999; margin-top: 2px; }
-      .modal-acciones { display: flex; gap: 10px; margin-top: 20px; }
-      .btn-modal-primario   { flex: 1; padding: 11px; background: #4a90e2; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
-      .btn-modal-primario:hover    { background: #357abd; }
-      .btn-modal-primario:disabled { background: #aaa; cursor: not-allowed; }
-      .btn-modal-secundario { padding: 11px 20px; background: #f0f0f0; color: #555; border: none; border-radius: 8px; cursor: pointer; }
-      .btn-modal-secundario:hover { background: #e0e0e0; }
+    .panel { display:none; margin-bottom: 15px; }
 
-      /* ── Detalle consulta ───────────────────────────────── */
-      .detalle-campo    { margin-bottom: 14px; }
-      .detalle-etiqueta { font-size: 12px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-      .detalle-valor    { font-size: 15px; color: #222; }
-      .detalle-vacio    { font-size: 14px; color: #bbb; font-style: italic; }
-      .separador        { border: none; border-top: 1px solid #eee; margin: 16px 0; }
-      .lista-items      { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-    </style>
-  </head>
+    .card {
+      background:white; padding:12px;
+      border-radius:10px; margin-bottom:8px;
+    }
 
-  <body>
-    <div class="contenedor">
+    .fila {
+      background:white; padding:12px;
+      border-radius:10px; margin-bottom:8px;
+      cursor:pointer;
+    }
 
-      <!-- Header -->
-      <div class="header-mascota">
-        <div class="foto-placeholder" id="foto-mascota">?</div>
-        <div class="info-header">
-          <div class="nombre-mascota" id="nombre-mascota">Cargando...</div>
-          <div class="detalle-mascota" id="detalle-mascota"></div>
-        </div>
-      </div>
+    /* MODAL */
+    .modal-bg {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.5);
+      align-items:center; justify-content:center;
+    }
 
-      <div id="mensaje-pagina" class="mensaje"></div>
+    .modal-bg.activo { display:flex; }
 
-      <!-- Botones de acción -->
-      <div class="acciones">
-        <button id="btn-agregar-consulta" class="btn-accion btn-primario">+ Agregar consulta</button>
-        <button id="btn-tratamientos"     class="btn-accion btn-secundario">Tratamientos</button>
-        <button id="btn-historial"        class="btn-accion btn-secundario">Historial clínico</button>
-      </div>
+    .modal {
+      background:white; padding:20px;
+      border-radius:10px; width:400px;
+    }
 
-      <!-- Sección tratamientos -->
-      <div id="seccion-tratamientos" class="seccion-contenido"></div>
+    input, textarea {
+      width:100%; padding:8px; margin-top:5px;
+      margin-bottom:10px;
+    }
+  </style>
+</head>
 
-      <!-- Sección historial -->
-      <div id="seccion-historial" class="seccion-contenido"></div>
+<body>
 
+<div class="contenedor">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="foto" id="foto">?</div>
+    <div>
+      <h3 id="nombre">Cargando...</h3>
+      <small id="detalle"></small>
     </div>
+  </div>
 
+  <!-- ACCIONES -->
+  <div class="acciones">
+    <button class="primary" id="btn-consulta">+ Consulta</button>
+    <button class="sec" id="btn-historial">Historial</button>
+    <button class="sec" id="btn-tratamientos">Tratamientos</button>
+  </div>
 
-    <!-- Modal: agregar consulta -->
-    <div id="modal-crear" class="modal-overlay">
-      <div class="modal">
-        <button class="modal-cerrar" id="cerrar-modal-crear">✕</button>
-        <p class="modal-titulo">Nueva consulta</p>
-        <div id="mensaje-modal-crear" class="mensaje"></div>
-        <form id="form-crear-consulta">
-          <div class="campo">
-            <label for="input-motivo">Motivo *</label>
-            <input type="text" id="input-motivo" placeholder="Ej: Control anual" required />
-          </div>
-          <div class="campo">
-            <label for="input-diagnostico">Diagnóstico</label>
-            <textarea id="input-diagnostico" rows="3" placeholder="Observaciones..."></textarea>
-          </div>
-          <div id="contenedor-tratamiento"></div>
-          <label class="campo-check" style="margin-top:8px;">
-            <input type="checkbox" id="check-dosis" />
-            <span>Registrar dosis de vacuna<small>Se aplicó una vacuna en esta consulta</small></span>
-          </label>
-          <div class="modal-acciones">
-            <button type="button" class="btn-modal-secundario" id="cancelar-crear">Cancelar</button>
-            <button type="submit" class="btn-modal-primario"   id="btn-guardar">Guardar consulta</button>
-          </div>
-        </form>
-      </div>
-    </div>
+  <!-- PANELES -->
+  <div id="historial" class="panel"></div>
+  <div id="tratamientos" class="panel"></div>
 
+</div>
 
-    <!-- Modal: detalle consulta -->
-    <div id="modal-detalle" class="modal-overlay">
-      <div class="modal">
-        <button class="modal-cerrar" id="cerrar-modal-detalle">✕</button>
-        <p class="modal-titulo">Detalle de consulta</p>
-        <div id="contenido-detalle"></div>
-        <div class="modal-acciones">
-          <button type="button" class="btn-modal-secundario" id="cerrar-detalle-btn">Cerrar</button>
-        </div>
-      </div>
-    </div>
+<!-- MODAL CONSULTA -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
 
+    <h3>Nueva consulta</h3>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/perfilMascotaVet.js"></script>
-  </body>
+    <form id="form">
+      <label>Motivo</label>
+      <input id="motivo" required />
+
+      <label>Diagnóstico</label>
+      <textarea id="diag"></textarea>
+
+      <div id="vacunas"></div>
+
+      <button type="submit">Guardar consulta</button>
+    </form>
+
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/perfilMascotaVet.js"></script>
+
+</body>
 </html>
