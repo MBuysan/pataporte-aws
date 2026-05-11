@@ -1,44 +1,52 @@
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
-
+import jwt
+from jwt import PyJWTError
+import os
 from config.database import get_db
-from schemas.consulta import ConsultaResponse
-from schemas.historial import AgregarConsultaHistorialCreate, HistorialResponse
-from services import historial_service
+from schemas.consulta import ConsultaCreate, ConsultaResponse
+from schemas.historial import HistorialResponse
+from services import historial_service, consulta_service
+
+from utils import password_utils
 
 router = APIRouter()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
+def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
-# TODO: reemplazar por dependencia real de autenticación JWT
-def _get_id_veterinario(x_veterinario_id: str = Header(...)) -> str:
-    """
-    Dependencia temporal: el id del veterinario se pasa en el header X-Veterinario-Id.
-    En producción debe extraerse del token JWT.
-    """
-    return x_veterinario_id
+    id_veterinario = payload.get("sub")
+
+    if not id_veterinario:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
+    return id_veterinario
 
 
 @router.post(
     "/consultas",
     response_model=ConsultaResponse,
     status_code=201,
-    summary="Agregar consulta al historial",
+    summary="Agregar consulta al historial de una mascota",
 )
-def agregar_consulta_al_historial(
-    data: AgregarConsultaHistorialCreate,
+def agregar_consulta(
+    data: ConsultaCreate,
     db: Session = Depends(get_db),
-    id_veterinario: str = Depends(_get_id_veterinario),
-):
-    return historial_service.agregar_consulta_al_historial(db, data, id_veterinario)
+    id_veterinario: str = Depends(get_current_vet)):
+    return consulta_service.crear(db, data, id_veterinario)
 
 
 @router.get(
-    "/{id_mascota}",
-    response_model=HistorialResponse,
-    summary="Visualizar historial completo de una mascota",
+    "/{id_mascota}/detalle/{id_consulta}",
+    response_model=ConsultaResponse,
+    summary="Ver detalle completo de una consulta",
+    description="Devuelve la consulta con sus tratamientos y dosis asociadas.",
 )
-def visualizar_historial(id_mascota: str, db: Session = Depends(get_db)):
-    return historial_service.visualizar_historial(db, id_mascota)
+def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = Depends(get_db)):
+    return consulta_service.obtener_detalle(db, id_consulta)
+ 
 
 
 @router.get(
@@ -48,3 +56,5 @@ def visualizar_historial(id_mascota: str, db: Session = Depends(get_db)):
 )
 def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db)):
     return historial_service.ver_historial_consultas(db, id_mascota)
+
+

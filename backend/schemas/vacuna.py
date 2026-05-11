@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
-
+from typing import List
 
 class EstadoEsquemaEnum(str, Enum):
     activo = "activo"
@@ -17,46 +17,7 @@ class EstadoCertificadoEnum(str, Enum):
     revocado = "revocado"
 
 
-# ── Lo que se recibe al REGISTRAR una dosis ────────────────
-class DosisCreate(BaseModel):
-    id_esquema: str
-    numero_dosis: int
-    fecha_aplicacion: date
-    lote_vacuna: Optional[str] = None
-    via_administracion: Optional[str] = None
-    observaciones: Optional[str] = None
-    es_externa: bool = False
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "id_esquema": "uuid-del-esquema",
-                "numero_dosis": 1,
-                "fecha_aplicacion": "2024-05-10",
-                "lote_vacuna": "LOT-2024-XZ",
-                "via_administracion": "subcutanea",
-                "es_externa": False,
-            }
-        }
-
-
-# ── Lo que se DEVUELVE al consultar una dosis ──────────────
-class DosisResponse(BaseModel):
-    id_dosis: str
-    id_esquema: str
-    id_veterinaria: str
-    numero_dosis: int
-    fecha_aplicacion: date
-    fecha_programada: Optional[date]
-    lote_vacuna: Optional[str]
-    via_administracion: Optional[str]
-    es_externa: bool
-
-    class Config:
-        from_attributes = True
-
-
-# ── Lo que se DEVUELVE al consultar un certificado ─────────
+# ── Certificado primero (lo usa DosisResponse) ─────────────
 class CertificadoResponse(BaseModel):
     id_certificado: str
     id_dosis: str
@@ -71,16 +32,50 @@ class CertificadoResponse(BaseModel):
         from_attributes = True
 
 
-# ── Lo que se DEVUELVE al consultar un esquema completo ────
-# Incluye las dosis y el certificado de cada una
+class DosisCreate(BaseModel):
+
+    id_esquema_vacuna: str
+    fecha_aplicacion: date
+
+    id_consulta: Optional[str] = None
+
+
+# ── Dosis (usa CertificadoResponse) ───────────────────────
+class DosisResponse(BaseModel):
+    id_dosis: str
+    id_esquema_vacuna: str
+    id_veterinaria: str
+    numero_dosis: int
+    fecha_aplicacion: date
+    id_consulta: Optional[str]
+    certificado: Optional[CertificadoResponse] = None
+    
+
+    class Config:
+        from_attributes = True
+
+
+# ── Vacuna (usa DosisResponse) ────────────────────────────
+class VacunaResponse(BaseModel):
+    id_esquema_vacuna: str
+    id_vacuna: str
+    nombre: str
+    estado: EstadoEsquemaEnum
+    fecha_inicio: date
+    fecha_proxima_dosis: Optional[date]
+
+    dosis: List[DosisResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+
+# ── Esquema (usa VacunaResponse) ──────────────────────────
 class EsquemaVacunacionResponse(BaseModel):
     id_esquema: str
     id_mascota: str
-    nombre_vacuna: str
-    fecha_inicio: date
-    estado: EstadoEsquemaEnum
-    fecha_proxima_dosis: Optional[date]
-    dosis: list[DosisResponse] = []
+
+    vacunas: List[VacunaResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

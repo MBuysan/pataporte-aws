@@ -1,6 +1,6 @@
 import secrets
 import string
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
@@ -87,6 +87,23 @@ def crear(db: Session, data: MascotaCreate):
         raise HTTPException(status_code=500, detail="Error al registrar la mascota")
 
     return nueva_mascota
+
+
+def calcular_edad(mascota) -> int | None:
+    """
+    calcula la edad en años a partir de la fecha de nacimiento.
+    devuelve none si la mascota no tiene fecha de nacimiento registrada.
+ 
+    """
+    if not mascota.fecha_de_nacimiento:
+        return None
+    hoy = date.today()
+    # resta 1 si todavía no llegó el cumpleaños este año
+    return (
+        hoy.year - mascota.fecha_de_nacimiento.year
+        - ((hoy.month, hoy.day) < (mascota.fecha_de_nacimiento.month, mascota.fecha_de_nacimiento.day))
+    )
+
 
 
 def generar_codigo_acceso(db: Session, id_mascota: str):

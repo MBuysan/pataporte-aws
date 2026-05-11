@@ -2,8 +2,31 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db, Veterinaria
+from schemas.mascota import ResultadoBusquedaTutor
+from services import veterinario_service
 
 router = APIRouter()
+
+from schemas.veterinaria import VeterinariaCreate, VeterinariaResponse
+
+@router.post(
+    "/",
+    response_model=VeterinariaResponse,
+    status_code=201,
+    summary="Registrar una organización/veterinaria",
+)
+def registrar_veterinaria(data: VeterinariaCreate, db: Session = Depends(get_db)):
+    return veterinario_service.registrar_veterinaria(db, data)
+
+
+
+@router.get(
+    "/buscar/{cedula}",
+    response_model=ResultadoBusquedaTutor,
+    summary="Buscar mascotas por cédula del tutor",
+)
+def buscar_por_cedula(cedula: str, db: Session = Depends(get_db)):
+    return veterinario_service.buscar_por_cedula(db, cedula)
 
 
 @router.get("/", summary="Listar veterinarios")

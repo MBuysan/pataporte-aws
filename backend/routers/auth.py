@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from schemas.auth import VeterinariaLoginResponse
 
 from config.database import get_db
 from schemas.recuperacion_password import (
@@ -40,3 +41,8 @@ def resetear_password(
 @router.post("/login", response_model=LoginResponse, summary="Iniciar sesión de tutor")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     return auth_service.login_tutor(db, data.identificador, data.password)
+
+
+@router.post("/login/veterinaria", response_model=VeterinariaLoginResponse, summary="Iniciar sesión de organización/veterinaria")
+def login_veterinaria_endpoint(data: LoginRequest, db: Session = Depends(get_db)):
+    return auth_service.login_veterinaria(db, data.identificador, data.password)

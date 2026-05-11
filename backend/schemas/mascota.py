@@ -10,9 +10,9 @@ tambien hereda de str para poder manejarse en json y la base de datos
 
 
 class SexoEnum(str, Enum):
-    macho = "macho"
-    hembra = "hembra"
-    desconocido = "desconocido"
+    macho = "Macho"
+    hembra = "Hembra"
+    desconocido = "Desconocido"
 
 
 class EstadoEnum(str, Enum):
@@ -22,6 +22,7 @@ class EstadoEnum(str, Enum):
 
 # ── Lo que se recibe al CREAR una mascota ──────────────────
 class MascotaCreate(BaseModel):
+    id_tutor: str
     nombre: str
     especie: str
     raza: Optional[str] = None
@@ -76,3 +77,39 @@ class CodigoAccesoResponse(BaseModel):
 
 class VincularMascotaRequest(BaseModel):
     codigo: str
+
+
+
+class ResultadoBusquedaTutor(BaseModel):
+    
+    """
+    esquema resultado de busqueda del tutor y sus mascotas por parte del veterinario,
+    agrupa nombre de tutor y un resumen de info de cada mascota
+    
+    """
+    
+    nombre_tutor: str
+    mascotas:     list["MascotaResumen"]
+ 
+    class Config:
+        from_attributes = True
+        
+        
+        
+class MascotaResumen(BaseModel):
+    
+    """
+    esquema resumen de mascotas 
+    mediante la cédula de un tutor se accede a los siguientes atributos de las mascotas
+    
+    la edad es calculada
+    """
+    
+    id_mascota: str
+    nombre:     str
+    especie:    str
+    foto_url:   Optional[str]
+    edad:       Optional[int]
+ 
+    class Config:
+        from_attributes = True
