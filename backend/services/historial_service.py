@@ -11,7 +11,7 @@ def agregar_consulta_al_historial(
     db: Session, data: ConsultaCreate, id_veterinario: str
 ) -> Consulta:
 
-    mascota = mascota_service.obtener_por_id(db, Mascota.id_mascota)
+    mascota = mascota_service.obtener_por_id(db, data.id_mascota)
     if not mascota:
         raise HTTPException(status_code=404, detail="Mascota no encontrada")
 

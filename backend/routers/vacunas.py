@@ -9,7 +9,7 @@ from config.database import TipoVacunas, Dosis, EsquemaVacunacion, EsquemaVacuna
 router = APIRouter()
 
 @router.get(
-    "/mascota/{id_mascota}",
+    "/{id_mascota}/carnet",
     summary="Obtener carnet de vacunas de una mascota"
 )
 def obtener_carnet(
@@ -76,14 +76,6 @@ def agregar_dosis(
         id_veterinaria=id_veterinaria
     )
 
-@router.get(
-    "/{id_mascota}/carnet",
-    response_model=list[EsquemaVacunacionResponse],
-    summary="Ver carnet de vacunas de una mascota",
-)
-def ver_carnet_vacunas(id_mascota: str, db: Session = Depends(get_db)):
-    return vacuna_service.esquema_por_mascota(db, id_mascota)
-
 @router.get("/tipos")
 def ver_vacunas(db: Session = Depends(get_db)):
     return db.query(TipoVacunas).all()
@@ -97,7 +89,7 @@ def vacunas_por_consulta(id_consulta: str, db: Session = Depends(get_db)):
         .all()
     )
 
-@router.get("/mascota/{id_mascota}")
+@router.get("/mascota/{id_mascota}/vacunas")
 def vacunas_mascota(id_mascota: str, db: Session = Depends(get_db)):
 
     return (
