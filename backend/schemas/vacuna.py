@@ -79,3 +79,7 @@ class EsquemaVacunacionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class EditarEsquemaVacuna(BaseModel):
+    agregar_dosis: Optional[list[DosisCreate]] = []
+    eliminar_dosis: Optional[list[str]] = []
