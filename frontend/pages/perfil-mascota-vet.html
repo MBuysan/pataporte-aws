@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil mascota</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial; background: #f5f5f5; padding: 30px; }
+
+    .contenedor { max-width: 650px; margin: auto; }
+
+    .header {
+      background: white; padding: 20px; border-radius: 12px;
+      display: flex; gap: 15px; align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .foto {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: #ddd; display:flex; align-items:center;
+      justify-content:center; font-weight:bold;
+    }
+
+    .acciones { display:flex; gap:10px; margin-bottom: 15px; }
+
+    button {
+      border: none; padding: 10px 14px;
+      border-radius: 8px; cursor: pointer;
+    }
+
+    .primary { background:#4a90e2; color:white; }
+    .sec { background:#eee; }
+
+    .panel { display:none; margin-bottom: 15px; }
+
+    .card {
+      background:white; padding:12px;
+      border-radius:10px; margin-bottom:8px;
+    }
+
+    .fila {
+      background:white; padding:12px;
+      border-radius:10px; margin-bottom:8px;
+      cursor:pointer;
+    }
+
+    /* MODAL */
+    .modal-bg {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.5);
+      align-items:center; justify-content:center;
+    }
+
+    .modal-bg.activo { display:flex; }
+
+    .modal {
+      background:white; padding:20px;
+      border-radius:10px; width:400px;
+    }
+
+    input, textarea {
+      width:100%; padding:8px; margin-top:5px;
+      margin-bottom:10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="foto" id="foto">?</div>
+    <div>
+      <h3 id="nombre">Cargando...</h3>
+      <small id="detalle"></small>
+    </div>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="acciones">
+    <button class="primary" id="btn-consulta">+ Consulta</button>
+    <button class="sec" id="btn-historial">Historial</button>
+    <button class="sec" id="btn-tratamientos">Tratamientos</button>
+  </div>
+
+  <!-- PANELES -->
+  <div id="historial" class="panel"></div>
+  <div id="tratamientos" class="panel"></div>
+
+</div>
+
+<!-- MODAL CONSULTA -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+
+    <h3>Nueva consulta</h3>
+
+    <form id="form">
+      <label>Motivo</label>
+      <input id="motivo" required />
+
+      <label>Diagnóstico</label>
+      <textarea id="diag"></textarea>
+
+      <div id="vacunas"></div>
+
+      <button type="submit">Guardar consulta</button>
+    </form>
+
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/perfilMascotaVet.js"></script>
+
+</body>
+</html>
