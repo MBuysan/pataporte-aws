@@ -165,3 +165,115 @@ def _actualizar_proxima_dosis(db: Session, dosis: Dosis):
         esquema_vacuna.estado = "completado"
 
     db.add(esquema_vacuna)
+
+def editar_esquema_vacuna(
+    db: Session,
+    id_esquema_vacuna: str,
+    agregar_dosis: list[DosisCreate] = None,
+    eliminar_dosis: list[str] = None,
+    id_veterinaria: str = None
+):
+
+    esquema_vacuna = db.query(EsquemaVacuna).filter_by(
+        id_esquema_vacuna=id_esquema_vacuna
+    ).first()
+
+    if not esquema_vacuna:
+        raise HTTPException(
+            status_code=404,
+            detail="Esquema vacuna no encontrado"
+        )
+
+    # -------------------------
+    # ELIMINAR DOSIS
+    # -------------------------
+    if eliminar_dosis:
+
+        dosis_existentes = (
+            db.query(Dosis)
+            .filter(
+                Dosis.id_dosis.in_(eliminar_dosis),
+                Dosis.id_esquema_vacuna == id_esquema_vacuna
+            )
+            .all()
+        )
+
+        for dosis in dosis_existentes:
+            db.delete(dosis)
+
+        db.flush()
+
+        # Reordenar números de dosis
+        dosis_restantes = (
+            db.query(Dosis)
+            .filter_by(id_esquema_vacuna=id_esquema_vacuna)
+            .order_by(Dosis.fecha_aplicacion.asc())
+            .all()
+        )
+
+        for index, dosis in enumerate(dosis_restantes, start=1):
+            dosis.numero_dosis = index
+
+    # -------------------------
+    # AGREGAR DOSIS
+    # -------------------------
+    if agregar_dosis:
+
+        cantidad_actual = db.query(Dosis).filter_by(
+            id_esquema_vacuna=id_esquema_vacuna
+        ).count()
+
+        for nueva in agregar_dosis:
+
+            cantidad_actual += 1
+
+            dosis = Dosis(
+                id_dosis=str(uuid.uuid4()),
+                id_esquema_vacuna=id_esquema_vacuna,
+                id_veterinaria=id_veterinaria,
+                id_consulta=nueva.id_consulta,
+                numero_dosis=cantidad_actual,
+                fecha_aplicacion=nueva.fecha_aplicacion,
+            )
+
+            db.add(dosis)
+            db.flush()
+
+            _generar_certificado(db, dosis)
+
+    # -------------------------
+    # RECALCULAR ESTADO
+    # -------------------------
+    total_dosis = db.query(Dosis).filter_by(
+        id_esquema_vacuna=id_esquema_vacuna
+    ).count()
+
+    tipo_vacuna = esquema_vacuna.tipo_vacuna
+
+    if total_dosis >= tipo_vacuna.cantidad_dosis_requeridas:
+        esquema_vacuna.estado = "completado"
+        esquema_vacuna.fecha_proxima_dosis = None
+    else:
+        esquema_vacuna.estado = "activo"
+
+        ultima_dosis = (
+            db.query(Dosis)
+            .filter_by(id_esquema_vacuna=id_esquema_vacuna)
+            .order_by(Dosis.fecha_aplicacion.desc())
+            .first()
+        )
+
+        if ultima_dosis:
+            intervalo = tipo_vacuna.intervalo_entre_dosis_dias or 0
+
+            esquema_vacuna.fecha_proxima_dosis = (
+                ultima_dosis.fecha_aplicacion +
+                timedelta(days=intervalo)
+            )
+
+    db.add(esquema_vacuna)
+
+    db.commit()
+    db.refresh(esquema_vacuna)
+
+    return esquema_vacuna
