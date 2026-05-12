@@ -144,19 +144,18 @@ class Tratamiento(Base):
     __tablename__ = "tratamiento"
     __table_args__ = (
         UniqueConstraint("id_mascota", "nombre", name="uq_trat_nombre_mascota"),
-        CheckConstraint("finalizacion IS NULL OR finalizacion >= creacion", name="chk_trat_fechas"),
+        CheckConstraint("finalizacion IS NULL OR finalizacion >= inicio", name="chk_trat_fechas"),
     )
 
     id_tratamiento: Mapped[str]           = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_mascota:     Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     nombre:         Mapped[str]           = mapped_column(VARCHAR(150), nullable=False)
     descripcion:    Mapped[str|None]      = mapped_column(Text, nullable=True)
-    creacion:       Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    frecuencia:     Mapped[str | None]    = mapped_column(VARCHAR(300), nullable=True)
+    inicio:         Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     finalizacion:   Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
 
     mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="tratamientos")
-    id_consulta_creacion: Mapped[str] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta",ondelete="RESTRICT",onupdate="CASCADE"), nullable=False)
-    id_consulta_ultima_edicion: Mapped[str] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta",ondelete="RESTRICT",onupdate="CASCADE"),nullable=False)
     
 class TipoVacunas(Base):
     __tablename__ = "tipo_vacunas"
