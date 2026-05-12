@@ -84,7 +84,8 @@
   <div class="acciones">
     <button class="primary" id="btn-consulta">+ Consulta</button>
     <button class="sec" id="btn-historial">Historial</button>
-    <button class="sec" id="btn-tratamientos">Tratamientos</button>
+    <button class="sec"     id="btn-tratamientos">Tratamientos</button>
+    <button class="primary" id="btn-nuevo-tratamiento">+ Tratamiento</button>
   </div>
 
   <!-- PANELES -->
@@ -113,6 +114,25 @@
 
   </div>
 </div>
+
+<!-- MODAL Tratamiento -->
+<div class="modal-bg" id="modal-tratamiento">
+  <div class="modal" style="position:relative;">
+    <button id="cerrar-modal-tratamiento" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+    <h3>Nuevo tratamiento</h3>
+    <form id="form-tratamiento">
+      <label>Nombre</label>
+      <input id="trat-nombre" required />
+      <label>Descripción / indicaciones</label>
+      <textarea id="trat-descripcion"></textarea>
+      <label>Fecha de finalización (opcional)</label>
+      <input type="datetime-local" id="trat-finalizacion" />
+      <p id="trat-mensaje" style="color:red;font-size:13px;min-height:18px;"></p>
+      <button type="submit" class="primary">Guardar tratamiento</button>
+    </form>
+  </div>
+</div>
+
 
 <script src="../js/api.js"></script>
 <script src="../js/perfilMascotaVet.js"></script>

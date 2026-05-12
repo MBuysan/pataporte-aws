@@ -211,10 +211,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   // ───────── TRATAMIENTOS ─────────
-  document.getElementById("btn-tratamientos").onclick = async () => {
-    const data = await api.get(`/tratamientos/${idMascota}/activos`);
-    tratamientos.style.display = "block";
-    tratamientos.innerHTML = data.map(t => `<div class="card"><b>${t.nombre}</b><div>${t.descripcion || ""}</div></div>`).join("");
+  const modalTrat      = document.getElementById("modal-tratamiento");
+  const formTrat       = document.getElementById("form-tratamiento");
+  const mensajeTrat    = document.getElementById("trat-mensaje");
+  let tratamientosCargados = false;
+
+  document.getElementById("btn-nuevo-tratamiento").onclick = () => {
+    formTrat.reset();
+    mensajeTrat.textContent = "";
+    modalTrat.classList.add("activo");
   };
 
+  document.getElementById("cerrar-modal-tratamiento").onclick = () =>
+    modalTrat.classList.remove("activo");
+
+  document.getElementById("btn-tratamientos").onclick = async () => {
+    const abierto = tratamientos.style.display === "block";
+    tratamientos.style.display = abierto ? "none" : "block";
+    if (!abierto) await renderTratamientos();
+  };
+
+  async function renderTratamientos() {
+    tratamientos.innerHTML = `<p style="color:#aaa;padding:8px">Cargando...</p>`;
+    try {
+      const data = await api.get(`/tratamientos/${idMascota}/activos`);
+      tratamientosCargados = true;
+      tratamientos.innerHTML = data.length === 0
+        ? `<p style="color:#aaa;padding:8px">Sin tratamientos activos.</p>`
+        : data.map(t => `
+            <div class="card">
+              <b>${t.nombre}</b>
+              <div style="font-size:13px;color:#555;margin-top:4px">${t.descripcion || "Sin descripción"}</div>
+              ${t.finalizacion ? `<div style="font-size:12px;color:#999;margin-top:4px">Finaliza: ${new Date(t.finalizacion).toLocaleDateString("es-UY")}</div>` : ""}
+            </div>`).join("");
+    } catch (e) {
+      tratamientos.innerHTML = `<p style="color:red;padding:8px">${e.message}</p>`;
+    }
+  }
+
+  formTrat.onsubmit = async (e) => {
+    e.preventDefault();
+    mensajeTrat.textContent = "";
+
+  }
 });

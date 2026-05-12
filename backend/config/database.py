@@ -279,7 +279,7 @@ def get_db():
 def create_tables():
     Base.metadata.create_all(bind=engine)
 
-    # 🔥 SEED INICIAL DE VACUNAS
+    # SEED INICIAL DE VACUNAS
     from sqlalchemy.orm import Session
 
     db = SessionLocal()
