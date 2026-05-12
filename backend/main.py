@@ -12,7 +12,6 @@ from routers import (
     historial,
     tratamientos,
     vacunas,
-    pataporte,
     auth,
 )
 
