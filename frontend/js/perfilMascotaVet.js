@@ -241,7 +241,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         : data.map(t => `
             <div class="card">
               <b>${t.nombre}</b>
-              <div style="font-size:13px;color:#555;margin-top:4px">${t.descripcion || "Sin descripción"}</div>
+              <div style="font-size:13px;color:#555;margin-top:4px">${t.descripcion || ""}</div>
+              ${t.frecuencia ? `<div style="font-size:13px;color:#777;margin-top:2px">🕐 ${t.frecuencia}</div>` : ""}
               ${t.finalizacion ? `<div style="font-size:12px;color:#999;margin-top:4px">Finaliza: ${new Date(t.finalizacion).toLocaleDateString("es-UY")}</div>` : ""}
             </div>`).join("");
     } catch (e) {
@@ -250,8 +251,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   formTrat.onsubmit = async (e) => {
-    e.preventDefault();
-    mensajeTrat.textContent = "";
+  e.preventDefault();
+  mensajeTrat.textContent = "";
 
+  const payload = {
+    nombre:       document.getElementById("trat-nombre").value.trim(),
+    descripcion:  document.getElementById("trat-descripcion").value.trim() || null,
+    frecuencia:   document.getElementById("trat-frecuencia").value.trim() || null,
+    inicio:       document.getElementById("trat-inicio").value || null,
+    finalizacion: document.getElementById("trat-finalizacion").value || null,
+  };
+
+  try {
+    await api.post(`/tratamientos/${idMascota}`, payload);  // nueva URL
+    modalTrat.classList.remove("activo");
+    tratamientosCargados = false;
+    if (tratamientos.style.display === "block") await renderTratamientos();
+  } catch (err) {
+    mensajeTrat.textContent = err.message || "Error al guardar el tratamiento.";
+  }
   }
 });

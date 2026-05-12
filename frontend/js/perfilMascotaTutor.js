@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <div class="item-card">
                 <strong>${t.nombre}</strong>
                 <small>${t.descripcion || "Sin descripción"}</small>
+                ${t.frecuencia ? `<small>🕐 ${t.frecuencia}</small>` : ""}
                 ${t.finalizacion ? `<small>Finaliza: ${new Date(t.finalizacion).toLocaleDateString("es-UY")}</small>` : ""}
               </div>`).join("");
       } catch (e) {
