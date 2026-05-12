@@ -39,6 +39,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     vacunasPendientes = new Set();
     dosisPendientes = [];
+    idConsultaActual = null;
+    carnetCache = [];
+    vacunasCache = [];
 
     modal.classList.add("activo");
 
@@ -58,8 +61,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     vacunasCache = await api.get("/vacunas/tipos");
-    carnetCache = await api.get(`/vacunas/mascota/${idMascota}`);
 
+    const response = await api.get(`/vacunas/${idMascota}/carnet`);
+    carnetCache = Array.isArray(response) ? response : [];
     renderVacunas();
   };
 
