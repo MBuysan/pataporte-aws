@@ -47,26 +47,7 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
  
     #flujos opcionales
  
-    if data.crear_tratamiento and data.datos_tratamiento:
 
-        tratamiento_service.crear_tratamiento(
-            db=db,
-            data=data.datos_tratamiento,
-            id_consulta=consulta.id_consulta,
-        )
-        
-    if (
-        data.editar_tratamiento
-        and data.id_tratamiento
-        and data.datos_tratamiento
-    ):
-
-        tratamiento_service.actualizar_tratamiento(
-            db=db,
-            id_tratamiento=data.id_tratamiento,
-            data=data.datos_tratamiento,
-            id_consulta=consulta.id_consulta,
-        )
  
     if data.agregar_dosis and data.datos_dosis:
 
