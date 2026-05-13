@@ -71,13 +71,7 @@ def obtener_detalle(db: Session, id_consulta: str) -> dict:
     if not consulta:
         raise HTTPException(status_code=404, detail="Consulta no encontrada")
  
-    # trae solo los tratamientos creados en esta consulta
-    tratamientos = (
-        db.query(Tratamiento)
-        .filter(Tratamiento.id_consulta_creacion == id_consulta)
-        .order_by(Tratamiento.creacion.desc())
-        .all()
-    )
+
  
     # trae las dosis aplicadas en esta consulta.
     dosis = (
