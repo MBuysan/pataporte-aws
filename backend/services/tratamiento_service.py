@@ -30,7 +30,7 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate) -> Tr
     duplicado = (
         db.query(Tratamiento)
         .filter(
-            Tratamiento.id_mascota == data.id_mascota,
+            Tratamiento.id_mascota == id_mascota,
             Tratamiento.nombre == data.nombre
         )
         .first()

@@ -8,15 +8,13 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 30px 16px; }
-
     .contenedor { max-width: 650px; margin: auto; }
 
     /* ── Header ── */
     .header {
       background: white; padding: 20px; border-radius: 12px;
       display: flex; gap: 15px; align-items: center;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .foto {
       width: 60px; height: 60px; border-radius: 50%;
@@ -25,62 +23,46 @@
       font-size: 24px; font-weight: bold; flex-shrink: 0;
     }
 
-    /* ── Botones de acción superiores ── */
-    .acciones { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-
+    /* ── Acciones ── */
+    .acciones { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     button { border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
     .primary { background: #4a90e2; color: white; }
     .primary:hover { background: #357abd; }
     .sec { background: #eee; color: #444; }
     .sec:hover { background: #e0e0e0; }
-    .btn-peligro { background: #fce8e8; color: #c0392b; }
-    .btn-peligro:hover { background: #f5c6c6; }
 
-    /* ── Paneles inline (historial, tratamientos) ── */
-    .panel { display: none; margin-bottom: 15px; }
+    /* ── Sección tratamientos (siempre visible) ── */
+    .seccion-titulo {
+      font-size: 12px; font-weight: bold; color: #aaa;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
 
     .card {
       background: white; padding: 14px 16px;
       border-radius: 10px; margin-bottom: 8px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     }
-    .card-titulo { font-size: 15px; font-weight: bold; color: #222; margin-bottom: 4px; }
-    .card-meta   { font-size: 13px; color: #888; margin-top: 2px; }
+    .card-titulo { font-size: 15px; font-weight: bold; color: #222; }
     .card-desc   { font-size: 13px; color: #555; margin-top: 4px; }
     .card-freq   { font-size: 13px; color: #4a90e2; margin-top: 3px; }
+    .card-meta   { font-size: 12px; color: #aaa; margin-top: 6px; }
 
+    /* ── Panel historial (toggle) ── */
+    .panel { display: none; margin-top: 16px; }
     .fila {
       background: white; padding: 12px 16px;
       border-radius: 10px; margin-bottom: 8px;
-      cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
       transition: box-shadow 0.15s;
     }
     .fila:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
 
-    /* ── Formulario de nuevo tratamiento (inline dentro del panel) ── */
-    .form-inline {
-      background: #f0f6ff; border: 1px solid #c8dcf5;
-      border-radius: 10px; padding: 16px;
-      margin-bottom: 12px; display: none;
-    }
-    .form-inline label { font-size: 13px; color: #555; display: block; margin-bottom: 3px; margin-top: 10px; }
-    .form-inline label:first-child { margin-top: 0; }
-    .form-inline input,
-    .form-inline textarea {
-      width: 100%; padding: 8px 10px; border: 1px solid #ccc;
-      border-radius: 7px; font-size: 14px; margin: 0;
-    }
-    .form-inline textarea { resize: vertical; min-height: 60px; }
-    .form-inline .form-acciones { display: flex; gap: 8px; margin-top: 12px; }
-    .form-inline .form-acciones button { flex: 1; }
-    .form-error { color: #c0392b; font-size: 13px; margin-top: 8px; min-height: 18px; }
+    .sin-datos  { color: #bbb; font-size: 14px; text-align: center; padding: 20px 0; }
+    .cargando   { color: #bbb; font-size: 14px; text-align: center; padding: 20px 0; }
+    .error-panel { color: #c0392b; font-size: 14px; padding: 8px 0; }
 
-    .sin-datos { color: #aaa; font-size: 14px; text-align: center; padding: 16px 0; }
-    .cargando  { color: #aaa; font-size: 14px; text-align: center; padding: 16px 0; }
-    .error-panel { color: #c0392b; font-size: 14px; padding: 12px 0; }
-
-    /* ── Modal consulta ── */
+    /* ── Modales ── */
     .modal-bg {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,.5);
@@ -92,11 +74,26 @@
       border-radius: 12px; width: 420px; max-height: 90vh;
       overflow-y: auto; position: relative;
     }
-    .modal h3 { margin-bottom: 16px; }
-    .modal input, .modal textarea {
-      width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px;
-      border: 1px solid #ccc; border-radius: 7px;
+    .modal h3 { margin-bottom: 16px; font-size: 17px; }
+    .modal label {
+      font-size: 13px; color: #555; display: block;
+      margin-bottom: 3px; margin-top: 12px;
     }
+    .modal label:first-of-type { margin-top: 0; }
+    .modal input, .modal textarea {
+      width: 100%; padding: 8px 10px;
+      border: 1px solid #ddd; border-radius: 7px; font-size: 14px;
+    }
+    .modal input:focus, .modal textarea:focus {
+      outline: none; border-color: #4a90e2;
+    }
+    .modal textarea { resize: vertical; min-height: 60px; }
+    .modal-error { color: #c0392b; font-size: 13px; margin-top: 10px; min-height: 18px; }
+    .modal-cerrar {
+      position: absolute; top: 12px; right: 14px;
+      background: none; border: none; font-size: 20px; cursor: pointer; color: #bbb;
+    }
+    .modal-cerrar:hover { color: #555; }
   </style>
 </head>
 
@@ -115,66 +112,58 @@
   <!-- ACCIONES -->
   <div class="acciones">
     <button class="primary" id="btn-consulta">+ Consulta</button>
+    <button class="primary" id="btn-nuevo-tratamiento">+ Tratamiento</button>
     <button class="sec"     id="btn-historial">Historial</button>
-    <button class="sec"     id="btn-tratamientos">Tratamientos</button>
   </div>
 
-  <!-- PANEL HISTORIAL -->
+  <!-- TRATAMIENTOS ACTIVOS — carga automática al abrir el perfil -->
+  <p class="seccion-titulo">Tratamientos activos</p>
+  <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
+
+  <!-- PANEL HISTORIAL — se abre al pulsar el botón -->
   <div id="historial" class="panel"></div>
-
-  <!-- PANEL TRATAMIENTOS -->
-  <div id="panel-tratamientos" class="panel">
-
-    <!-- Botón nuevo tratamiento (solo vet) -->
-    <button class="primary" id="btn-nuevo-tratamiento" style="margin-bottom:12px; width:100%;">
-      + Nuevo tratamiento
-    </button>
-
-    <!-- Formulario inline (oculto por defecto) -->
-    <div class="form-inline" id="form-trat-container">
-      <label>Nombre del tratamiento / medicamento *</label>
-      <input type="text" id="trat-nombre" placeholder="Ej: Amoxicilina" />
-
-      <label>Descripción</label>
-      <textarea id="trat-descripcion" placeholder="Ej: Antibiótico para infección urinaria"></textarea>
-
-      <label>Frecuencia</label>
-      <input type="text" id="trat-frecuencia" placeholder="Ej: 1 comprimido de 250 mg cada 12 hs" />
-
-      <label>Fecha de inicio</label>
-      <input type="datetime-local" id="trat-inicio" />
-
-      <label>Fecha de finalización (opcional)</label>
-      <input type="datetime-local" id="trat-finalizacion" />
-
-      <p class="form-error" id="trat-error"></p>
-
-      <div class="form-acciones">
-        <button type="button" class="primary"  id="btn-guardar-trat">Guardar</button>
-        <button type="button" class="sec"      id="btn-cancelar-trat">Cancelar</button>
-      </div>
-    </div>
-
-    <!-- Lista de tratamientos -->
-    <div id="lista-tratamientos"></div>
-
-  </div>
 
 </div>
 
 <!-- MODAL CONSULTA -->
-<div class="modal-bg" id="modal">
+<div class="modal-bg" id="modal-consulta">
   <div class="modal">
-    <button id="cerrar-modal" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+    <button class="modal-cerrar" id="cerrar-modal-consulta">✕</button>
     <h3>Nueva consulta</h3>
-    <form id="form">
+    <form id="form-consulta">
       <label>Motivo</label>
       <input id="motivo" required />
       <label>Diagnóstico</label>
       <textarea id="diag"></textarea>
       <div id="vacunas"></div>
-      <button type="submit" class="primary">Guardar consulta</button>
+      <button type="submit" class="primary" style="margin-top:16px;width:100%;">Guardar consulta</button>
     </form>
+  </div>
+</div>
+
+<!-- MODAL TRATAMIENTO -->
+<div class="modal-bg" id="modal-tratamiento">
+  <div class="modal">
+    <button class="modal-cerrar" id="cerrar-modal-tratamiento">✕</button>
+    <h3>Nuevo tratamiento</h3>
+
+    <label>Nombre *</label>
+    <input type="text" id="trat-nombre" placeholder="Ej: Amoxicilina" />
+
+    <label>Descripción</label>
+    <textarea id="trat-descripcion" placeholder="Ej: Antibiótico para infección urinaria"></textarea>
+
+    <label>Frecuencia</label>
+    <input type="text" id="trat-frecuencia" placeholder="Ej: 1 comprimido de 250 mg cada 12 hs" />
+
+    <label>Fecha de inicio</label>
+    <input type="datetime-local" id="trat-inicio" />
+
+    <label>Fecha de finalización (opcional)</label>
+    <input type="datetime-local" id="trat-finalizacion" />
+
+    <p class="modal-error" id="trat-error"></p>
+    <button type="button" class="primary" id="btn-guardar-trat" style="margin-top:16px;width:100%;">Guardar tratamiento</button>
   </div>
 </div>
 
