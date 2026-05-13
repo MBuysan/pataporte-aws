@@ -244,21 +244,86 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   async function cargarHistorial() {
-    panelHistorial.innerHTML = `<p class="cargando">Cargando...</p>`;
-    try {
-      const data = await api.get(`/historial/${idMascota}/consultas`);
-      historialCargado = true;
-      panelHistorial.innerHTML = data.length === 0
-        ? `<p class="sin-datos">No hay consultas registradas.</p>`
-        : data.map(c => {
-            const f = new Date(c.fecha_hora);
-            const fecha = f.toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-                        + ", " + f.toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit" });
-            return `<div class="fila"><b>${fecha}</b> — ${c.motivo}</div>`;
-          }).join("");
-    } catch (e) {
-      panelHistorial.innerHTML = `<p class="error-panel">${e.message}</p>`;
-    }
-  }
+  panelHistorial.innerHTML = `<p class="cargando">Cargando...</p>`;
+  try {
+    const response = await api.get(`/historial/${idMascota}/unificado`);
+    const eventos = response.eventos;
+    historialCargado = true;
 
+    if (eventos.length === 0) {
+      panelHistorial.innerHTML = `<p class="sin-datos">No hay eventos en el historial.</p>`;
+      return;
+    }
+
+    panelHistorial.innerHTML = eventos.map(e => renderEvento(e)).join("");
+
+    // Hacer consultas clickeables
+    panelHistorial.querySelectorAll('[data-tipo="consulta"]').forEach(btn => {
+      btn.onclick = async () => {
+        // Abrir modal con detalle de consulta
+        try {
+          const detalle = await api.get(`/historial/${idMascota}/detalle/${btn.dataset.id}`);
+          mostrarDetalleConsulta(detalle);
+        } catch (err) {
+          alert(`Error: ${err.message}`);
+        }
+      };
+    });
+
+  } catch (e) {
+    panelHistorial.innerHTML = `<p class="error-panel">${e.message}</p>`;
+  }
+}
+
+function renderEvento(e) {
+  const fecha = new Date(e.fecha).toLocaleDateString("es-UY", { 
+    day: "numeric", month: "short", year: "numeric" 
+  });
+  const hora = new Date(e.fecha).toLocaleTimeString("es-UY", { 
+    hour: "2-digit", minute: "2-digit" 
+  });
+
+  if (e.tipo === "consulta") {
+    return `
+      <button class="fila" data-tipo="consulta" data-id="${e.id}" style="display:flex;align-items:center;gap:10px;width:100%;">
+        <span style="background:#e3f2fd;color:#1976d2;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;white-space:nowrap;">CONSULTA</span>
+        <span style="flex:1;text-align:left;"><b>${fecha}, ${hora}</b> — ${e.motivo}</span>
+        <span style="color:#ccc;font-size:18px;">›</span>
+      </button>`;
+  } else {
+    // tratamiento
+    const fin = e.finalizacion 
+      ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
+      : "Sin fecha de fin";
+    const estado = e.finalizacion && new Date(e.finalizacion) < new Date() 
+      ? "FINALIZADO" 
+      : "ACTIVO";
+    const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
+    
+    return `
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:#fff3e0;color:${colorEstado};padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;">TRATAMIENTO · ${estado}</span>
+          <span style="font-size:12px;color:#aaa;">${fecha}</span>
+        </div>
+        <div class="card-titulo">${e.nombre}</div>
+        ${e.descripcion ? `<div class="card-desc">${e.descripcion}</div>` : ""}
+        ${e.frecuencia ? `<div class="card-freq">🕐 ${e.frecuencia}</div>` : ""}
+        <div class="card-meta">Finalización: ${fin}</div>
+      </div>`;
+  }
+}
+
+function mostrarDetalleConsulta(detalle) {
+  // implementar modal simple o reutilizar el de consulta
+  const html = `
+    <p><b>Motivo:</b> ${detalle.motivo}</p>
+    <p><b>Diagnóstico:</b> ${detalle.diagnostico || "No registrado"}</p>
+    ${detalle.dosis?.length > 0 ? `
+      <p><b>Vacunas:</b></p>
+      <ul>${detalle.dosis.map(d => `<li>${d.nombre_vacuna} (dosis ${d.numero_dosis})</li>`).join("")}</ul>
+    ` : ""}
+  `;
+  alert(html); 
+}
 });
