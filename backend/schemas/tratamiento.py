@@ -5,7 +5,6 @@ from typing import Optional
 
 # ── Lo que se recibe al CREAR un tratamiento ──────────────
 class TratamientoCreate(BaseModel):
-
     nombre:      str
     descripcion: Optional[str] = None   # indicaciones / nombre del medicamento
     frecuencia:  Optional[str] = None   # ej: "1 pastilla cada 12hs"
