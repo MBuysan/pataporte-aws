@@ -42,6 +42,12 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate) -> Tr
             detail="Ya existe un tratamiento con ese nombre para esta mascota"
         )
 
+    if data.finalizacion < datetime.utcnow():
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de finalización no puede ser anterior a la fecha actual"
+        )
+    
     tratamiento = Tratamiento(
         id_mascota=id_mascota,
         nombre=data.nombre,
