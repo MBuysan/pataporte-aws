@@ -22,7 +22,7 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
 
     console.error("BACKEND ERROR:", error);
 
-    throw new Error(JSON.stringify(error));
+    throw new Error(error.detail || "Ocurrió un error");
   }
 
   if (response.status === 204) return null;

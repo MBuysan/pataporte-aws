@@ -3,72 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Perfil mascota</title>
+  <title>Perfil mascota — Veterinario</title>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial; background: #f5f5f5; padding: 30px; }
-
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 30px 16px; }
     .contenedor { max-width: 650px; margin: auto; }
 
+    /* ── Header ── */
     .header {
       background: white; padding: 20px; border-radius: 12px;
       display: flex; gap: 15px; align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-
     .foto {
       width: 60px; height: 60px; border-radius: 50%;
-      background: #ddd; display:flex; align-items:center;
-      justify-content:center; font-weight:bold;
+      background: #dde8f8; color: #4a90e2;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: bold; flex-shrink: 0;
     }
 
-    .acciones { display:flex; gap:10px; margin-bottom: 15px; }
+    /* ── Acciones ── */
+    .acciones { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    button { border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
+    .primary { background: #4a90e2; color: white; }
+    .primary:hover { background: #357abd; }
+    .sec { background: #eee; color: #444; }
+    .sec:hover { background: #e0e0e0; }
 
-    button {
-      border: none; padding: 10px 14px;
-      border-radius: 8px; cursor: pointer;
+    /* ── Sección tratamientos (siempre visible) ── */
+    .seccion-titulo {
+      font-size: 12px; font-weight: bold; color: #aaa;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 8px;
     }
-
-    .primary { background:#4a90e2; color:white; }
-    .sec { background:#eee; }
-
-    .panel { display:none; margin-bottom: 15px; }
 
     .card {
-      background:white; padding:12px;
-      border-radius:10px; margin-bottom:8px;
+      background: white; padding: 14px 16px;
+      border-radius: 10px; margin-bottom: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     }
+    .card-titulo { font-size: 15px; font-weight: bold; color: #222; }
+    .card-desc   { font-size: 13px; color: #555; margin-top: 4px; }
+    .card-freq   { font-size: 13px; color: #4a90e2; margin-top: 3px; }
+    .card-meta   { font-size: 12px; color: #aaa; margin-top: 6px; }
 
+    /* ── Panel historial (toggle) ── */
+    .panel { display: none; margin-top: 16px; }
     .fila {
-      background:white; padding:12px;
-      border-radius:10px; margin-bottom:8px;
-      cursor:pointer;
+      background: white; padding: 12px 16px;
+      border-radius: 10px; margin-bottom: 8px;
+      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      transition: box-shadow 0.15s;
     }
+    .fila:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
 
-    /* MODAL */
+    .sin-datos  { color: #bbb; font-size: 14px; text-align: center; padding: 20px 0; }
+    .cargando   { color: #bbb; font-size: 14px; text-align: center; padding: 20px 0; }
+    .error-panel { color: #c0392b; font-size: 14px; padding: 8px 0; }
+
+    /* ── Modales ── */
     .modal-bg {
-      display:none; position:fixed; inset:0;
-      background:rgba(0,0,0,.5);
-      align-items:center; justify-content:center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      align-items: center; justify-content: center; z-index: 100;
     }
-
-    .modal-bg.activo { display:flex; }
-
+    .modal-bg.activo { display: flex; }
     .modal {
-      background:white; padding:20px;
-      border-radius:10px; width:400px;
+      background: white; padding: 24px;
+      border-radius: 12px; width: 420px; max-height: 90vh;
+      overflow-y: auto; position: relative;
     }
-
-    input, textarea {
-      width:100%; padding:8px; margin-top:5px;
-      margin-bottom:10px;
+    .modal h3 { margin-bottom: 16px; font-size: 17px; }
+    .modal label {
+      font-size: 13px; color: #555; display: block;
+      margin-bottom: 3px; margin-top: 12px;
     }
+    .modal label:first-of-type { margin-top: 0; }
+    .modal input, .modal textarea {
+      width: 100%; padding: 8px 10px;
+      border: 1px solid #ddd; border-radius: 7px; font-size: 14px;
+    }
+    .modal input:focus, .modal textarea:focus {
+      outline: none; border-color: #4a90e2;
+    }
+    .modal textarea { resize: vertical; min-height: 60px; }
+    .modal-error { color: #c0392b; font-size: 13px; margin-top: 10px; min-height: 18px; }
+    .modal-cerrar {
+      position: absolute; top: 12px; right: 14px;
+      background: none; border: none; font-size: 20px; cursor: pointer; color: #bbb;
+    }
+    .modal-cerrar:hover { color: #555; }
   </style>
 </head>
 
 <body>
-
 <div class="contenedor">
 
   <!-- HEADER -->
@@ -76,46 +105,69 @@
     <div class="foto" id="foto">?</div>
     <div>
       <h3 id="nombre">Cargando...</h3>
-      <small id="detalle"></small>
+      <small id="detalle" style="color:#888;"></small>
     </div>
   </div>
 
   <!-- ACCIONES -->
   <div class="acciones">
     <button class="primary" id="btn-consulta">+ Consulta</button>
-    <button class="sec" id="btn-historial">Historial</button>
-    <button class="sec" id="btn-tratamientos">Tratamientos</button>
+    <button class="primary" id="btn-nuevo-tratamiento">+ Tratamiento</button>
+    <button class="sec"     id="btn-historial">Historial completo</button>
   </div>
 
-  <!-- PANELES -->
+  <!-- TRATAMIENTOS ACTIVOS — carga automática al abrir el perfil -->
+  <p class="seccion-titulo">Tratamientos activos</p>
+  <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
+
+  <!-- PANEL HISTORIAL — se abre al pulsar el botón -->
   <div id="historial" class="panel"></div>
-  <div id="tratamientos" class="panel"></div>
 
 </div>
 
 <!-- MODAL CONSULTA -->
-<div class="modal-bg" id="modal">
+<div class="modal-bg" id="modal-consulta">
   <div class="modal">
-
+    <button class="modal-cerrar" id="cerrar-modal-consulta">✕</button>
     <h3>Nueva consulta</h3>
-
-    <form id="form">
+    <form id="form-consulta">
       <label>Motivo</label>
       <input id="motivo" required />
-
       <label>Diagnóstico</label>
       <textarea id="diag"></textarea>
-
       <div id="vacunas"></div>
-
-      <button type="submit">Guardar consulta</button>
+      <button type="submit" class="primary" style="margin-top:16px;width:100%;">Guardar consulta</button>
     </form>
+  </div>
+</div>
 
+<!-- MODAL TRATAMIENTO -->
+<div class="modal-bg" id="modal-tratamiento">
+  <div class="modal">
+    <button class="modal-cerrar" id="cerrar-modal-tratamiento">✕</button>
+    <h3>Nuevo tratamiento</h3>
+
+    <label>Nombre *</label>
+    <input type="text" id="trat-nombre" placeholder="Ej: Amoxicilina" />
+
+    <label>Descripción</label>
+    <textarea id="trat-descripcion" placeholder="Ej: Antibiótico para infección urinaria"></textarea>
+
+    <label>Frecuencia</label>
+    <input type="text" id="trat-frecuencia" placeholder="Ej: 1 comprimido de 250 mg cada 12 hs" />
+
+    <label>Fecha de inicio</label>
+    <input type="datetime-local" id="trat-inicio" />
+
+    <label>Fecha de finalización (opcional)</label>
+    <input type="datetime-local" id="trat-finalizacion" />
+
+    <p class="modal-error" id="trat-error"></p>
+    <button type="button" class="primary" id="btn-guardar-trat" style="margin-top:16px;width:100%;">Guardar tratamiento</button>
   </div>
 </div>
 
 <script src="../js/api.js"></script>
 <script src="../js/perfilMascotaVet.js"></script>
-
 </body>
 </html>

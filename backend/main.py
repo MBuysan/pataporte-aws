@@ -12,7 +12,6 @@ from routers import (
     historial,
     tratamientos,
     vacunas,
-    pataporte,
     auth,
 )
 
@@ -51,7 +50,6 @@ app.include_router(veterinarios.router, prefix="/veterinarios", tags=["Veterinar
 app.include_router(historial.router, prefix="/historial", tags=["Historial"])
 app.include_router(tratamientos.router, prefix="/tratamientos", tags=["Tratamientos"])
 app.include_router(vacunas.router, prefix="/vacunas", tags=["Vacunas"])
-app.include_router(pataporte.router, prefix="/pataporte", tags=["Pataporte"])
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
 
