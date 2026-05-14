@@ -7,7 +7,7 @@ from schemas.tratamiento import TratamientoCreate, TratamientoUpdate
 from config.database import Tratamiento, Mascota
 
  
-def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate,id_consulta: str) -> Tratamiento:
+def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate) -> Tratamiento:
     """
     Crea un nuevo tratamiento asociado a una consulta.
     """
@@ -30,7 +30,7 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate,id_con
     duplicado = (
         db.query(Tratamiento)
         .filter(
-            Tratamiento.id_mascota == data.id_mascota,
+            Tratamiento.id_mascota == id_mascota,
             Tratamiento.nombre == data.nombre
         )
         .first()
@@ -42,13 +42,29 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate,id_con
             detail="Ya existe un tratamiento con ese nombre para esta mascota"
         )
 
+    inicio = data.inicio or datetime.utcnow()
+
+    if data.finalizacion:
+        
+        if data.finalizacion < inicio:
+            raise HTTPException(
+                status_code=400,
+                detail="La fecha de finalización no puede ser anterior a la fecha de inicio"
+            )
+
+        if data.finalizacion < datetime.utcnow():
+            raise HTTPException(
+                status_code=400,
+                detail="La fecha de finalización no puede ser anterior a la fecha actual"
+            )
+    
     tratamiento = Tratamiento(
-        id_mascota=data.id_mascota,
+        id_mascota=id_mascota,
         nombre=data.nombre,
         descripcion=data.descripcion,
-        finalizacion=data.finalizacion,
-        id_consulta_creacion=id_consulta,
-        id_consulta_ultima_edicion=id_consulta,
+        frecuencia = data.frecuencia,
+        inicio = inicio,
+        finalizacion= data.finalizacion
     )
 
     db.add(tratamiento)
@@ -72,7 +88,7 @@ def ver_tratamientos_activos(db: Session, id_mascota: str) -> list[Tratamiento]:
             (Tratamiento.finalizacion == None) |
             (Tratamiento.finalizacion > datetime.utcnow())
         )
-        .order_by(Tratamiento.creacion.desc())
+        .order_by(Tratamiento.inicio.desc())
         .all()
     )
 
@@ -88,7 +104,7 @@ def listar_por_mascota(db: Session, id_mascota: str) -> list[Tratamiento]:
     return (
         db.query(Tratamiento)
         .filter(Tratamiento.id_mascota == id_mascota)
-        .order_by(Tratamiento.creacion.desc())
+        .order_by(Tratamiento.inicio.desc())
         .all()
     )
 
@@ -107,7 +123,7 @@ def obtener_por_id(db: Session, id_tratamiento: str) -> Tratamiento:
     return tratamiento
 
 
-def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUpdate, id_consulta: str ) -> Tratamiento:
+def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUpdate) -> Tratamiento:
 
     tratamiento = obtener_por_id(db, id_tratamiento)
 
@@ -134,11 +150,12 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
     if data.descripcion is not None:
         tratamiento.descripcion = data.descripcion
 
+    if data.frecuencia is not None:
+        tratamiento.frecuencia = data.frecuencia
+
     if data.finalizacion is not None:
         tratamiento.finalizacion = data.finalizacion
 
-    # solo se actualiza la ultima edicion
-    tratamiento.id_consulta_ultima_edicion = id_consulta
 
     db.commit()
     db.refresh(tratamiento)

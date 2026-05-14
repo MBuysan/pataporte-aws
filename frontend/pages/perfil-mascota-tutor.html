@@ -83,14 +83,17 @@
 
       <div id="mensaje-pagina" class="mensaje"></div>
 
-      <!-- Solo tratamientos e historial — sin agregar consulta -->
-      <div class="acciones">
-        <button id="btn-tratamientos" class="btn-accion btn-secundario">Tratamientos</button>
-        <button id="btn-historial"    class="btn-accion btn-secundario">Historial clínico</button>
-      </div>
+      <!-- Tratamientos: se cargan al abrir el perfil (solo lectura) -->
+      <p style="font-size:12px;font-weight:bold;color:#aaa;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+        Tratamientos activos
+      </p>
+      <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
 
-      <div id="seccion-tratamientos" class="seccion-contenido"></div>
-      <div id="seccion-historial"    class="seccion-contenido"></div>
+      <!-- Historial: toggle con lazy load -->
+      <div class="acciones" style="margin-top:16px;">
+        <button id="btn-historial" class="btn-accion btn-secundario">Historial clínico</button>
+      </div>
+      <div id="seccion-historial" class="seccion-contenido"></div>
 
     </div>
 

@@ -5,7 +5,6 @@ from jwt import PyJWTError
 import os
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
-from schemas.historial import HistorialResponse
 from services import historial_service, consulta_service
 
 from utils import password_utils
@@ -56,5 +55,12 @@ def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = De
 )
 def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db)):
     return historial_service.ver_historial_consultas(db, id_mascota)
+
+@router.get(
+    "/{id_mascota}/unificado",
+    summary="Ver historial unificado (consultas, tratamientos y vacunas)"
+)
+def ver_historial_unificado(id_mascota: str, db: Session = Depends(get_db)):
+    return {"eventos": historial_service.obtener_historial_unificado(db, id_mascota)}
 
 
