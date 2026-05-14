@@ -103,6 +103,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    const inicio = document.getElementById("trat-inicio").value;
+    const finalizacion = document.getElementById("trat-finalizacion").value;
+
+    if (inicio && finalizacion) {
+
+      const fechaInicio = new Date(inicio);
+      const fechaFin = new Date(finalizacion);
+
+    if (fechaFin < fechaInicio) {
+      errorEl.textContent =
+        "La fecha de finalización no puede ser anterior a la fecha de inicio.";
+      return;
+      }
+    } 
+
     const payload = {
       nombre,
       descripcion:  document.getElementById("trat-descripcion").value.trim()  || null,
