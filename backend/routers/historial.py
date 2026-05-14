@@ -5,7 +5,6 @@ from jwt import PyJWTError
 import os
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
-from schemas.historial import HistorialResponse
 from services import historial_service, consulta_service
 
 from utils import password_utils

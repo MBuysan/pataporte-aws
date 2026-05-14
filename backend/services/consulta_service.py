@@ -90,15 +90,6 @@ def obtener_detalle(db: Session, id_consulta: str) -> dict:
         "motivo":               consulta.motivo,
         "diagnostico":          consulta.diagnostico,
         
-        "tratamientos": [
-            {
-                "id_tratamiento": t.id_tratamiento,
-                "nombre":      t.nombre,
-                "descripcion": t.descripcion,
-                "finalizacion": (str(t.finalizacion.date()) if t.finalizacion else None)
-            }
-            for t in tratamientos
-        ],
         "dosis": [
             {
                 "nombre_vacuna":   nombre_vacuna,

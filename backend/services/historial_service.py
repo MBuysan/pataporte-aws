@@ -51,21 +51,28 @@ def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
         .all()
     )
 
-    #objeto a retornar
+    #objeto a retornar, lista de eventos 
     eventos = []
     
     for c in consultas:
         eventos.append({
-            "tipo": "consulta",
-            "fecha": c.fecha_hora,
-            "datos": c
+            "tipo":     "consulta",
+            "fecha":    c.fecha_hora,
+            "id":       c.id_consulta,
+            "motivo":   c.motivo,
+            "diagnostico":    c.diagnostico,
+            "id_veterinario": c.id_veterinario,
         })
         
     for t in tratamientos:
         eventos.append({
             "tipo": "tratamiento", 
             "fecha": t.inicio,
-            "datos": t
+            "id":           t.id_tratamiento,
+            "nombre":       t.nombre,
+            "descripcion":  t.descripcion,
+            "frecuencia":   t.frecuencia,
+            "finalizacion": t.finalizacion,
         })
         
     """
