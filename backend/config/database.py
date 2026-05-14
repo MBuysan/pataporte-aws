@@ -20,7 +20,7 @@ class Base(DeclarativeBase):
     pass
 
 # ── ENUMs (reflejan los tipos del DDL) ───────────────────────────────────────
-estado_general_enum = SAEnum("activo", "inactivo",                                    name="estado_general")
+estado_general_enum = SAEnum("activo", "inactivo", "pendiente_verificacion",          name="estado_general")
 estado_esquema_enum = SAEnum("activo", "completado", "atrasado",                      name="estado_esquema")
 estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
 sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
@@ -37,7 +37,7 @@ class UsuarioTutor(Base):
     telefono:       Mapped[str|None] = mapped_column(VARCHAR(30),  nullable=True)
     password_hash:  Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     fecha_registro: Mapped[datetime] = mapped_column(DateTime,     nullable=False, default=datetime.utcnow)
-    estado:         Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
+    estado:         Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="pendiente_verificacion")
 
     mascotas: Mapped[list["MascotaTutor"]] = relationship("MascotaTutor", back_populates="tutor")
 
@@ -95,7 +95,7 @@ class Veterinaria(Base):
     nombre:                Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:                 Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
-    estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
+    estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="pendiente_verificacion")
     fecha_registro:        Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
 
     consultas:              Mapped[list["Consulta"]]    = relationship("Consulta",    back_populates="veterinario")
@@ -259,7 +259,22 @@ class RecuperacionPassword(Base):
      fecha_solicitud: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
 
      tutor: Mapped["UsuarioTutor"] = relationship("UsuarioTutor")
- 
+
+class VerificacionEmail(Base):
+    """
+    Guarda los códigos de verificación de correo enviados post-registro.
+    Valida la activación de la cuenta tanto para Tutor como para Veterinaria.
+    """
+    __tablename__ = "verificacion_email"
+
+    id_verificacion: Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email:           Mapped[str]      = mapped_column(VARCHAR(254), nullable=False)
+    tipo_usuario:    Mapped[str]      = mapped_column(VARCHAR(20), nullable=False) # "tutor" | "veterinaria"
+    codigo_hash:     Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
+    expiracion:      Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    usado:           Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
+    fecha_solicitud: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+
 # ── Sesion y utilidades ───────────────────────────────────────────────────────
 
 def get_db():

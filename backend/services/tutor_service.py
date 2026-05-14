@@ -32,6 +32,10 @@ def crear(db: Session, data: TutorCreate):
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
+
+    # Generamos el código de verificación y enviamos el correo electrónico
+    auth_service.generar_y_enviar_codigo_verificacion(db, nuevo.email, "tutor")
+
     return nuevo
 
 
