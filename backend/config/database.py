@@ -154,6 +154,8 @@ class Tratamiento(Base):
     frecuencia:     Mapped[str | None]    = mapped_column(VARCHAR(300), nullable=True)
     inicio:         Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     finalizacion:   Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
+    editado:        Mapped[bool]          = mapped_column(Boolean, nullable=False, default=False)
+    fecha_edicion:  Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
 
     mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="tratamientos")
     
