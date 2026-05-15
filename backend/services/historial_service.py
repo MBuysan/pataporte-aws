@@ -1,20 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from config.database import Consulta, Tratamiento ,EsquemaVacunacion
 from services import mascota_service
 
-from schemas.consulta import ConsultaCreate
 
-
-def ver_historial_consultas(db: Session, id_mascota: str) -> list[Consulta]:
-
-    consultas = (
-        db.query(Consulta).filter(Consulta.id_mascota == id_mascota).all()
-    )
-
-    return consultas
 
 
 def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
@@ -34,7 +25,7 @@ def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
         raise HTTPException(status_code=404, detail="Mascota no encontrada")
 
     #  Consultas 
-    consultas = ver_historial_consultas(db, id_mascota)
+    consultas = db.query(Consulta).filter(Consulta.id_mascota == id_mascota).all()
 
     #  Tratamientos 
     tratamientos = (
@@ -65,26 +56,27 @@ def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
         })
         
     for t in tratamientos:
+        
+        estado = (
+        "FINALIZADO"
+        if (
+            t.finalizacion and
+            t.finalizacion < datetime.now(timezone.utc)
+        )
+        else "ACTIVO"
+    )
+
         eventos.append({
-            "tipo": "tratamiento", 
+            "tipo": "tratamiento",
             "fecha": t.inicio,
-            "id":           t.id_tratamiento,
-            "nombre":       t.nombre,
-            "descripcion":  t.descripcion,
-            "frecuencia":   t.frecuencia,
+            "id": t.id_tratamiento,
+            "nombre": t.nombre,
+            "descripcion": t.descripcion,
+            "frecuencia": t.frecuencia,
             "finalizacion": t.finalizacion,
-        })
+            "estado": estado,
+            })
         
-    """
-    no se como funcionan los esquemas, queda comentado de momento
-    for e in esquemas:
-        eventos.append({
-            "tipo": "tratamiento", 
-            "fecha": t.inicio,
-            "datos": t
-        }) 
-        
-    """
 
     #ordena todos los eventos del mas reciente al primero
     eventos.sort(key=lambda x: x["fecha"], reverse=True)

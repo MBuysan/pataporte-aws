@@ -21,14 +21,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 password: password
             });
 
-            mensajeP.textContent = "Organización registrada exitosamente!";
+            mensajeP.textContent = "¡Registro exitoso! Te enviamos un código por email. Redirigiendo a verificación...";
             mensajeP.style.color = "green";
             
-            // Opcional: limpiar formulario
+            // Limpiar formulario
             form.reset();
             
-            // Opcional: redirigir al login
-            // window.location.href = "login.html";
+            // Esperar 1.5 segundos y redirigir a la verificación
+            setTimeout(() => {
+                window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinaria`;
+            }, 1500);
 
         } catch (error) {
             mensajeP.textContent = error.message || "Error al registrar organización";

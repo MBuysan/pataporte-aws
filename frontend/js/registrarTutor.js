@@ -27,11 +27,15 @@ form.addEventListener("submit", async (e) => {
             mensaje.innerText = "Error: " + result.detail;
             mensaje.style.color = "red";
         } else {
-            mensaje.innerText = "Tutor registrado correctamente";
+            mensaje.innerText = "¡Registro exitoso! Te enviamos un código por email. Redirigiendo a verificación...";
             mensaje.style.color = "green";
             form.reset();
+            
+            // Esperar 1.5 segundos para que lean el mensaje de éxito y luego redirigir
+            setTimeout(() => {
+                window.location.href = `verificar-correo.html?email=${encodeURIComponent(data.email)}&tipo=tutor`;
+            }, 1500);
         }
-        window.location.href = "dashboard.html";
     } catch (error) {
         mensaje.innerText = "Error de conexión con el servidor";
         mensaje.style.color = "red";

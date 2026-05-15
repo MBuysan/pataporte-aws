@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -42,28 +42,14 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate) -> Tr
             detail="Ya existe un tratamiento con ese nombre para esta mascota"
         )
 
-    inicio = data.inicio or datetime.utcnow()
-
-    if data.finalizacion:
-        
-        if data.finalizacion < inicio:
-            raise HTTPException(
-                status_code=400,
-                detail="La fecha de finalización no puede ser anterior a la fecha de inicio"
-            )
-
-        if data.finalizacion < datetime.utcnow():
-            raise HTTPException(
-                status_code=400,
-                detail="La fecha de finalización no puede ser anterior a la fecha actual"
-            )
+    _check_fecha_finalizacion(data.finalizacion, data.inicio)
     
     tratamiento = Tratamiento(
         id_mascota=id_mascota,
         nombre=data.nombre,
         descripcion=data.descripcion,
         frecuencia = data.frecuencia,
-        inicio = inicio,
+        inicio = data.inicio,
         finalizacion= data.finalizacion
     )
 
@@ -86,7 +72,7 @@ def ver_tratamientos_activos(db: Session, id_mascota: str) -> list[Tratamiento]:
         .filter(
             Tratamiento.id_mascota == id_mascota,
             (Tratamiento.finalizacion == None) |
-            (Tratamiento.finalizacion > datetime.utcnow())
+            (Tratamiento.finalizacion > datetime.now(timezone.utc))
         )
         .order_by(Tratamiento.inicio.desc())
         .all()
@@ -126,7 +112,15 @@ def obtener_por_id(db: Session, id_tratamiento: str) -> Tratamiento:
 def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUpdate) -> Tratamiento:
 
     tratamiento = obtener_por_id(db, id_tratamiento)
-
+    
+    if tratamiento.finalizacion and tratamiento.finalizacion < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=400,
+            detail="No se pueden editar tratamientos finalizados"
+        )
+        
+    hubo_cambios = False
+        
     if (data.nombre is not None and data.nombre != tratamiento.nombre):
 
         colision = (
@@ -146,18 +140,60 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
             )
 
         tratamiento.nombre = data.nombre
+        hubo_cambios = True
 
-    if data.descripcion is not None:
+    if data.descripcion is not None and data.descripcion != tratamiento.descripcion:  
+        
         tratamiento.descripcion = data.descripcion
+        hubo_cambios = True
 
-    if data.frecuencia is not None:
+    if data.frecuencia is not None and data.frecuencia != tratamiento.frecuencia: 
+        
         tratamiento.frecuencia = data.frecuencia
+        hubo_cambios = True
+    
+    
+    fecha_inicio = data.inicio or tratamiento.inicio
+    fecha_finalizacion= (data.finalizacion if data.finalizacion is not None else tratamiento.finalizacion)
+    
+    _check_fecha_finalizacion(fecha_finalizacion,fecha_inicio)
+    
+    if data.inicio is not None and data.inicio != tratamiento.inicio:
 
-    if data.finalizacion is not None:
+        tratamiento.inicio = data.inicio
+        hubo_cambios = True
+        
+    if (data.finalizacion is not None and data.finalizacion != tratamiento.finalizacion):  
+        
         tratamiento.finalizacion = data.finalizacion
-
+        hubo_cambios = True
+        
+        
+    if not hubo_cambios:
+        raise HTTPException(
+            status_code=400,
+            detail="No se proporcionaron cambios para actualizar"
+        )
+        
+    tratamiento.editado = True
+    tratamiento.fecha_edicion = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(tratamiento)
 
     return tratamiento
+
+
+def _check_fecha_finalizacion(finalizacion: datetime | None, inicio: datetime) -> None:
+
+    if finalizacion < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de finalización no puede ser anterior a la actual"
+        )
+
+    if inicio and finalizacion < inicio:
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de finalización no puede ser anterior al inicio"
+        )

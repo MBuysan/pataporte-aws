@@ -8,7 +8,7 @@ class TratamientoCreate(BaseModel):
     nombre:      str
     descripcion: Optional[str] = None   # indicaciones / nombre del medicamento
     frecuencia:  Optional[str] = None   # ej: "1 pastilla cada 12hs"
-    inicio:      Optional[datetime] = None   # si no se manda, el service usa utcnow()
+    inicio:      Optional[datetime] = None   # si no se manda, el service usa now()
     finalizacion: Optional[datetime] = None
 
     class Config:
@@ -29,6 +29,7 @@ class TratamientoUpdate(BaseModel):
     nombre:       Optional[str]      = None
     descripcion:  Optional[str]      = None
     frecuencia:   Optional[str]      = None
+    inicio:       Optional[datetime] = None
     finalizacion: Optional[datetime] = None
 
 
