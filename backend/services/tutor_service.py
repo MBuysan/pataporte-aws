@@ -120,7 +120,7 @@ def vincular_mascota_con_codigo(db: Session, id_tutor: str, codigo: str):
         )
 
     # 2. Validar expiración
-    if codigo_obj.fecha_expiracion < datetime.utcnow():
+    if codigo_obj.fecha_expiracion < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="El código ha expirado")
 
     # 3. Vincular (rol secundario por defecto)

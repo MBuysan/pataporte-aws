@@ -224,7 +224,7 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     # genera el codigo, lo hashea y calcula su fecha de expiracion
     codigo_plano = _generar_codigo()
     codigo_hash = _hashear(codigo_plano)
-    expiracion = datetime.utcnow() + timedelta(minutes=EXPIRACION_MINUTOS)
+    expiracion = datetime.now(timezone.utc) + timedelta(minutes=EXPIRACION_MINUTOS)
 
     # crea el objeto python del modelo
     recuperacion = RecuperacionPassword(
@@ -265,7 +265,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
         db.query(RecuperacionPassword)
         .filter(
             RecuperacionPassword.usado == False,
-            RecuperacionPassword.expiracion > datetime.utcnow(),
+            RecuperacionPassword.expiracion > datetime.now(timezone.utc),
         )
         .all()
     )
@@ -327,7 +327,7 @@ def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: 
 
     codigo_plano = _generar_codigo()
     codigo_hash = _hashear(codigo_plano)
-    expiracion = datetime.utcnow() + timedelta(minutes=EXPIRACION_MINUTOS)
+    expiracion = datetime.now(timezone.utc) + timedelta(minutes=EXPIRACION_MINUTOS)
 
     nueva_verificacion = VerificacionEmail(
         email=email,
@@ -357,7 +357,7 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
             VerificacionEmail.email == data.email,
             VerificacionEmail.tipo_usuario == data.tipo_usuario,
             VerificacionEmail.usado == False,
-            VerificacionEmail.expiracion > datetime.utcnow(),
+            VerificacionEmail.expiracion > datetime.now(timezone.utc),
         )
         .all()
     )
@@ -452,7 +452,7 @@ def verificar_password(password_plano: str, password_hash: str) -> bool:
 
 
 def crear_access_token(data: dict) -> str:
-    expire = datetime.utcnow() + timedelta(
+    expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
 

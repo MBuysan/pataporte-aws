@@ -5,16 +5,7 @@ from fastapi import HTTPException
 from config.database import Consulta, Tratamiento ,EsquemaVacunacion
 from services import mascota_service
 
-from schemas.consulta import ConsultaCreate
 
-
-def ver_historial_consultas(db: Session, id_mascota: str) -> list[Consulta]:
-
-    consultas = (
-        db.query(Consulta).filter(Consulta.id_mascota == id_mascota).all()
-    )
-
-    return consultas
 
 
 def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
@@ -34,7 +25,7 @@ def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
         raise HTTPException(status_code=404, detail="Mascota no encontrada")
 
     #  Consultas 
-    consultas = ver_historial_consultas(db, id_mascota)
+    consultas = db.query(Consulta).filter(Consulta.id_mascota == id_mascota).all()
 
     #  Tratamientos 
     tratamientos = (
@@ -70,7 +61,7 @@ def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
         "FINALIZADO"
         if (
             t.finalizacion and
-            t.finalizacion < datetime.now()
+            t.finalizacion < datetime.now(timezone.utc)
         )
         else "ACTIVO"
     )
