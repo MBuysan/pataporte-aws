@@ -24,6 +24,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const seccionTrats  = document.getElementById("seccion-tratamientos");
   const panelHistorial = document.getElementById("historial");
 
+  const btnVacunas = document.getElementById("btn-vacunas");
+  const btnCert = document.getElementById("btn-certificado");
+
+  btnVacunas.onclick = () => {
+    window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=vet`;
+  };
+
+  btnCert.onclick = () => {
+    alert("La generación de certificados estará disponible en la próxima versión.");
+  };
+
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
   try {
     const m = await api.get(`/mascotas/${idMascota}`);

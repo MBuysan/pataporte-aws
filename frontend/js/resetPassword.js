@@ -60,9 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       mostrarMensaje(mensajeEl, "¡Contraseña actualizada correctamente!", "exito");
 
-      // Redirige al login después de 2 segundos
+      // Redirige al dashboard después de 2 segundos
       setTimeout(() => {
-        window.location.href = "index.html";
+        window.location.href = "dashboard.html";
       }, 2000);
 
     } catch (error) {

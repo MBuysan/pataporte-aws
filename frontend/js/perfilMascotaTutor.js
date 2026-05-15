@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const seccionTrat   = document.getElementById("seccion-tratamientos");
   const seccionHist   = document.getElementById("seccion-historial");
   const btnHist       = document.getElementById("btn-historial");
+  const btnVacunas    = document.getElementById("btn-vacunas");
+  const btnCert       = document.getElementById("btn-certificado");
   const modalDetalle     = document.getElementById("modal-detalle");
   const contenidoDetalle = document.getElementById("contenido-detalle");
   const cerrarDetalle    = document.getElementById("cerrar-modal-detalle");
@@ -23,6 +25,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     mostrarMensaje(mensajePagina, "No se especificó una mascota.", "error");
     return;
   }
+
+  // ── Listeners de Acciones Adicionales ─────────────────────────────────────
+  
+  btnVacunas.addEventListener("click", () => {
+    window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=tutor`;
+  });
+
+  btnCert.addEventListener("click", () => {
+    alert("Funcionalidad de descarga de certificado estará disponible próximamente.");
+  });
 
   // Carga en paralelo: datos de mascota + tratamientos activos
   await Promise.all([cargarMascota(), cargarTratamientos()]);
