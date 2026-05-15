@@ -120,7 +120,7 @@ def generar_codigo_acceso(db: Session, id_mascota: str):
     codigo = "".join(secrets.choice(caracteres) for _ in range(8))
 
     # Definir expiración (24 horas)
-    expiracion = datetime.utcnow() + timedelta(hours=24)
+    expiracion = datetime.now() + timedelta(hours=24)
 
     nuevo_codigo = CodigoAccesoMascota(
         id_mascota=id_mascota, codigo=codigo, fecha_expiracion=expiracion

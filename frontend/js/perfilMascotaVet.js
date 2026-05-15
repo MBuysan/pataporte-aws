@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (modoEdicion && !huboCambios()) {
 
       errorEl.textContent =
-        "No realizaste cambios en el tratamiento.";
+        "No se realizaron cambios en el tratamiento.";
 
       return;
     }

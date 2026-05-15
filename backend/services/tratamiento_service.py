@@ -72,7 +72,7 @@ def ver_tratamientos_activos(db: Session, id_mascota: str) -> list[Tratamiento]:
         .filter(
             Tratamiento.id_mascota == id_mascota,
             (Tratamiento.finalizacion == None) |
-            (Tratamiento.finalizacion > datetime.utcnow())
+            (Tratamiento.finalizacion > datetime.now())
         )
         .order_by(Tratamiento.inicio.desc())
         .all()
@@ -113,7 +113,7 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
 
     tratamiento = obtener_por_id(db, id_tratamiento)
     
-    if tratamiento.finalizacion and tratamiento.finalizacion < datetime.utcnow():
+    if tratamiento.finalizacion and tratamiento.finalizacion < datetime.now():
         raise HTTPException(
             status_code=400,
             detail="No se pueden editar tratamientos finalizados"
@@ -121,8 +121,6 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
         
     hubo_cambios = False
         
-   
-
     if (data.nombre is not None and data.nombre != tratamiento.nombre):
 
         colision = (
@@ -153,16 +151,20 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
         
         tratamiento.frecuencia = data.frecuencia
         hubo_cambios = True
-        
+    
+    
+    fecha_inicio = data.inicio or tratamiento.inicio
+    fecha_finalizacion= (data.finalizacion if data.finalizacion is not None else tratamiento.finalizacion)
+    
+    _check_fecha_finalizacion(fecha_finalizacion,fecha_inicio)
+    
     if data.inicio is not None and data.inicio != tratamiento.inicio:
 
-        _check_fecha_finalizacion(data.finalizacion, tratamiento.inicio)
         tratamiento.inicio = data.inicio
         hubo_cambios = True
         
     if (data.finalizacion is not None and data.finalizacion != tratamiento.finalizacion):  
         
-        _check_fecha_finalizacion(data.finalizacion, tratamiento.inicio)
         tratamiento.finalizacion = data.finalizacion
         hubo_cambios = True
         
@@ -174,7 +176,7 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
         )
         
     tratamiento.editado = True
-    tratamiento.fecha_edicion = datetime.utcnow()
+    tratamiento.fecha_edicion = datetime.now()
 
     db.commit()
     db.refresh(tratamiento)
@@ -184,7 +186,7 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
 
 def _check_fecha_finalizacion(finalizacion: datetime | None, inicio: datetime) -> None:
 
-    inicio = inicio or datetime.utcnow()
+    inicio = inicio or datetime.now()
     
     if finalizacion:
         
@@ -194,7 +196,7 @@ def _check_fecha_finalizacion(finalizacion: datetime | None, inicio: datetime) -
                 detail="La fecha de finalización no puede ser anterior a la fecha de inicio"
             )
 
-        if finalizacion < datetime.utcnow():
+        if finalizacion < datetime.now():
             raise HTTPException(
                 status_code=400,
                 detail="La fecha de finalización no puede ser anterior a la fecha actual"
