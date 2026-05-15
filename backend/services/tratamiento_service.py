@@ -49,7 +49,7 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate) -> Tr
         nombre=data.nombre,
         descripcion=data.descripcion,
         frecuencia = data.frecuencia,
-        inicio = inicio,
+        inicio = data.inicio,
         finalizacion= data.finalizacion
     )
 
@@ -144,14 +144,20 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
         tratamiento.nombre = data.nombre
         hubo_cambios = True
 
-    if data.descripcion is not None:  
+    if data.descripcion is not None and data.descripcion != tratamiento.descripcion:  
         
         tratamiento.descripcion = data.descripcion
         hubo_cambios = True
 
-    if data.frecuencia is not None: 
+    if data.frecuencia is not None and data.frecuencia != tratamiento.frecuencia: 
         
         tratamiento.frecuencia = data.frecuencia
+        hubo_cambios = True
+        
+    if data.inicio is not None and data.inicio != tratamiento.inicio:
+
+        _check_fecha_finalizacion(data.finalizacion, tratamiento.inicio)
+        tratamiento.inicio = data.inicio
         hubo_cambios = True
         
     if (data.finalizacion is not None and data.finalizacion != tratamiento.finalizacion):  

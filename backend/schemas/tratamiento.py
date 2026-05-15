@@ -29,6 +29,7 @@ class TratamientoUpdate(BaseModel):
     nombre:       Optional[str]      = None
     descripcion:  Optional[str]      = None
     frecuencia:   Optional[str]      = None
+    inicio:       Optional[datetime] = None
     finalizacion: Optional[datetime] = None
 
 
