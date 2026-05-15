@@ -2,22 +2,23 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  const params    = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
   const idMascota = params.get("id");
 
-  const nombreEl      = document.getElementById("nombre-mascota");
-  const detalleEl     = document.getElementById("detalle-mascota");
-  const fotoEl        = document.getElementById("foto-mascota");
+  const nombreEl = document.getElementById("nombre-mascota");
+  const detalleEl = document.getElementById("detalle-mascota");
+  const fotoEl = document.getElementById("foto-mascota");
   const mensajePagina = document.getElementById("mensaje-pagina");
-  const seccionTrat   = document.getElementById("seccion-tratamientos");
-  const seccionHist   = document.getElementById("seccion-historial");
-  const btnHist       = document.getElementById("btn-historial");
-  const modalDetalle     = document.getElementById("modal-detalle");
+  const seccionTrat = document.getElementById("seccion-tratamientos");
+  const seccionHist = document.getElementById("seccion-historial");
+  const btnHist = document.getElementById("btn-historial");
+  const modalDetalle = document.getElementById("modal-detalle");
   const contenidoDetalle = document.getElementById("contenido-detalle");
-  const cerrarDetalle    = document.getElementById("cerrar-modal-detalle");
-  const cerrarDetallBtn  = document.getElementById("cerrar-detalle-btn");
+  const cerrarDetalle = document.getElementById("cerrar-modal-detalle");
+  const cerrarDetallBtn = document.getElementById("cerrar-detalle-btn");
 
   let historialCargado = false;
+  const tutor = JSON.parse(localStorage.getItem("tutor"));
 
   if (!idMascota) {
     mostrarMensaje(mensajePagina, "No se especificó una mascota.", "error");
@@ -25,17 +26,62 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Carga en paralelo: datos de mascota + tratamientos activos
+  if (!tutor || !tutor.id_tutor) {
+    mostrarMensaje(mensajePagina, "Debés iniciar sesión para ver esta mascota.", "error");
+    return;
+  }
+
+  const tieneAcceso = await validarAccesoTutor();
+
+  if (!tieneAcceso) {
+    return;
+  }
+
+  // Carga en paralelo: datos de mascota + tratamientos activos
   await Promise.all([cargarMascota(), cargarTratamientos()]);
 
+  async function validarAccesoTutor() {
+  try {
+    const mascotas = await api.get(`/tutores/${tutor.id_tutor}/mascotas`);
+
+    const puedeVer = mascotas.some((m) => m.id_mascota === idMascota);
+
+    if (!puedeVer) {
+      nombreEl.textContent = "Acceso denegado";
+      detalleEl.textContent = "";
+      seccionTrat.innerHTML = "";
+      seccionHist.innerHTML = "";
+      btnHist.style.display = "none";
+
+      mostrarMensaje(
+        mensajePagina,
+        "No tenés permisos para ver la información de esta mascota.",
+        "error"
+      );
+
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    mostrarMensaje(
+      mensajePagina,
+      `No se pudo validar el acceso: ${error.message}`,
+      "error"
+    );
+
+    return false;
+  }
+}
 
   // ── Datos de la mascota ───────────────────────────────────────────────────
 
   async function cargarMascota() {
     try {
       const m = await api.get(`/mascotas/${idMascota}`);
-      nombreEl.textContent  = m.nombre;
+      nombreEl.textContent = m.nombre;
       detalleEl.textContent = [m.especie, m.raza, m.sexo !== "desconocido" ? m.sexo : null]
-                              .filter(Boolean).join(" · ");
+        .filter(Boolean).join(" · ");
       if (m.foto_url) {
         fotoEl.outerHTML = `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`;
       } else {
@@ -70,7 +116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <div class="item-card">
             <strong>${t.nombre}</strong>
             ${t.descripcion ? `<small>${t.descripcion}</small>` : ""}
-            ${t.frecuencia  ? `<small style="color:#4a90e2;">🕐 ${t.frecuencia}</small>` : ""}
+            ${t.frecuencia ? `<small style="color:#4a90e2;">🕐 ${t.frecuencia}</small>` : ""}
             <small>Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}</small>
           </div>`;
       }).join("");
@@ -89,26 +135,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnHist.textContent = abierto ? "Historial clínico" : "Cerrar historial";
 
     if (!abierto && !historialCargado) {
-      seccionHist.innerHTML = `<p class="cargando">Cargando...</p>`;
+      seccionHist.innerHTML = `<p class="cargando">Cargando historial de consultas...</p>`;
+
       try {
-        const consultas  = await api.get(`/historial/${idMascota}/consultas`);
+        const consultas = await api.get(`/historial/${idMascota}/consultas`);
         historialCargado = true;
 
-        seccionHist.innerHTML = consultas.length === 0
-          ? `<p class="sin-datos">No hay consultas registradas.</p>`
-          : consultas.map(c => {
-              const f = new Date(c.fecha_hora);
-              const fecha = f.toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-                          + ", " + f.toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit" });
-              return `
-                <button class="fila-consulta" data-id="${c.id_consulta}">
-                  <span class="consulta-fecha">${fecha}</span>
-                  <span class="consulta-motivo">${c.motivo}</span>
-                  <span class="consulta-flecha">›</span>
-                </button>`;
-            }).join("");
+        if (!consultas || consultas.length === 0) {
+          seccionHist.innerHTML = `<p class="sin-datos">No hay consultas registradas.</p>`;
+          return;
+        }
+
+        consultas.sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+
+        seccionHist.innerHTML = `
+        <p style="
+          font-size: 14px;
+          font-weight: 700;
+          color: #a6a6a6;
+          margin: 16px 0 10px 2px;
+          letter-spacing: 0.5px;
+        ">
+          CONSULTAS
+        </p>
+
+        ${consultas.map(c => {
+          const f = new Date(c.fecha_hora);
+          const fecha = f.toLocaleDateString("es-UY", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
+
+          const hora = f.toLocaleTimeString("es-UY", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          return `
+            <button class="fila-consulta" data-id="${c.id_consulta}">
+              <span style="background:#e3f2fd;color:#1976d2;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;white-space:nowrap;">
+                CONSULTA
+              </span>
+              <span class="consulta-motivo">
+                <b>${fecha}, ${hora}</b> — ${c.motivo}
+              </span>
+              <span class="consulta-flecha">›</span>
+            </button>`;
+        }).join("")}
+      `;
       } catch (e) {
-        seccionHist.innerHTML = `<p class="error-seccion">${e.message}</p>`;
+        seccionHist.innerHTML = `
+        <p class="error-seccion">No se pudo cargar el historial de consultas: ${e.message}</p>
+      `;
       }
     }
   });
@@ -122,7 +201,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ── Modal detalle consulta (solo lectura) ─────────────────────────────────
 
-  cerrarDetalle.addEventListener("click",   () => cerrarModalDetalle());
+  cerrarDetalle.addEventListener("click", () => cerrarModalDetalle());
   cerrarDetallBtn.addEventListener("click", () => cerrarModalDetalle());
   modalDetalle.addEventListener("click", (e) => {
     if (e.target === modalDetalle) cerrarModalDetalle();
@@ -159,8 +238,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="detalle-campo">
           <p class="detalle-etiqueta">Diagnóstico</p>
           ${c.diagnostico
-            ? `<p class="detalle-valor">${c.diagnostico}</p>`
-            : `<p class="detalle-vacio">No registrado</p>`}
+          ? `<p class="detalle-valor">${c.diagnostico}</p>`
+          : `<p class="detalle-vacio">No registrado</p>`}
         </div>
         ${secDosis}`;
     } catch (error) {
