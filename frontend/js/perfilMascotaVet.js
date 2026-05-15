@@ -1,30 +1,34 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
-  let idConsultaActual  = null;
-  let vacunasCache      = [];
-  let carnetCache       = [];
+  let idConsultaActual = null;
+  let vacunasCache = [];
+  let carnetCache = [];
   let vacunasPendientes = new Set();
-  let dosisPendientes   = [];
-  let historialCargado  = false;
+  let dosisPendientes = [];
+  let historialCargado = false;
 
   const idMascota = new URLSearchParams(location.search).get("id");
 
-  const nombreEl  = document.getElementById("nombre");
+  const nombreEl = document.getElementById("nombre");
   const detalleEl = document.getElementById("detalle");
-  const fotoEl    = document.getElementById("foto");
+  const fotoEl = document.getElementById("foto");
 
-  const modalConsulta   = document.getElementById("modal-consulta");
+  const modalConsulta = document.getElementById("modal-consulta");
   const modalTratamiento = document.getElementById("modal-tratamiento");
-  const formConsulta    = document.getElementById("form-consulta");
-  const vacunasDiv      = document.getElementById("vacunas");
+  const formConsulta = document.getElementById("form-consulta");
+  const vacunasDiv = document.getElementById("vacunas");
 
-  const seccionTrats  = document.getElementById("seccion-tratamientos");
+  const seccionTrats = document.getElementById("seccion-tratamientos");
   const panelHistorial = document.getElementById("historial");
+
+  const modalDetalleConsulta = document.getElementById("modal-detalle-consulta");
+  const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
+  const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
 
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
   try {
     const m = await api.get(`/mascotas/${idMascota}`);
-    nombreEl.textContent  = m.nombre;
+    nombreEl.textContent = m.nombre;
     detalleEl.textContent = `${m.especie}${m.raza ? " · " + m.raza : ""}`;
     if (m.foto_url) {
       fotoEl.outerHTML = `<img src="${m.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
@@ -65,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="card">
           <div class="card-titulo">${t.nombre}</div>
           ${t.descripcion ? `<div class="card-desc">${t.descripcion}</div>` : ""}
-          ${t.frecuencia  ? `<div class="card-freq">🕐 ${t.frecuencia}</div>` : ""}
+          ${t.frecuencia ? `<div class="card-freq">🕐 ${t.frecuencia}</div>` : ""}
           <div class="card-meta">Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}</div>
         </div>`;
     }).join("");
@@ -74,12 +78,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── MODAL TRATAMIENTO ───────────────────────────────────────────────
   document.getElementById("btn-nuevo-tratamiento").onclick = () => {
     // limpiar formulario
-    document.getElementById("trat-nombre").value       = "";
-    document.getElementById("trat-descripcion").value  = "";
-    document.getElementById("trat-frecuencia").value   = "";
-    document.getElementById("trat-inicio").value       = "";
+    document.getElementById("trat-nombre").value = "";
+    document.getElementById("trat-descripcion").value = "";
+    document.getElementById("trat-frecuencia").value = "";
+    document.getElementById("trat-inicio").value = "";
     document.getElementById("trat-finalizacion").value = "";
-    document.getElementById("trat-error").textContent  = "";
+    document.getElementById("trat-error").textContent = "";
     modalTratamiento.classList.add("activo");
     document.getElementById("trat-nombre").focus();
   };
@@ -111,19 +115,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       const fechaInicio = new Date(inicio);
       const fechaFin = new Date(finalizacion);
 
-    if (fechaFin < fechaInicio) {
-      errorEl.textContent =
-        "La fecha de finalización no puede ser anterior a la fecha de inicio.";
-      return;
+      if (fechaFin < fechaInicio) {
+        errorEl.textContent =
+          "La fecha de finalización no puede ser anterior a la fecha de inicio.";
+        return;
       }
-    } 
+    }
 
     const payload = {
       nombre,
-      descripcion:  document.getElementById("trat-descripcion").value.trim()  || null,
-      frecuencia:   document.getElementById("trat-frecuencia").value.trim()   || null,
-      inicio:       document.getElementById("trat-inicio").value              || null,
-      finalizacion: document.getElementById("trat-finalizacion").value        || null,
+      descripcion: document.getElementById("trat-descripcion").value.trim() || null,
+      frecuencia: document.getElementById("trat-frecuencia").value.trim() || null,
+      inicio: document.getElementById("trat-inicio").value || null,
+      finalizacion: document.getElementById("trat-finalizacion").value || null,
     };
 
     try {
@@ -138,10 +142,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── MODAL CONSULTA ──────────────────────────────────────────────────
   document.getElementById("btn-consulta").onclick = async () => {
     vacunasPendientes = new Set();
-    dosisPendientes   = [];
-    idConsultaActual  = null;
-    carnetCache       = [];
-    vacunasCache      = [];
+    dosisPendientes = [];
+    idConsultaActual = null;
+    carnetCache = [];
+    vacunasCache = [];
 
     modalConsulta.classList.add("activo");
 
@@ -158,6 +162,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (e.target === modalConsulta) modalConsulta.classList.remove("activo");
   });
 
+  if (modalDetalleConsulta && cerrarModalDetalleConsulta) {
+    cerrarModalDetalleConsulta.onclick = () =>
+      modalDetalleConsulta.classList.remove("activo");
+
+    modalDetalleConsulta.addEventListener("click", (e) => {
+      if (e.target === modalDetalleConsulta) {
+        modalDetalleConsulta.classList.remove("activo");
+      }
+    });
+  }
+
   // ───────── RENDER VACUNAS ──────────────────────────────────────────────────
   function renderVacunas() {
     const esquema = carnetCache?.[0];
@@ -172,7 +187,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("btn-add-vacuna").onclick = () => {
       lista.innerHTML = "";
-      const yaTiene     = new Set((esquema?.vacunas || []).map(v => v.id_vacuna));
+      const yaTiene = new Set((esquema?.vacunas || []).map(v => v.id_vacuna));
       const disponibles = vacunasCache.filter(v => !yaTiene.has(v.id_vacuna));
       disponibles.forEach(v => {
         const btn = document.createElement("button");
@@ -214,8 +229,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.preventDefault();
     try {
       const res = await api.post("/historial/consultas", {
-        id_mascota:  idMascota,
-        motivo:      document.getElementById("motivo").value,
+        id_mascota: idMascota,
+        motivo: document.getElementById("motivo").value,
         diagnostico: document.getElementById("diag").value
       });
       idConsultaActual = res?.id_consulta;
@@ -230,8 +245,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!vetId || vetId === "null" || vetId === "undefined") throw new Error("Veterinaria no válida en sesión");
         await api.post("/vacunas/dosis", {
           id_esquema_vacuna: dosisObj.id_esquema_vacuna,
-          fecha_aplicacion:  dosisObj.fecha_aplicacion,
-          id_consulta:       idConsultaActual
+          fecha_aplicacion: dosisObj.fecha_aplicacion,
+          id_consulta: idConsultaActual
         }, { headers: { "x-veterinaria-id": vetId } });
       }
 
@@ -259,63 +274,90 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   async function cargarHistorial() {
-  panelHistorial.innerHTML = `<p class="cargando">Cargando...</p>`;
-  try {
-    const response = await api.get(`/historial/${idMascota}/unificado`);
-    const eventos = response.eventos;
-    historialCargado = true;
+    panelHistorial.innerHTML = `<p class="cargando">Cargando historial de consultas...</p>`;
 
-    if (eventos.length === 0) {
-      panelHistorial.innerHTML = `<p class="sin-datos">No hay eventos en el historial.</p>`;
-      return;
+    try {
+      // KEY-47: usar el endpoint de consultas, no el historial unificado.
+      const consultas = await api.get(`/historial/${idMascota}/consultas`);
+      historialCargado = true;
+
+      if (!consultas || consultas.length === 0) {
+        panelHistorial.innerHTML = `<p class="sin-datos">No hay consultas registradas.</p>`;
+        return;
+      }
+
+      // Ordenar de más reciente a más antigua.
+      consultas.sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+
+      // Adaptamos cada consulta al formato que ya espera renderEvento().
+      panelHistorial.innerHTML = `
+      <p style="
+        font-size: 14px;
+        font-weight: 700;
+        color: #a6a6a6;
+        margin: 16px 0 10px 2px;
+        letter-spacing: 0.5px;
+      ">
+        CONSULTAS
+      </p>
+
+  ${consultas.map((consulta) =>
+        renderEvento({
+          tipo: "consulta",
+          fecha: consulta.fecha_hora,
+          id: consulta.id_consulta,
+          motivo: consulta.motivo,
+        })
+      ).join("")}
+`;
+
+      // Hacer consultas clickeables.
+      panelHistorial.querySelectorAll('[data-tipo="consulta"]').forEach(btn => {
+        btn.onclick = async () => {
+          try {
+            const detalle = await api.get(`/historial/${idMascota}/detalle/${btn.dataset.id}`);
+            mostrarDetalleConsulta(detalle);
+          } catch (err) {
+            panelHistorial.innerHTML += `
+  <p class="error-panel">No se pudo cargar el detalle de la consulta: ${err.message}</p>
+`;
+          }
+        };
+      });
+
+    } catch (e) {
+      panelHistorial.innerHTML = `
+      <p class="error-panel">No se pudo cargar el historial de consultas: ${e.message}</p>
+    `;
     }
+  }
 
-    panelHistorial.innerHTML = eventos.map(e => renderEvento(e)).join("");
-
-    // Hacer consultas clickeables
-    panelHistorial.querySelectorAll('[data-tipo="consulta"]').forEach(btn => {
-      btn.onclick = async () => {
-        // Abrir modal con detalle de consulta
-        try {
-          const detalle = await api.get(`/historial/${idMascota}/detalle/${btn.dataset.id}`);
-          mostrarDetalleConsulta(detalle);
-        } catch (err) {
-          alert(`Error: ${err.message}`);
-        }
-      };
+  function renderEvento(e) {
+    const fecha = new Date(e.fecha).toLocaleDateString("es-UY", {
+      day: "numeric", month: "short", year: "numeric"
+    });
+    const hora = new Date(e.fecha).toLocaleTimeString("es-UY", {
+      hour: "2-digit", minute: "2-digit"
     });
 
-  } catch (e) {
-    panelHistorial.innerHTML = `<p class="error-panel">${e.message}</p>`;
-  }
-}
-
-function renderEvento(e) {
-  const fecha = new Date(e.fecha).toLocaleDateString("es-UY", { 
-    day: "numeric", month: "short", year: "numeric" 
-  });
-  const hora = new Date(e.fecha).toLocaleTimeString("es-UY", { 
-    hour: "2-digit", minute: "2-digit" 
-  });
-
-  if (e.tipo === "consulta") {
-    return `
+    if (e.tipo === "consulta") {
+      return `
       <button class="fila" data-tipo="consulta" data-id="${e.id}" style="display:flex;align-items:center;gap:10px;width:100%;">
         <span style="background:#e3f2fd;color:#1976d2;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;white-space:nowrap;">CONSULTA</span>
         <span style="flex:1;text-align:left;"><b>${fecha}, ${hora}</b> — ${e.motivo}</span>
         <span style="color:#ccc;font-size:18px;">›</span>
       </button>`;
-  } else {
-    // tratamiento
-    const fin = e.finalizacion 
-      ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-      : "Sin fecha de fin";
-    const estado = e.finalizacion && new Date(e.finalizacion) < new Date() 
-      ? "FINALIZADO" 
-      : "ACTIVO";
-    const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
-    
-    return `
+    } else {
+      // tratamiento
+      const fin = e.finalizacion
+        ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
+        : "Sin fecha de fin";
+      const estado = e.finalizacion && new Date(e.finalizacion) < new Date()
+        ? "FINALIZADO"
+        : "ACTIVO";
+      const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
+
+      return `
       <div class="card">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
           <span style="background:#fff3e0;color:${colorEstado};padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;">TRATAMIENTO · ${estado}</span>
@@ -326,19 +368,59 @@ function renderEvento(e) {
         ${e.frecuencia ? `<div class="card-freq">🕐 ${e.frecuencia}</div>` : ""}
         <div class="card-meta">Finalización: ${fin}</div>
       </div>`;
+    }
   }
-}
 
-function mostrarDetalleConsulta(detalle) {
-  // implementar modal simple o reutilizar el de consulta
-  const html = `
-    <p><b>Motivo:</b> ${detalle.motivo}</p>
-    <p><b>Diagnóstico:</b> ${detalle.diagnostico || "No registrado"}</p>
-    ${detalle.dosis?.length > 0 ? `
-      <p><b>Vacunas:</b></p>
-      <ul>${detalle.dosis.map(d => `<li>${d.nombre_vacuna} (dosis ${d.numero_dosis})</li>`).join("")}</ul>
-    ` : ""}
+  function mostrarDetalleConsulta(detalle) {
+    const fecha = new Date(detalle.fecha_hora).toLocaleString("es-UY", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const vacunas = detalle.dosis?.length > 0
+      ? `
+      <hr style="border:none;border-top:1px solid #eee;margin:16px 0;" />
+      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
+        Vacunas aplicadas
+      </p>
+      ${detalle.dosis.map(d => `
+        <div class="card">
+          <div class="card-titulo">${d.nombre_vacuna}</div>
+          <div class="card-meta">Dosis ${d.numero_dosis} — ${d.fecha_aplicacion}</div>
+        </div>
+      `).join("")}
+    `
+      : "";
+
+    contenidoDetalleConsulta.innerHTML = `
+    <div style="margin-bottom:14px;">
+      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Fecha</p>
+      <p style="font-size:15px;color:#222;">${fecha}</p>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Veterinario</p>
+      <p style="font-size:15px;color:#222;">${detalle.id_veterinario}</p>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Motivo</p>
+      <p style="font-size:15px;color:#222;">${detalle.motivo}</p>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Diagnóstico</p>
+      <p style="font-size:15px;color:#222;">
+        ${detalle.diagnostico || "No registrado"}
+      </p>
+    </div>
+
+    ${vacunas}
   `;
-  alert(html); 
-}
+
+    modalDetalleConsulta.classList.add("activo");
+  }
 });
