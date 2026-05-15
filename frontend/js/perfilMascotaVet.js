@@ -539,9 +539,7 @@ function renderEvento(e) {
     const fin = e.finalizacion 
       ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
       : "Sin fecha de fin";
-    const estado = e.finalizacion && new Date(e.finalizacion) < new Date() 
-      ? "FINALIZADO" 
-      : "ACTIVO";
+    const estado = e.estado;
     const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
     
     return `

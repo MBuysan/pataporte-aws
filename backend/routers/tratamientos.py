@@ -64,5 +64,5 @@ def finalizar_tratamiento(
     id_tratamiento: str,
     db: Session = Depends(get_db),
 ):
-    data = TratamientoUpdate(finalizacion=datetime.now(timezone.utc))
+    data = TratamientoUpdate(finalizacion=datetime.utcnow())
     return tratamiento_service.actualizar_tratamiento(db, id_tratamiento, data)

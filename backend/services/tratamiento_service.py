@@ -72,7 +72,7 @@ def ver_tratamientos_activos(db: Session, id_mascota: str) -> list[Tratamiento]:
         .filter(
             Tratamiento.id_mascota == id_mascota,
             (Tratamiento.finalizacion == None) |
-            (Tratamiento.finalizacion > datetime.now(timezone.utc))
+            (Tratamiento.finalizacion > datetime.utcnow())
         )
         .order_by(Tratamiento.inicio.desc())
         .all()
@@ -113,7 +113,7 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
 
     tratamiento = obtener_por_id(db, id_tratamiento)
     
-    if tratamiento.finalizacion and tratamiento.finalizacion < datetime.now(timezone.utc):
+    if tratamiento.finalizacion and tratamiento.finalizacion < datetime.utcnow():
         raise HTTPException(
             status_code=400,
             detail="No se pueden editar tratamientos finalizados"
@@ -176,7 +176,7 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
         )
         
     tratamiento.editado = True
-    tratamiento.fecha_edicion = datetime.now(timezone.utc)
+    tratamiento.fecha_edicion = datetime.utcnow()
 
     db.commit()
     db.refresh(tratamiento)
@@ -186,18 +186,14 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
 
 def _check_fecha_finalizacion(finalizacion: datetime | None, inicio: datetime) -> None:
 
-    inicio = inicio or datetime.now(timezone.utc)
-    
-    if finalizacion:
-        
-        if finalizacion < inicio:
-            raise HTTPException(
-                status_code=400,
-                detail="La fecha de finalización no puede ser anterior a la fecha de inicio"
-            )
+    if finalizacion < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de finalización no puede ser anterior a la actual"
+        )
 
-        if finalizacion < datetime.now(timezone.utc):
-            raise HTTPException(
-                status_code=400,
-                detail="La fecha de finalización no puede ser anterior a la fecha actual"
-            )
+    if inicio and finalizacion < inicio:
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de finalización no puede ser anterior al inicio"
+        )

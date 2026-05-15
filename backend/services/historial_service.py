@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -65,26 +65,27 @@ def obtener_historial_unificado(db: Session, id_mascota: str) -> list[dict]:
         })
         
     for t in tratamientos:
+        
+        estado = (
+        "FINALIZADO"
+        if (
+            t.finalizacion and
+            t.finalizacion < datetime.now()
+        )
+        else "ACTIVO"
+    )
+
         eventos.append({
-            "tipo": "tratamiento", 
+            "tipo": "tratamiento",
             "fecha": t.inicio,
-            "id":           t.id_tratamiento,
-            "nombre":       t.nombre,
-            "descripcion":  t.descripcion,
-            "frecuencia":   t.frecuencia,
+            "id": t.id_tratamiento,
+            "nombre": t.nombre,
+            "descripcion": t.descripcion,
+            "frecuencia": t.frecuencia,
             "finalizacion": t.finalizacion,
-        })
+            "estado": estado,
+            })
         
-    """
-    no se como funcionan los esquemas, queda comentado de momento
-    for e in esquemas:
-        eventos.append({
-            "tipo": "tratamiento", 
-            "fecha": t.inicio,
-            "datos": t
-        }) 
-        
-    """
 
     #ordena todos los eventos del mas reciente al primero
     eventos.sort(key=lambda x: x["fecha"], reverse=True)
