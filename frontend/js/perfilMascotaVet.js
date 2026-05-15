@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   let vacunasPendientes = new Set();
   let dosisPendientes   = [];
   let historialCargado  = false;
+  let modoEdicion = false;
+  let tratamientoEditando = null;
+  let valoresOriginales = null;
 
   const idMascota = new URLSearchParams(location.search).get("id");
 
@@ -50,90 +53,316 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function renderTratamientos(data) {
-    if (data.length === 0) {
-      seccionTrats.innerHTML = `<p class="sin-datos">Esta mascota no tiene tratamientos activos.</p>`;
-      return;
-    }
-    seccionTrats.innerHTML = data.map(t => {
-      const inicio = t.inicio
-        ? new Date(t.inicio).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-        : "—";
-      const fin = t.finalizacion
-        ? new Date(t.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-        : "Sin fecha de fin";
-      return `
-        <div class="card">
-          <div class="card-titulo">${t.nombre}</div>
-          ${t.descripcion ? `<div class="card-desc">${t.descripcion}</div>` : ""}
-          ${t.frecuencia  ? `<div class="card-freq">🕐 ${t.frecuencia}</div>` : ""}
-          <div class="card-meta">Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}</div>
-        </div>`;
-    }).join("");
+
+  if (data.length === 0) {
+    seccionTrats.innerHTML =
+      `<p class="sin-datos">Esta mascota no tiene tratamientos activos.</p>`;
+    return;
+  }
+
+  seccionTrats.innerHTML = data.map(t => {
+
+    const inicio = t.inicio
+      ? new Date(t.inicio).toLocaleDateString("es-UY", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        })
+      : "—";
+
+    const fin = t.finalizacion
+      ? new Date(t.finalizacion).toLocaleDateString("es-UY", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        })
+      : "Sin fecha de fin";
+
+    return `
+      <div class="card">
+
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">
+
+          <div style="flex:1;">
+
+            <div class="card-titulo">${t.nombre}</div>
+
+            ${t.descripcion
+              ? `<div class="card-desc">${t.descripcion}</div>`
+              : ""}
+
+            ${t.frecuencia
+              ? `<div class="card-freq">🕐 ${t.frecuencia}</div>`
+              : ""}
+
+            <div class="card-meta">
+              Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}
+            </div>
+
+          </div>
+
+          <button
+            class="sec btn-editar-trat"
+            data-id="${t.id_tratamiento}"
+          >
+            Editar
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
+
+  // listeners despues de renderizar
+
+  document.querySelectorAll(".btn-editar-trat").forEach(btn => {
+
+    btn.onclick = () => {
+
+      const tratamiento = data.find(
+        t => t.id_tratamiento === btn.dataset.id
+      );
+
+      abrirModalEdicion(tratamiento);
+    };
+  });
+}
+
+  function convertirUTCALocalInput(fechaUTC) {
+
+  const fecha = new Date(fechaUTC);
+
+  const year = fecha.getFullYear();
+  const month = String(fecha.getMonth() + 1).padStart(2, "0");
+  const day = String(fecha.getDate()).padStart(2, "0");
+
+  const hours = String(fecha.getHours()).padStart(2, "0");
+  const minutes = String(fecha.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  function abrirModalEdicion(tratamiento) {
+
+  modoEdicion = true;
+  tratamientoEditando = tratamiento;
+
+  document.querySelector("#modal-tratamiento h3").textContent =
+    "Editar tratamiento";
+
+  document.getElementById("btn-guardar-trat").textContent =
+    "Guardar cambios";
+
+  document.getElementById("trat-nombre").value =
+    tratamiento.nombre || "";
+
+  document.getElementById("trat-descripcion").value =
+    tratamiento.descripcion || "";
+
+  document.getElementById("trat-frecuencia").value =
+    tratamiento.frecuencia || "";
+
+  document.getElementById("trat-inicio").value =
+    tratamiento.inicio
+      ? convertirUTCALocalInput(tratamiento.inicio)
+      : "";
+
+  document.getElementById("trat-finalizacion").value =
+    tratamiento.finalizacion
+      ? convertirUTCALocalInput(tratamiento.finalizacion)
+      : "";
+
+  valoresOriginales = obtenerValoresFormulario();
+
+  document.getElementById("trat-error").textContent = "";
+
+  modalTratamiento.classList.add("activo");
+  }
+
+    function obtenerValoresFormulario() {
+
+  return {
+    nombre: document.getElementById("trat-nombre").value.trim(),
+
+    descripcion:
+      document.getElementById("trat-descripcion").value.trim(),
+
+    frecuencia:
+      document.getElementById("trat-frecuencia").value.trim(),
+
+    inicio:
+      document.getElementById("trat-inicio").value,
+
+    finalizacion:
+      document.getElementById("trat-finalizacion").value
+  };
+  }
+
+  function huboCambios() {
+
+  const actuales = obtenerValoresFormulario();
+
+  return JSON.stringify(actuales)
+    !== JSON.stringify(valoresOriginales);
   }
 
   // ───────── MODAL TRATAMIENTO ───────────────────────────────────────────────
   document.getElementById("btn-nuevo-tratamiento").onclick = () => {
+
+    modoEdicion = false;
+    tratamientoEditando = null;
+    valoresOriginales = null;
+
+    document.querySelector("#modal-tratamiento h3").textContent =
+      "Nuevo tratamiento";
+
+    document.getElementById("btn-guardar-trat").textContent =
+      "Guardar tratamiento";
+
     // limpiar formulario
-    document.getElementById("trat-nombre").value       = "";
-    document.getElementById("trat-descripcion").value  = "";
-    document.getElementById("trat-frecuencia").value   = "";
-    document.getElementById("trat-inicio").value       = "";
+    document.getElementById("trat-nombre").value = "";
+    document.getElementById("trat-descripcion").value = "";
+    document.getElementById("trat-frecuencia").value = "";
+    document.getElementById("trat-inicio").value = "";
     document.getElementById("trat-finalizacion").value = "";
-    document.getElementById("trat-error").textContent  = "";
+
+    document.getElementById("trat-error").textContent = "";
+
     modalTratamiento.classList.add("activo");
+
     document.getElementById("trat-nombre").focus();
   };
 
-  document.getElementById("cerrar-modal-tratamiento").onclick = () =>
+  document.getElementById("cerrar-modal-tratamiento").onclick = () => {
     modalTratamiento.classList.remove("activo");
+  };
 
-  // cerrar al hacer click fuera del modal
+  // cerrar haciendo click fuera
+
   modalTratamiento.addEventListener("click", (e) => {
-    if (e.target === modalTratamiento) modalTratamiento.classList.remove("activo");
+
+    if (e.target === modalTratamiento) {
+      modalTratamiento.classList.remove("activo");
+    }
   });
 
   document.getElementById("btn-guardar-trat").onclick = async () => {
+
     const errorEl = document.getElementById("trat-error");
+
     errorEl.textContent = "";
 
-    const nombre = document.getElementById("trat-nombre").value.trim();
+    const nombre =
+      document.getElementById("trat-nombre").value.trim();
+
     if (!nombre) {
-      errorEl.textContent = "El nombre del tratamiento es obligatorio.";
+
+      errorEl.textContent =
+        "El nombre del tratamiento es obligatorio.";
+
       document.getElementById("trat-nombre").focus();
+
       return;
     }
 
-    const inicio = document.getElementById("trat-inicio").value;
-    const finalizacion = document.getElementById("trat-finalizacion").value;
+    const inicio =
+      document.getElementById("trat-inicio").value;
+
+    const finalizacion =
+      document.getElementById("trat-finalizacion").value;
+
+    // validacion frontend fechas
 
     if (inicio && finalizacion) {
 
       const fechaInicio = new Date(inicio);
       const fechaFin = new Date(finalizacion);
 
-    if (fechaFin < fechaInicio) {
-      errorEl.textContent =
-        "La fecha de finalización no puede ser anterior a la fecha de inicio.";
-      return;
+      if (fechaFin < fechaInicio) {
+
+        errorEl.textContent =
+          "La fecha de finalización no puede ser anterior a la fecha de inicio.";
+
+        return;
       }
-    } 
+    }
+
+    // validar cambios en modo edicion
+
+    if (modoEdicion && !huboCambios()) {
+
+      errorEl.textContent =
+        "No se realizaron cambios en el tratamiento.";
+
+      return;
+    }
+
+    const inicioValue =
+      document.getElementById("trat-inicio").value;
+
+    const finalizacionValue =
+      document.getElementById("trat-finalizacion").value;
 
     const payload = {
+
       nombre,
-      descripcion:  document.getElementById("trat-descripcion").value.trim()  || null,
-      frecuencia:   document.getElementById("trat-frecuencia").value.trim()   || null,
-      inicio:       document.getElementById("trat-inicio").value              || null,
-      finalizacion: document.getElementById("trat-finalizacion").value        || null,
+
+      descripcion:
+        document.getElementById("trat-descripcion")
+          .value
+          .trim() || null,
+
+      frecuencia:
+        document.getElementById("trat-frecuencia")
+          .value
+          .trim() || null,
+
+      inicio:
+        inicioValue
+          ? new Date(inicioValue).toISOString()
+          : null,
+
+      finalizacion:
+        finalizacionValue
+          ? new Date(finalizacionValue).toISOString()
+          : null,
     };
 
     try {
-      await api.post(`/tratamientos/${idMascota}`, payload);
+
+      // EDITAR
+
+      if (modoEdicion) {
+
+        await api.patch(
+          `/tratamientos/${tratamientoEditando.id_tratamiento}`,
+          payload
+        );
+
+      }
+
+      // CREAR
+
+      else {
+
+        await api.post(
+          `/tratamientos/${idMascota}`,
+          payload
+        );
+      }
+
       modalTratamiento.classList.remove("activo");
-      await cargarTratamientos();   // refresca la lista en la página
+
+      await cargarTratamientos();
+
     } catch (err) {
-      errorEl.textContent = err.message || "Error al guardar el tratamiento.";
+
+      errorEl.textContent =
+        err.message || "Error al guardar el tratamiento.";
     }
-  };
+};
 
   // ───────── MODAL CONSULTA ──────────────────────────────────────────────────
   document.getElementById("btn-consulta").onclick = async () => {
@@ -310,9 +539,7 @@ function renderEvento(e) {
     const fin = e.finalizacion 
       ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
       : "Sin fecha de fin";
-    const estado = e.finalizacion && new Date(e.finalizacion) < new Date() 
-      ? "FINALIZADO" 
-      : "ACTIVO";
+    const estado = e.estado;
     const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
     
     return `
@@ -340,5 +567,5 @@ function mostrarDetalleConsulta(detalle) {
     ` : ""}
   `;
   alert(html); 
-}
+};
 });
