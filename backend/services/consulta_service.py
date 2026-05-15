@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -34,7 +34,7 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
     consulta = Consulta(
         id_mascota           = data.id_mascota,
         id_veterinario       = id_veterinario,
-        fecha_hora           = datetime.now(),
+        fecha_hora           = datetime.now(timezone.utc),
         motivo               = data.motivo,
         diagnostico          = data.diagnostico,
         tratamiento_indicado = None,

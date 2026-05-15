@@ -130,6 +130,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 }
 
+  function convertirUTCALocalInput(fechaUTC) {
+
+  const fecha = new Date(fechaUTC);
+
+  const year = fecha.getFullYear();
+  const month = String(fecha.getMonth() + 1).padStart(2, "0");
+  const day = String(fecha.getDate()).padStart(2, "0");
+
+  const hours = String(fecha.getHours()).padStart(2, "0");
+  const minutes = String(fecha.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
 
   function abrirModalEdicion(tratamiento) {
 
@@ -153,12 +166,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("trat-inicio").value =
     tratamiento.inicio
-      ? tratamiento.inicio.slice(0, 16)
+      ? convertirUTCALocalInput(tratamiento.inicio)
       : "";
 
   document.getElementById("trat-finalizacion").value =
     tratamiento.finalizacion
-      ? tratamiento.finalizacion.slice(0, 16)
+      ? convertirUTCALocalInput(tratamiento.finalizacion)
       : "";
 
   valoresOriginales = obtenerValoresFormulario();
@@ -286,6 +299,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    const inicioValue =
+      document.getElementById("trat-inicio").value;
+
+    const finalizacionValue =
+      document.getElementById("trat-finalizacion").value;
+
     const payload = {
 
       nombre,
@@ -301,12 +320,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           .trim() || null,
 
       inicio:
-        document.getElementById("trat-inicio")
-          .value || null,
+        inicioValue
+          ? new Date(inicioValue).toISOString()
+          : null,
 
       finalizacion:
-        document.getElementById("trat-finalizacion")
-          .value || null,
+        finalizacionValue
+          ? new Date(finalizacionValue).toISOString()
+          : null,
     };
 
     try {
