@@ -24,6 +24,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const seccionTrats = document.getElementById("seccion-tratamientos");
   const panelHistorial = document.getElementById("historial");
 
+  const btnVacunas = document.getElementById("btn-vacunas");
+  const btnCert = document.getElementById("btn-certificado");
+
+  btnVacunas.onclick = () => {
+    window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=vet`;
+  };
+
+  btnCert.onclick = () => {
+    alert("La generación de certificados estará disponible en la próxima versión.");
+  };
   const modalDetalleConsulta = document.getElementById("modal-detalle-consulta");
   const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");

@@ -73,6 +73,10 @@
   <body>
     <div class="contenedor">
 
+      <div style="margin-bottom: 16px;">
+        <a href="dashboard.html" style="color: #4a90e2; text-decoration: none; font-size: 14px; font-weight: bold;">← Volver a Mis Mascotas</a>
+      </div>
+
       <div class="header-mascota">
         <div class="foto-placeholder" id="foto-mascota">?</div>
         <div class="info-header">
@@ -89,9 +93,11 @@
       </p>
       <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
 
-      <!-- Historial: toggle con lazy load -->
+      <!-- Acciones principales -->
       <div class="acciones" style="margin-top:16px;">
         <button id="btn-historial" class="btn-accion btn-secundario">Historial clínico</button>
+        <button id="btn-vacunas" class="btn-accion btn-secundario" style="background:#eef4fe; color:#4a90e2;">Ver Vacunas</button>
+        <button id="btn-certificado" class="btn-accion btn-secundario" style="background:#fdf6e2; color:#d97706;">Obtener Certificado</button>
       </div>
       <div id="seccion-historial" class="seccion-contenido"></div>
 

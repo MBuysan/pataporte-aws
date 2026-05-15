@@ -41,7 +41,7 @@ form.addEventListener("submit", async (e) => {
       mensaje.style.color = "green";
       form.reset();
       setTimeout(() => {
-        window.location.href = "dashboard.html";
+        window.location.href = `perfil-mascota-tutor.html?id=${result.id_mascota}`;
       }, 1000);
     }
   } catch (error) {
