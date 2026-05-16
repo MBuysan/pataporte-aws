@@ -513,61 +513,61 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   async function cargarHistorial() {
-    panelHistorial.innerHTML = `<p class="cargando">Cargando historial de consultas...</p>`;
+      panelHistorial.innerHTML =
+      `<p class="cargando">Cargando...</p>`;
 
     try {
-      // KEY-47: usar el endpoint de consultas, no el historial unificado.
-      const consultas = await api.get(`/historial/${idMascota}/consultas`);
+
+      const response =
+        await api.get(`/historial/${idMascota}/unificado`);
+
+      const eventos = response.eventos;
+
       historialCargado = true;
 
-      if (!consultas || consultas.length === 0) {
-        panelHistorial.innerHTML = `<p class="sin-datos">No hay consultas registradas.</p>`;
+      if (eventos.length === 0) {
+
+        panelHistorial.innerHTML =
+          `<p class="sin-datos">No hay eventos en el historial.</p>`;
+
         return;
       }
 
-      // Ordenar de más reciente a más antigua.
-      consultas.sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+      panelHistorial.innerHTML =
+        eventos.map(e => renderEvento(e)).join("");
 
-      // Adaptamos cada consulta al formato que ya espera renderEvento().
-      panelHistorial.innerHTML = `
-      <p style="
-        font-size: 14px;
-        font-weight: 700;
-        color: #a6a6a6;
-        margin: 16px 0 10px 2px;
-        letter-spacing: 0.5px;
-      ">
-        CONSULTAS
-      </p>
+      // consultas clickeables
 
-  ${consultas.map((consulta) =>
-        renderEvento({
-          tipo: "consulta",
-          fecha: consulta.fecha_hora,
-          id: consulta.id_consulta,
-          motivo: consulta.motivo,
-        })
-      ).join("")}
-`;
+      panelHistorial
+        .querySelectorAll('[data-tipo="consulta"]')
+        .forEach(btn => {
 
-      // Hacer consultas clickeables.
-      panelHistorial.querySelectorAll('[data-tipo="consulta"]').forEach(btn => {
-        btn.onclick = async () => {
-          try {
-            const detalle = await api.get(`/historial/${idMascota}/detalle/${btn.dataset.id}`);
-            mostrarDetalleConsulta(detalle);
-          } catch (err) {
-            panelHistorial.innerHTML += `
-  <p class="error-panel">No se pudo cargar el detalle de la consulta: ${err.message}</p>
-`;
-          }
-        };
-      });
+          btn.onclick = async () => {
+
+            try {
+
+              const detalle = await api.get(
+                `/historial/${idMascota}/detalle/${btn.dataset.id}`
+              );
+
+              mostrarDetalleConsulta(detalle);
+
+            } catch (err) {
+
+              panelHistorial.innerHTML += `
+                <p class="error-panel">
+                  No se pudo cargar el detalle:
+                  ${err.message}
+                </p>
+              `;
+            }
+          };
+        });
 
     } catch (e) {
-      panelHistorial.innerHTML = `
-      <p class="error-panel">No se pudo cargar el historial de consultas: ${e.message}</p>
-    `;
+
+      panelHistorial.innerHTML =
+        `<p class="error-panel">${e.message}</p>`;
     }
   }
 
@@ -641,11 +641,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
 
     <div style="margin-bottom:14px;">
-      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Veterinario</p>
-      <p style="font-size:15px;color:#222;">${detalle.id_veterinario}</p>
-    </div>
-
-    <div style="margin-bottom:14px;">
       <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Motivo</p>
       <p style="font-size:15px;color:#222;">${detalle.motivo}</p>
     </div>
@@ -661,6 +656,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   `;
 
     modalDetalleConsulta.classList.add("activo");
-    alert(html); 
   }
 });
