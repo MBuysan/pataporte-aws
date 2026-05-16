@@ -142,86 +142,222 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ── Historial clínico — toggle con lazy load ──────────────────────────────
 
   btnHist.addEventListener("click", async () => {
-    const abierto = seccionHist.style.display === "block";
-    seccionHist.style.display = abierto ? "none" : "block";
-    btnHist.textContent = abierto ? "Historial clínico" : "Cerrar historial";
 
-    if (!abierto && !historialCargado) {
-      seccionHist.innerHTML = `<p class="cargando">Cargando historial de consultas...</p>`;
+  const abierto = seccionHist.style.display === "block";
 
-      try {
-        const consultas = await api.get(`/historial/${idMascota}/consultas`);
-        historialCargado = true;
+  seccionHist.style.display = abierto ? "none" : "block";
 
-        if (!consultas || consultas.length === 0) {
-          seccionHist.innerHTML = `<p class="sin-datos">No hay consultas registradas.</p>`;
-          return;
-        }
+  btnHist.textContent =
+    abierto
+      ? "Historial clínico"
+      : "Cerrar historial";
 
-        consultas.sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+  if (!abierto && !historialCargado) {
+    await cargarHistorial();
+  }
+  });
 
-        seccionHist.innerHTML = `
-        <p style="
-          font-size: 14px;
-          font-weight: 700;
-          color: #a6a6a6;
-          margin: 16px 0 10px 2px;
-          letter-spacing: 0.5px;
-        ">
-          CONSULTAS
-        </p>
+  async function cargarHistorial() {
 
-        ${consultas.map(c => {
-          const f = new Date(c.fecha_hora);
-          const fecha = f.toLocaleDateString("es-UY", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          });
+  seccionHist.innerHTML =
+    `<p class="cargando">Cargando historial de consultas...</p>`;
 
-          const hora = f.toLocaleTimeString("es-UY", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
+  try {
 
-          return `
-            <button class="fila-consulta" data-id="${c.id_consulta}">
-              <span style="background:#e3f2fd;color:#1976d2;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;white-space:nowrap;">
-                CONSULTA
-              </span>
-              <span class="consulta-motivo">
-                <b>${fecha}, ${hora}</b> — ${c.motivo}
-              </span>
-              <span class="consulta-flecha">›</span>
-            </button>`;
-        }).join("")}
-      `;
-      } catch (e) {
-        seccionHist.innerHTML = `
-        <p class="error-seccion">No se pudo cargar el historial de consultas: ${e.message}</p>
-      `;
-      }
+    const response =
+        await api.get(`/historial/${idMascota}/unificado`);
+
+    const eventos = response.eventos; 
+
+    historialCargado = true;
+
+    if (!eventos || eventos.length === 0) {
+
+      seccionHist.innerHTML =
+        `<p class="sin-datos">No hay consultas registradas.</p>`;
+
+      return;
     }
+
+    eventos.sort(
+      (a, b) =>
+        new Date(b.fecha) - new Date(a.fecha)
+    );
+
+    seccionHist.innerHTML = `
+      <p style="
+        font-size: 14px;
+        font-weight: 700;
+        color: #a6a6a6;
+        margin: 16px 0 10px 2px;
+        letter-spacing: 0.5px;
+      ">
+        CONSULTAS
+      </p>
+
+      ${eventos.map(renderEvento).join("")}
+    `;
+
+  } catch (e) {
+
+    seccionHist.innerHTML = `
+      <p class="error-seccion">
+        No se pudo cargar el historial:
+        ${e.message}
+      </p>
+    `;
+  }
+  }
+
+  seccionHist.addEventListener("click", async (e) => {
+
+  const fila = e.target.closest(".fila-consulta");
+
+  if (!fila) return;
+
+  await abrirModalDetalle(fila.dataset.id);
   });
 
-  // delegación de eventos para filas generadas dinámicamente
-  seccionHist.addEventListener("click", async (e) => {
-    const fila = e.target.closest(".fila-consulta");
-    if (fila) await abrirModalDetalle(fila.dataset.id);
+  function renderEvento(e) {
+
+
+  const fecha = new Date(e.fecha).toLocaleDateString("es-UY", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
   });
+
+  const hora = new Date(e.fecha).toLocaleTimeString("es-UY", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  // CONSULTA
+
+  if (e.tipo === "consulta") {
+
+    return `
+      <button
+        class="fila-consulta"
+        data-id="${e.id}"
+      >
+
+        <span style="
+          background:#e3f2fd;
+          color:#1976d2;
+          padding:4px 8px;
+          border-radius:6px;
+          font-size:10px;
+          font-weight:bold;
+          white-space:nowrap;
+        ">
+          CONSULTA
+        </span>
+
+        <span class="consulta-motivo">
+          <b>${fecha}, ${hora}</b> — ${e.motivo}
+        </span>
+
+        <span class="consulta-flecha">›</span>
+
+      </button>
+    `;
+  }
+
+  // TRATAMIENTO
+
+  const fin = e.finalizacion
+    ? new Date(e.finalizacion).toLocaleDateString("es-UY", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      })
+    : "Sin fecha de fin";
+
+  const estado =
+    e.finalizacion &&
+    new Date(e.finalizacion) < new Date()
+      ? "FINALIZADO"
+      : "ACTIVO";
+
+  const colorEstado =
+    estado === "FINALIZADO"
+      ? "#bbb"
+      : "#f57c00";
+
+  return `
+    <div class="item-card">
+
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin-bottom:6px;
+      ">
+
+        <span style="
+          background:#fff3e0;
+          color:${colorEstado};
+          padding:4px 8px;
+          border-radius:6px;
+          font-size:10px;
+          font-weight:bold;
+        ">
+          TRATAMIENTO · ${estado}
+        </span>
+
+        <span style="
+          font-size:12px;
+          color:#aaa;
+        ">
+          ${fecha}
+        </span>
+
+      </div>
+
+      <strong>${e.nombre}</strong>
+
+      ${e.descripcion
+        ? `<small>${e.descripcion}</small>`
+        : ""}
+
+      ${e.frecuencia
+        ? `<small style="color:#4a90e2;">🕐 ${e.frecuencia}</small>`
+        : ""}
+
+      <small>
+        Finalización: ${fin}
+      </small>
+
+    </div>
+  `;
+}
 
 
   // ── Modal detalle consulta (solo lectura) ─────────────────────────────────
 
-  cerrarDetalle.addEventListener("click", () => cerrarModalDetalle());
-  cerrarDetallBtn.addEventListener("click", () => cerrarModalDetalle());
+  if (cerrarDetalle) {
+  cerrarDetalle.addEventListener("click", cerrarModalDetalle);
+}
+
+if (cerrarDetallBtn) {
+  cerrarDetallBtn.addEventListener("click", cerrarModalDetalle);
+}
+
+if (modalDetalle) {
   modalDetalle.addEventListener("click", (e) => {
-    if (e.target === modalDetalle) cerrarModalDetalle();
+    if (e.target === modalDetalle) {
+      cerrarModalDetalle();
+    }
   });
+  }
 
   async function abrirModalDetalle(idConsulta) {
+    
+    if (!modalDetalle || !contenidoDetalle) {return;}
     contenidoDetalle.innerHTML = `<p style="color:#aaa;text-align:center;padding:20px 0">Cargando...</p>`;
     modalDetalle.classList.add("activo");
+
     try {
       const c = await api.get(`/historial/${idMascota}/detalle/${idConsulta}`);
       const fecha = new Date(c.fecha_hora).toLocaleString("es-UY", {

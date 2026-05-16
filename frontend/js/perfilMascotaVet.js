@@ -641,11 +641,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
 
     <div style="margin-bottom:14px;">
-      <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Veterinario</p>
-      <p style="font-size:15px;color:#222;">${detalle.id_veterinario}</p>
-    </div>
-
-    <div style="margin-bottom:14px;">
       <p style="font-size:12px;font-weight:bold;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Motivo</p>
       <p style="font-size:15px;color:#222;">${detalle.motivo}</p>
     </div>
@@ -661,6 +656,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   `;
 
     modalDetalleConsulta.classList.add("activo");
-    alert(html); 
   }
 });
