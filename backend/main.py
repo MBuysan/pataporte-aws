@@ -12,7 +12,7 @@ from routers import (
     historial,
     tratamientos,
     vacunas,
-    pataporte,
+    # pataporte,  # Temporalmente comentado porque el archivo routers/pataporte.py no existe en el repositorio!
     auth,
 )
 
@@ -38,7 +38,12 @@ app = FastAPI(
 # allow_origins se debe cambiar para produccion
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost",
+        "http://localhost:3000",
+        "http://127.0.0.1",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -51,7 +56,7 @@ app.include_router(veterinarios.router, prefix="/veterinarios", tags=["Veterinar
 app.include_router(historial.router, prefix="/historial", tags=["Historial"])
 app.include_router(tratamientos.router, prefix="/tratamientos", tags=["Tratamientos"])
 app.include_router(vacunas.router, prefix="/vacunas", tags=["Vacunas"])
-app.include_router(pataporte.router, prefix="/pataporte", tags=["Pataporte"])
+# app.include_router(pataporte.router, prefix="/pataporte", tags=["Pataporte"])  # Comentado porque no existe el archivo
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
 

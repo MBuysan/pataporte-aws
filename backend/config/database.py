@@ -20,7 +20,7 @@ class Base(DeclarativeBase):
     pass
 
 # ── ENUMs (reflejan los tipos del DDL) ───────────────────────────────────────
-estado_general_enum = SAEnum("activo", "inactivo",                                    name="estado_general")
+estado_general_enum = SAEnum("activo", "inactivo", "pendiente_verificacion",          name="estado_general")
 estado_esquema_enum = SAEnum("activo", "completado", "atrasado",                      name="estado_esquema")
 estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
 sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
@@ -36,8 +36,8 @@ class UsuarioTutor(Base):
     email:          Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     telefono:       Mapped[str|None] = mapped_column(VARCHAR(30),  nullable=True)
     password_hash:  Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
-    fecha_registro: Mapped[datetime] = mapped_column(DateTime,     nullable=False, default=datetime.utcnow)
-    estado:         Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
+    fecha_registro: Mapped[datetime] = mapped_column(DateTime(timezone=True),     nullable=False, default=datetime.utcnow)
+    estado:         Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="pendiente_verificacion")
 
     mascotas: Mapped[list["MascotaTutor"]] = relationship("MascotaTutor", back_populates="tutor")
 
@@ -52,7 +52,7 @@ class Mascota(Base):
     especie:             Mapped[str]       = mapped_column(VARCHAR(60), nullable=False)
     raza:                Mapped[str|None]  = mapped_column(VARCHAR(60), nullable=True)
     foto_url:            Mapped[str|None]  = mapped_column(Text, nullable=True)
-    fecha_registro:      Mapped[datetime]  = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_registro:      Mapped[datetime]  = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     estado:              Mapped[str]       = mapped_column(estado_general_enum, nullable=False, default="activo")
 
     tutores:      Mapped[list["MascotaTutor"]]     = relationship("MascotaTutor",     back_populates="mascota")
@@ -68,7 +68,7 @@ class MascotaTutor(Base):
     id_tutor:         Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("usuario_tutor.id_tutor", ondelete="RESTRICT",  onupdate="CASCADE"), primary_key=True)
     id_mascota:       Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota",     ondelete="CASCADE",   onupdate="CASCADE"), primary_key=True)
     rol_tutor:        Mapped[str]      = mapped_column(rol_tutor_enum, nullable=False, default="secundario")
-    fecha_asignacion: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_asignacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
     tutor:   Mapped["UsuarioTutor"] = relationship("UsuarioTutor", back_populates="mascotas")
     mascota: Mapped["Mascota"]      = relationship("Mascota",      back_populates="tutores")
@@ -80,8 +80,8 @@ class CodigoAccesoMascota(Base):
     id_codigo:        Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_mascota:       Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     codigo:           Mapped[str]      = mapped_column(VARCHAR(20), nullable=False, unique=True)
-    fecha_creacion:   Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
-    fecha_expiracion: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    fecha_creacion:   Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    fecha_expiracion: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     usado:            Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
 
     mascota: Mapped["Mascota"] = relationship("Mascota")
@@ -95,8 +95,8 @@ class Veterinaria(Base):
     nombre:                Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:                 Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
-    estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="activo")
-    fecha_registro:        Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="pendiente_verificacion")
+    fecha_registro:        Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
     consultas:              Mapped[list["Consulta"]]    = relationship("Consulta",    back_populates="veterinario")
     dosis:                  Mapped[list["Dosis"]]       = relationship("Dosis",       back_populates="veterinario")
@@ -129,12 +129,12 @@ class Consulta(Base):
     id_consulta:          Mapped[str]           = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_mascota:           Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota",        ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     id_veterinario:       Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("veterinaria.id_veterinaria", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
-    fecha_hora:           Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_hora:           Mapped[datetime]      = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     motivo:               Mapped[str]           = mapped_column(Text, nullable=False)
     diagnostico:          Mapped[str|None]      = mapped_column(Text, nullable=True)
     tratamiento_indicado: Mapped[str|None]      = mapped_column(Text, nullable=True)
     editado:              Mapped[bool]          = mapped_column(Boolean, nullable=False, default=False)
-    fecha_edicion:        Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
+    fecha_edicion:        Mapped[datetime|None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     mascota:     Mapped["Mascota"]     = relationship("Mascota",     back_populates="consultas")
     veterinario: Mapped["Veterinaria"] = relationship("Veterinaria", back_populates="consultas")
@@ -144,19 +144,20 @@ class Tratamiento(Base):
     __tablename__ = "tratamiento"
     __table_args__ = (
         UniqueConstraint("id_mascota", "nombre", name="uq_trat_nombre_mascota"),
-        CheckConstraint("finalizacion IS NULL OR finalizacion >= creacion", name="chk_trat_fechas"),
+        CheckConstraint("finalizacion IS NULL OR finalizacion >= inicio", name="chk_trat_fechas"),
     )
 
     id_tratamiento: Mapped[str]           = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_mascota:     Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     nombre:         Mapped[str]           = mapped_column(VARCHAR(150), nullable=False)
     descripcion:    Mapped[str|None]      = mapped_column(Text, nullable=True)
-    creacion:       Mapped[datetime]      = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
-    finalizacion:   Mapped[datetime|None] = mapped_column(DateTime, nullable=True)
+    frecuencia:     Mapped[str | None]    = mapped_column(VARCHAR(300), nullable=True)
+    inicio:         Mapped[datetime]      = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    finalizacion:   Mapped[datetime|None] = mapped_column(DateTime(timezone=True), nullable=True)
+    editado:        Mapped[bool]          = mapped_column(Boolean, nullable=False, default=False)
+    fecha_edicion:  Mapped[datetime|None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="tratamientos")
-    id_consulta_creacion: Mapped[str] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta",ondelete="RESTRICT",onupdate="CASCADE"), nullable=False)
-    id_consulta_ultima_edicion: Mapped[str] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta",ondelete="RESTRICT",onupdate="CASCADE"),nullable=False)
     
 class TipoVacunas(Base):
     __tablename__ = "tipo_vacunas"
@@ -234,7 +235,7 @@ class Certificado(Base):
     hash_verificacion:      Mapped[str|None]  = mapped_column(VARCHAR(128), nullable=True)
     url_documento:          Mapped[str|None]  = mapped_column(Text, nullable=True)
     estado:                 Mapped[str]       = mapped_column(estado_cert_enum, nullable=False, default="pendiente_revision")
-    fecha_emision:          Mapped[datetime]  = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_emision:          Mapped[datetime]  = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     fecha_vencimiento:      Mapped[date|None] = mapped_column(Date, nullable=True)
     certificacion_manual:   Mapped[bool]      = mapped_column(Boolean, nullable=False, default=False)
     observaciones_revision: Mapped[str|None]  = mapped_column(Text, nullable=True)
@@ -255,12 +256,27 @@ class RecuperacionPassword(Base):
      id_recuperacion: Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
      id_tutor:        Mapped[str]      = mapped_column(UUID(as_uuid=False), ForeignKey("usuario_tutor.id_tutor", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
      codigo_hash:     Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
-     expiracion:      Mapped[datetime] = mapped_column(DateTime, nullable=False)
+     expiracion:      Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
      usado:           Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
-     fecha_solicitud: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+     fecha_solicitud: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
      tutor: Mapped["UsuarioTutor"] = relationship("UsuarioTutor")
- 
+
+class VerificacionEmail(Base):
+    """
+    Guarda los códigos de verificación de correo enviados post-registro.
+    Valida la activación de la cuenta tanto para Tutor como para Veterinaria.
+    """
+    __tablename__ = "verificacion_email"
+
+    id_verificacion: Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email:           Mapped[str]      = mapped_column(VARCHAR(254), nullable=False)
+    tipo_usuario:    Mapped[str]      = mapped_column(VARCHAR(20), nullable=False) # "tutor" | "veterinaria"
+    codigo_hash:     Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
+    expiracion:      Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    usado:           Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
+    fecha_solicitud: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+
 # ── Sesion y utilidades ───────────────────────────────────────────────────────
 
 def get_db():
@@ -279,7 +295,7 @@ def get_db():
 def create_tables():
     Base.metadata.create_all(bind=engine)
 
-    # 🔥 SEED INICIAL DE VACUNAS
+    # SEED INICIAL DE VACUNAS
     from sqlalchemy.orm import Session
 
     db = SessionLocal()

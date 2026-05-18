@@ -73,6 +73,10 @@
   <body>
     <div class="contenedor">
 
+      <div style="margin-bottom: 16px;">
+        <a href="dashboard.html" style="color: #4a90e2; text-decoration: none; font-size: 14px; font-weight: bold;">← Volver a Mis Mascotas</a>
+      </div>
+
       <div class="header-mascota">
         <div class="foto-placeholder" id="foto-mascota">?</div>
         <div class="info-header">
@@ -83,14 +87,19 @@
 
       <div id="mensaje-pagina" class="mensaje"></div>
 
-      <!-- Solo tratamientos e historial — sin agregar consulta -->
-      <div class="acciones">
-        <button id="btn-tratamientos" class="btn-accion btn-secundario">Tratamientos</button>
-        <button id="btn-historial"    class="btn-accion btn-secundario">Historial clínico</button>
-      </div>
+      <!-- Tratamientos: se cargan al abrir el perfil (solo lectura) -->
+      <p style="font-size:12px;font-weight:bold;color:#aaa;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+        Tratamientos activos
+      </p>
+      <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
 
-      <div id="seccion-tratamientos" class="seccion-contenido"></div>
-      <div id="seccion-historial"    class="seccion-contenido"></div>
+      <!-- Acciones principales -->
+      <div class="acciones" style="margin-top:16px;">
+        <button id="btn-historial" class="btn-accion btn-secundario">Historial clínico</button>
+        <button id="btn-vacunas" class="btn-accion btn-secundario" style="background:#eef4fe; color:#4a90e2;">Ver Vacunas</button>
+        <button id="btn-certificado" class="btn-accion btn-secundario" style="background:#fdf6e2; color:#d97706;">Obtener Certificado</button>
+      </div>
+      <div id="seccion-historial" class="seccion-contenido"></div>
 
     </div>
 

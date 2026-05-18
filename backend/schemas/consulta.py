@@ -11,12 +11,7 @@ class ConsultaCreate(BaseModel):
     motivo:               str
     diagnostico:          Optional[str]  = None
     
-    crear_tratamiento: bool = False
-    editar_tratamiento: bool = False
     agregar_dosis: bool = False
-    
-    nuevo_tratamiento: Optional[TratamientoCreate] = None
-    tratamiento_actualizado: Optional[TratamientoUpdate] = None
     nueva_dosis: Optional[DosisCreate] = None
 
     
@@ -27,13 +22,6 @@ class ConsultaCreate(BaseModel):
                 "motivo":           "Control anual",
                 "diagnostico":      "Animal sano",
                 "agregar_dosis":    False,
-                "editar_tratamiento": True,
-                "id_tratamiento":   "uuid-tratamiento",
-                "datos_tratamiento": {
-                    "nombre":       "Vitaminas diarias",
-                    "descripcion":  "Una pastilla por día",
-                    "finalizacion": None,
-                },
             }
         }
 
@@ -47,7 +35,6 @@ class ConsultaResponse(BaseModel):
     fecha_hora: datetime
     motivo: str
     diagnostico: Optional[str]
-    tratamientos: List[TratamientoResponse] = []
     dosis:        List[DosisResponse] = []
     
     class Config:

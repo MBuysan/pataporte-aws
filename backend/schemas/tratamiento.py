@@ -5,25 +5,31 @@ from typing import Optional
 
 # ── Lo que se recibe al CREAR un tratamiento ──────────────
 class TratamientoCreate(BaseModel):
-
-    nombre: str
-    descripcion: Optional[str] = None
+    nombre:      str
+    descripcion: Optional[str] = None   # indicaciones / nombre del medicamento
+    frecuencia:  Optional[str] = None   # ej: "1 pastilla cada 12hs"
+    inicio:      Optional[datetime] = None   # si no se manda, el service usa now()
     finalizacion: Optional[datetime] = None
 
     class Config:
         json_schema_extra = {
             "example": {
-                "nombre": "Antibiótico 10 días",
-                "descripcion": "Amoxicilina 250mg cada 12hs durante 10 días",
-                "finalizacion": "2024-06-20T00:00:00",
+                "nombre":       "Amoxicilina",
+                "descripcion":  "Antibiótico para infección urinaria",
+                "frecuencia":   "1 comprimido de 250mg cada 12hs",
+                "inicio":       "2025-06-01T00:00:00",
+                "finalizacion": "2025-06-10T00:00:00",
             }
         }
+
 
 
 # ── Lo que se recibe al ACTUALIZAR un tratamiento ─────────
 class TratamientoUpdate(BaseModel):
     nombre:       Optional[str]      = None
     descripcion:  Optional[str]      = None
+    frecuencia:   Optional[str]      = None
+    inicio:       Optional[datetime] = None
     finalizacion: Optional[datetime] = None
 
 
@@ -33,10 +39,9 @@ class TratamientoResponse(BaseModel):
     id_mascota: str
     nombre: str
     descripcion: Optional[str]
-    creacion: datetime
+    frecuencia: Optional[str]
+    inicio: datetime
     finalizacion: Optional[datetime]
-    id_consulta_creacion: str
-    id_consulta_ultima_edicion: str
 
     class Config:
         from_attributes = True
