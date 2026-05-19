@@ -546,8 +546,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         await cargarHistorial();
       }
     } catch (err) {
+
       console.error("Error guardando consulta", err);
-      alert("Error guardando consulta. Revisá la consola.");
+
+      alert(err.message || "Error guardando consulta.");
     }
   };
 

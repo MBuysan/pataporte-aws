@@ -157,6 +157,12 @@ def _actualizar_proxima_dosis(db: Session, dosis: Dosis, fecha_proxima_dosis: Op
         id_esquema_vacuna=esquema_vacuna.id_esquema_vacuna
     ).count()
 
+    if fecha_proxima_dosis is not None and fecha_proxima_dosis <= dosis.fecha_aplicacion:
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de la próxima dosis debe ser posterior a la fecha de aplicación"
+        )
+
     if cantidad_actual < tipo_vacuna.cantidad_dosis_requeridas:
         # se usa la fecha indicada por el veterinario, o None si no se indicó
         esquema_vacuna.fecha_proxima_dosis = fecha_proxima_dosis
