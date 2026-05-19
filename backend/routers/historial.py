@@ -9,13 +9,18 @@ from services import historial_service, consulta_service
 
 from utils import password_utils
 
-router = APIRouter()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
+    except PyJWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="No autorizado"
+        )
     id_veterinario = payload.get("sub")
 
     if not id_veterinario:
@@ -23,6 +28,7 @@ def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
 
     return id_veterinario
 
+router = APIRouter(    dependencies=[Depends(get_current_vet)])
 
 @router.post(
     "/consultas",
