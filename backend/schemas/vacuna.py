@@ -36,7 +36,7 @@ class DosisCreate(BaseModel):
 
     id_esquema_vacuna: str
     fecha_aplicacion: date
-
+    fecha_proxima_dosis: Optional[date] = None
     id_consulta: Optional[str] = None
 
 

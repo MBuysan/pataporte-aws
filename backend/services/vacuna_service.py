@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 import hashlib
 from datetime import date, timedelta
@@ -67,7 +68,7 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     if not esquema_vacuna:
         raise HTTPException(status_code=404, detail="Vacuna no encontrada en el esquema")
 
-    # ✅ Contar dosis ya aplicadas para esta vacuna en el esquema
+    # contar dosis ya aplicadas para esta vacuna en el esquema
     cantidad_actual = db.query(Dosis).filter_by(
         id_esquema_vacuna=data.id_esquema_vacuna
     ).count()
@@ -86,7 +87,7 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     db.flush()
 
     _generar_certificado(db, dosis)
-    _actualizar_proxima_dosis(db, dosis)
+    _actualizar_proxima_dosis(db, dosis, data.fecha_proxima_dosis)
 
     db.commit()
     db.refresh(dosis)
@@ -147,7 +148,8 @@ def _generar_certificado(db: Session, dosis: Dosis):
     pass
 
 
-def _actualizar_proxima_dosis(db: Session, dosis: Dosis):
+def _actualizar_proxima_dosis(db: Session, dosis: Dosis, fecha_proxima_dosis: Optional[date]):
+    
     esquema_vacuna = dosis.esquema_vacuna
     tipo_vacuna = esquema_vacuna.tipo_vacuna
 
@@ -155,10 +157,16 @@ def _actualizar_proxima_dosis(db: Session, dosis: Dosis):
         id_esquema_vacuna=esquema_vacuna.id_esquema_vacuna
     ).count()
 
+    if fecha_proxima_dosis is not None and fecha_proxima_dosis <= dosis.fecha_aplicacion:
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de la próxima dosis debe ser posterior a la fecha de aplicación"
+        )
+
     if cantidad_actual < tipo_vacuna.cantidad_dosis_requeridas:
-        # Si quedan dosis por aplicar, calcular fecha de la próxima
-        intervalo = tipo_vacuna.intervalo_entre_dosis_dias or 0
-        esquema_vacuna.fecha_proxima_dosis = dosis.fecha_aplicacion + timedelta(days=intervalo)
+        # se usa la fecha indicada por el veterinario, o None si no se indicó
+        esquema_vacuna.fecha_proxima_dosis = fecha_proxima_dosis
+
     else:
         # Todas las dosis aplicadas
         esquema_vacuna.fecha_proxima_dosis = None
@@ -240,6 +248,7 @@ def editar_esquema_vacuna(
             db.flush()
 
             _generar_certificado(db, dosis)
+            _actualizar_proxima_dosis(db, dosis, nueva.fecha_proxima_dosis)
 
     # -------------------------
     # RECALCULAR ESTADO
@@ -256,20 +265,8 @@ def editar_esquema_vacuna(
     else:
         esquema_vacuna.estado = "activo"
 
-        ultima_dosis = (
-            db.query(Dosis)
-            .filter_by(id_esquema_vacuna=id_esquema_vacuna)
-            .order_by(Dosis.fecha_aplicacion.desc())
-            .first()
-        )
 
-        if ultima_dosis:
-            intervalo = tipo_vacuna.intervalo_entre_dosis_dias or 0
 
-            esquema_vacuna.fecha_proxima_dosis = (
-                ultima_dosis.fecha_aplicacion +
-                timedelta(days=intervalo)
-            )
 
     db.add(esquema_vacuna)
 
