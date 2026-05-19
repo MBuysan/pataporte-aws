@@ -443,7 +443,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("btn-add-dosis").onclick = () => {
       lista.innerHTML = "";
-      const vacunasActivas = carnetCache?.[0]?.vacunas || [];
+      const vacunasActivas = (carnetCache?.[0]?.vacunas || []).filter(v => v.dosis.length < v.cantidad_dosis_requeridas);
+
+      if (vacunasActivas.length === 0) { 
+        lista.innerHTML = `
+          <p style="color:#888;font-size:13px;">
+            Todas las vacunas ya completaron su esquema.
+          </p>
+        `;
+        return;
+      }
+
       vacunasActivas.forEach(v => {
         const wrapper = document.createElement("div");
         wrapper.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0;flex-wrap:wrap;";

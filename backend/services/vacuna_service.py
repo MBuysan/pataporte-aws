@@ -72,6 +72,14 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     cantidad_actual = db.query(Dosis).filter_by(
         id_esquema_vacuna=data.id_esquema_vacuna
     ).count()
+    
+    tipo_vacuna = esquema_vacuna.tipo_vacuna
+
+    if cantidad_actual >= tipo_vacuna.cantidad_dosis_requeridas:
+        raise HTTPException(
+            status_code=400,
+            detail="El esquema de vacunación ya está completo para esta vacuna"
+        )
 
     dosis = Dosis(
         id_dosis=str(uuid.uuid4()),
@@ -127,7 +135,8 @@ def esquema_por_mascota(db: Session, id_mascota: str):
                 "estado": ev.estado,
                 "fecha_inicio": esquema.fecha_inicio,
                 "fecha_proxima_dosis": ev.fecha_proxima_dosis,
-                "dosis": dosis
+                "dosis": dosis,
+                "cantidad_dosis_requeridas": tipo.cantidad_dosis_requeridas if tipo else None
             })
 
         resultado.append({
@@ -233,6 +242,14 @@ def editar_esquema_vacuna(
 
         for nueva in agregar_dosis:
 
+            tipo_vacuna = esquema_vacuna.tipo_vacuna
+            
+            if cantidad_actual >= tipo_vacuna.cantidad_dosis_requeridas:
+                raise HTTPException(
+                    status_code=400,
+                    detail="No se pueden agregar más dosis, el esquema ya está completo para esta vacuna"
+                )
+            
             cantidad_actual += 1
 
             dosis = Dosis(
