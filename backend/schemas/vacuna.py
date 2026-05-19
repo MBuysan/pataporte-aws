@@ -53,6 +53,14 @@ class DosisResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class DosisDetalleConsultaResponse(BaseModel):
+    nombre_vacuna: str
+    numero_dosis: int
+    fecha_aplicacion: date
+
+    class Config:
+        from_attributes = True
 
 
 # ── Vacuna (usa DosisResponse) ────────────────────────────

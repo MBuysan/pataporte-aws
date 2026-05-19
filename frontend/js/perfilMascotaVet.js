@@ -443,18 +443,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("btn-add-dosis").onclick = () => {
       lista.innerHTML = "";
-      const vacunasActivas = (carnetCache?.[0]?.vacunas || []).filter(v => v.dosis.length < v.cantidad_dosis_requeridas);
+      const vacunasEsquema = carnetCache?.[0]?.vacunas || [];
 
-      if (vacunasActivas.length === 0) { 
+      if (vacunasEsquema.length === 0) { 
         lista.innerHTML = `
           <p style="color:#888;font-size:13px;">
-            Todas las vacunas ya completaron su esquema.
+            Esta mascota todavía no tiene vacunas asignadas.
           </p>
         `;
         return;
       }
 
-      vacunasActivas.forEach(v => {
+      vacunasEsquema.forEach(v => {
         const wrapper = document.createElement("div");
         wrapper.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0;flex-wrap:wrap;";
 
@@ -463,6 +463,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.textContent =  `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
         btn.dataset.id = v.id_esquema_vacuna;
         btn.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;";
+        
+        const esquemaCompleto = v.dosis_aplicadas >= v.dosis_requeridas;
+
+        if (esquemaCompleto) { btn.style.background = "#c8f7c5";
+                               btn.style.border = "1px solid #7bc67b";
+                               btn.style.color = "#256029";
+                               btn.style.cursor = "not-allowed";
+                               btn.disabled = true;
+                             }
 
         // Input de fecha próxima dosis — oculto hasta que se seleccione la vacuna
         const inputFecha = document.createElement("input");
@@ -484,6 +493,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         btn.onclick = () => {
+
+          if (esquemaCompleto) {return;}
+
           const idx = dosisPendientes.findIndex(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
           if (idx >= 0) {
             dosisPendientes.splice(idx, 1);
