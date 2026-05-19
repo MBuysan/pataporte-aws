@@ -25,27 +25,19 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const response = await fetch("http://localhost:8000/mascotas/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    const result = await api.post("/mascotas/", data);
 
-    const result = await response.json();
+    mensaje.innerText = `Mascota registrada. ID: ${result.id_mascota}`;
+    mensaje.style.color = "green";
 
-    if (!response.ok) {
-      mensaje.innerText = "Error: " + result.detail;
-      mensaje.style.color = "red";
-    } else {
-      mensaje.innerText = `Mascota registrada. ID: ${result.id_mascota}`;
-      mensaje.style.color = "green";
-      form.reset();
-      setTimeout(() => {
-        window.location.href = `perfil-mascota-tutor.html?id=${result.id_mascota}`;
-      }, 1000);
-    }
+    form.reset();
+
+    setTimeout(() => {
+      window.location.href = `perfil-mascota-tutor.html?id=${result.id_mascota}`;
+    }, 1000);
+
   } catch (error) {
-    mensaje.innerText = "Error de conexión con el servidor";
+    mensaje.innerText = "Error: " + error.message;
     mensaje.style.color = "red";
   }
 });

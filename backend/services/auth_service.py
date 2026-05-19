@@ -491,7 +491,7 @@ def login_tutor(db: Session, identificador: str, password: str):
 
     access_token = crear_access_token(
         {
-            "sub": tutor.id_tutor,
+            "sub": str(tutor.id_tutor),
             "rol": "tutor",
             "nombre": tutor.nombre,
             "email": tutor.email,
