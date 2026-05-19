@@ -460,7 +460,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = v.nombre;
+        btn.textContent =  `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
         btn.dataset.id = v.id_esquema_vacuna;
         btn.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;";
 

@@ -127,6 +127,12 @@ def esquema_por_mascota(db: Session, id_mascota: str):
             dosis = db.query(Dosis).filter_by(
                 id_esquema_vacuna=ev.id_esquema_vacuna
             ).all()
+            
+            cantidad_dosis_aplicadas = len(dosis)
+            
+            cantidad_dosis_requeridas = tipo.cantidad_dosis_requeridas
+            
+            dosis_restantes = max(0, cantidad_dosis_requeridas - cantidad_dosis_aplicadas)
 
             vacunas_response.append({
                 "id_esquema_vacuna": ev.id_esquema_vacuna,
@@ -136,7 +142,9 @@ def esquema_por_mascota(db: Session, id_mascota: str):
                 "fecha_inicio": esquema.fecha_inicio,
                 "fecha_proxima_dosis": ev.fecha_proxima_dosis,
                 "dosis": dosis,
-                "cantidad_dosis_requeridas": tipo.cantidad_dosis_requeridas if tipo else None
+                "dosis_aplicadas": cantidad_dosis_aplicadas,
+                "dosis_requeridas": cantidad_dosis_requeridas,
+                "dosis_restantes": dosis_restantes
             })
 
         resultado.append({
