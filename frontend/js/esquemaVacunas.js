@@ -83,14 +83,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           card.innerHTML = `
             <h3 style="color:#222; margin-bottom:8px;">Vacuna ${vacuna.nombre}</h3>
-            <p style="font-size:14px; margin: 4px 0;"><strong>Fecha de aplicación:</strong> ${vacuna.fecha_inicio || "—"}</p>
-            <p style="font-size:14px; margin: 4px 0;"><strong>Próxima dosis:</strong> ${vacuna.fecha_proxima_dosis || "No requerida"}</p>
+            <p style="font-size:14px; margin: 4px 0;"><strong>Fecha de inicio:</strong> ${vacuna.fecha_inicio ? formatearFecha(vacuna.fecha_inicio) : "—"}</p>
+            <p style="font-size:14px; margin: 4px 0;"><strong>Próxima dosis:</strong> ${vacuna.fecha_proxima_dosis ? formatearFecha(vacuna.fecha_proxima_dosis) : "No requerida"}</p>
             <p style="font-size:14px; margin: 4px 0;"><strong>Dosis aplicadas:</strong> ${vacuna.dosis ? vacuna.dosis.length : 0}</p>
-            ${
-              proximaAVencer
-                ? "<p style='color:#e65100; font-weight:bold; margin-top:8px;'>⚠️ Atención: vacuna próxima a vencer o requiere refuerzo</p>"
-                : ""
-            }
+            ${proximaAVencer ? "<p style='color:#e65100; font-weight:bold; margin-top:8px;'>⚠️ Próxima dosis en menos de 7 días</p>" : ""}
           `;
 
           resultado.appendChild(card);
