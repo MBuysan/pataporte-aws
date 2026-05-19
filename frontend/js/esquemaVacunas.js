@@ -112,4 +112,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     inputMascota.value = idUrl;
     await ejecutarBusqueda(idUrl);
   }
+
+  function formatearFecha(fechaStr) {
+  return new Date(fechaStr).toLocaleDateString("es-UY", {
+    day: "numeric", month: "short", year: "numeric"
+  });
+  }
 });
