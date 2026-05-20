@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, Query
 from sqlalchemy.orm import Session
 
 from config.database import get_db
 from schemas.vacuna import DosisCreate, DosisResponse, EsquemaVacunacionResponse, EditarEsquemaVacuna
 from services import vacuna_service
 from config.database import TipoVacunas, Dosis, EsquemaVacunacion, EsquemaVacuna
+from typing import Optional
 
 router = APIRouter()
 
@@ -77,8 +78,11 @@ def agregar_dosis(
     )
 
 @router.get("/tipos")
-def ver_vacunas(db: Session = Depends(get_db)):
-    return db.query(TipoVacunas).all()
+def ver_vacunas(
+    especie: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return vacuna_service.obtener_tipos_vacuna(db, especie)
 
 @router.get("/consulta/{id_consulta}")
 def vacunas_por_consulta(id_consulta: str, db: Session = Depends(get_db)):
