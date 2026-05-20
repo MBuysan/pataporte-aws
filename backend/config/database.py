@@ -21,7 +21,7 @@ class Base(DeclarativeBase):
 
 # ── ENUMs (reflejan los tipos del DDL) ───────────────────────────────────────
 estado_general_enum = SAEnum("activo", "inactivo", "pendiente_verificacion",          name="estado_general")
-estado_esquema_enum = SAEnum("activo", "completado", "atrasado",                      name="estado_esquema")
+estado_esquema_enum = SAEnum("activo", "completado",                                  name="estado_esquema")
 estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
 sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
 rol_tutor_enum      = SAEnum("principal", "secundario",                               name="rol_tutor")
@@ -168,7 +168,6 @@ class TipoVacunas(Base):
     especie_objetivo:           Mapped[str|None] = mapped_column(VARCHAR(60), nullable=True)
     cantidad_dosis_requeridas:  Mapped[int]      = mapped_column(SmallInteger, nullable=False)
     intervalo_entre_dosis_dias: Mapped[int|None] = mapped_column(SmallInteger, nullable=True)
-    intervalo_refuerzo_dias:    Mapped[int|None] = mapped_column(SmallInteger, nullable=True)
     activo:                     Mapped[bool]     = mapped_column(Boolean, nullable=False, default=True)
     esquemas_vacuna:            Mapped[list["EsquemaVacuna"]] = relationship("EsquemaVacuna",back_populates="tipo_vacuna")
 
@@ -312,7 +311,6 @@ def create_tables():
                 especie_objetivo="canino/felino",
                 cantidad_dosis_requeridas=1,
                 intervalo_entre_dosis_dias=None,
-                intervalo_refuerzo_dias=365,
                 activo=True,
             ),
             TipoVacunas(
@@ -321,7 +319,6 @@ def create_tables():
                 especie_objetivo="canino",
                 cantidad_dosis_requeridas=3,
                 intervalo_entre_dosis_dias=21,
-                intervalo_refuerzo_dias=365,
                 activo=True,
             ),
             TipoVacunas(
@@ -330,7 +327,6 @@ def create_tables():
                 especie_objetivo="canino",
                 cantidad_dosis_requeridas=3,
                 intervalo_entre_dosis_dias=21,
-                intervalo_refuerzo_dias=365,
                 activo=True,
             ),
             TipoVacunas(
@@ -339,7 +335,6 @@ def create_tables():
                 especie_objetivo="felino",
                 cantidad_dosis_requeridas=2,
                 intervalo_entre_dosis_dias=21,
-                intervalo_refuerzo_dias=365,
                 activo=True,
             ),
         ]
