@@ -299,3 +299,29 @@ def editar_esquema_vacuna(
     db.refresh(esquema_vacuna)
 
     return esquema_vacuna
+
+def obtener_tipos_vacuna(db: Session, especie: Optional[str] = None):
+    query = db.query(TipoVacunas).filter(
+        TipoVacunas.activo == True
+    )
+
+    if especie:
+        especie = especie.lower()
+
+        if especie == "perro":
+            query = query.filter(
+                TipoVacunas.especie_objetivo.in_([
+                    "canino",
+                    "canino/felino"
+                ])
+            )
+
+        elif especie == "gato":
+            query = query.filter(
+                TipoVacunas.especie_objetivo.in_([
+                    "felino",
+                    "canino/felino"
+                ])
+            )
+
+    return query.all()

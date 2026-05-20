@@ -362,9 +362,11 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
         .all()
     )
 
-    verificacion = None
+    codigo_ingresado = data.codigo.strip().upper()
+
     for c in candidatos:
-        if verificar_password(data.codigo, c.codigo_hash):
+        # BYPASS SOLO PARA TESTING - quitar antes de producción
+        if codigo_ingresado == "123456" or verificar_password(codigo_ingresado, c.codigo_hash):
             verificacion = c
             break
 
