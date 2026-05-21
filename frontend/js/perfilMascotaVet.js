@@ -539,7 +539,7 @@ function _bindBtnAddDosis(vacunasEsquema) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.textContent = v.esNueva
-        ? `${v.nombre} (nueva)`
+        ? `${v.nombre} (primera dosis)`
         : `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
       btn.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;font-size:13px;";
 
