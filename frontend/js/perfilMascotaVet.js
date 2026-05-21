@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   let modoEdicion = false;
   let tratamientoEditando = null;
   let valoresOriginales = null;
-  let especieMascota = null;
 
   const idMascota = new URLSearchParams(location.search).get("id");
 
@@ -42,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
   try {
     const m = await api.get(`/mascotas/${idMascota}`);
-    especieMascota = m.especie?.toLowerCase();
     nombreEl.textContent = m.nombre;
     detalleEl.textContent = `${m.especie}${m.raza ? " · " + m.raza : ""}`;
     if (m.foto_url) {
@@ -388,9 +386,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     carnetCache = [];
     vacunasCache = [];
 
+    // limpia formulario
+    formConsulta.reset();
+    vacunasDiv.innerHTML = "";
+
     modalConsulta.classList.add("activo");
 
-    vacunasCache = await api.get(`/vacunas/tipos?especie=${encodeURIComponent(especieMascota)}`);    
+    vacunasCache = await api.get("/vacunas/tipos");
     const response = await api.get(`/vacunas/${idMascota}/carnet`);
     carnetCache = Array.isArray(response) ? response : [];
     renderVacunas();
@@ -417,165 +419,229 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── RENDER VACUNAS ──────────────────────────────────────────────────
   function renderVacunas() {
     const esquema = carnetCache?.[0];
+    const vacunasEsquema = esquema?.vacunas || [];
+    const hayVacunasActivas = vacunasEsquema.some(v => v.dosis_aplicadas < v.dosis_requeridas);
+
     vacunasDiv.innerHTML = `
       <hr style="margin:14px 0;">
-      <h4 style="margin-bottom:8px;">Vacunas</h4>
-      <button type="button" id="btn-add-vacuna" class="sec" style="margin-right:6px;">Agregar vacuna</button>
-      <button type="button" id="btn-add-dosis"  class="sec">Agregar dosis</button>
-      <div id="lista" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;"></div>
+      <h4 style="margin-bottom:10px;">Vacunas</h4>
+      <button type="button" id="btn-add-vacuna" class="sec" style="margin-right:6px;">+ Agregar vacuna</button>
+      ${hayVacunasActivas ? `<button type="button" id="btn-add-dosis" class="sec">+ Registrar dosis</button>` : ""}
+      <div id="lista-vacunas-nuevas" style="margin-top:10px;"></div>
+      <div id="lista-dosis" style="margin-top:4px;"></div>
     `;
-    const lista = document.getElementById("lista");
 
-    document.getElementById("btn-add-vacuna").onclick = () => {
-      lista.innerHTML = "";
-      const yaTiene = new Set((esquema?.vacunas || []).map(v => v.id_vacuna));
-      const disponibles = vacunasCache.filter(v => !yaTiene.has(v.id_vacuna));
-      disponibles.forEach(v => {
-        const btn = document.createElement("button");
-        btn.type = "button"; btn.textContent = v.nombre; btn.dataset.id = v.id_vacuna;
-        btn.style.cssText = "padding:6px 10px;margin:4px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;";
-        if (vacunasPendientes.has(v.id_vacuna)) btn.style.background = "#c8f7c5";
-        btn.onclick = () => {
-          if (vacunasPendientes.has(v.id_vacuna)) { vacunasPendientes.delete(v.id_vacuna); btn.style.background = "white"; }
-          else { vacunasPendientes.add(v.id_vacuna); btn.style.background = "#c8f7c5"; }
-        };
-        lista.appendChild(btn);
-      });
-    };
+document.getElementById("btn-add-vacuna").onclick = () => {
+    const contenedor = document.getElementById("lista-vacunas-nuevas");
+    contenedor.innerHTML = "";
 
-    document.getElementById("btn-add-dosis").onclick = () => {
-      lista.innerHTML = "";
-      const vacunasEsquema = carnetCache?.[0]?.vacunas || [];
+    const yaTiene = new Set(vacunasEsquema.map(v => v.id_vacuna));
+    const disponibles = vacunasCache.filter(v => !yaTiene.has(v.id_vacuna));
 
-      if (vacunasEsquema.length === 0) { 
-        lista.innerHTML = `
-          <p style="color:#888;font-size:13px;">
-            Esta mascota todavía no tiene vacunas asignadas.
-          </p>
-        `;
-        return;
+    if (disponibles.length === 0) {
+      contenedor.innerHTML = `<p style="color:#888;font-size:13px;">Esta mascota ya tiene todas las vacunas disponibles.</p>`;
+      return;
+    }
+
+    const titulo = document.createElement("p");
+    titulo.textContent = "Seleccioná las vacunas a agregar:";
+    titulo.style.cssText = "font-size:12px;color:#888;margin-bottom:6px;";
+    contenedor.appendChild(titulo);
+
+    disponibles.forEach(v => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = v.nombre;
+      btn.dataset.id = v.id_vacuna;
+      btn.style.cssText = "padding:6px 10px;margin:3px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;font-size:13px;";
+
+      if (vacunasPendientes.has(v.id_vacuna)) {
+        btn.style.background = "#c8f7c5";
+        btn.style.borderColor = "#7bc67b";
       }
 
-      vacunasEsquema.forEach(v => {
-        const wrapper = document.createElement("div");
-        wrapper.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0;flex-wrap:wrap;";
+      btn.onclick = () => {
+        if (vacunasPendientes.has(v.id_vacuna)) {
+          vacunasPendientes.delete(v.id_vacuna);
+          btn.style.background = "white";
+          btn.style.borderColor = "#ccc";
+          // si tenía dosis pendiente asociada, quitarla también
+          const idx = dosisPendientes.findIndex(d => d.id_vacuna_nueva === v.id_vacuna);
+          if (idx >= 0) dosisPendientes.splice(idx, 1);
+        } else {
+          vacunasPendientes.add(v.id_vacuna);
+          btn.style.background = "#c8f7c5";
+          btn.style.borderColor = "#7bc67b";
 
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.textContent =  `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
-        btn.dataset.id = v.id_esquema_vacuna;
-        btn.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;";
-        
-        const esquemaCompleto = v.dosis_aplicadas >= v.dosis_requeridas;
+          // mostrar "registrar dosis" si todavía no está visible
+          if (!document.getElementById("btn-add-dosis")) {
+            const btnDosis = document.createElement("button");
+            btnDosis.type = "button";
+            btnDosis.id = "btn-add-dosis";
+            btnDosis.className = "sec";
+            btnDosis.textContent = "+ Registrar dosis";
+            btnDosis.style.marginLeft = "6px";
+            document.getElementById("btn-add-vacuna").insertAdjacentElement("afterend", btnDosis);
+            _bindBtnAddDosis(vacunasEsquema);
+          }
+        }
+      };
 
-        if (esquemaCompleto) { btn.style.background = "#c8f7c5";
-                               btn.style.border = "1px solid #7bc67b";
-                               btn.style.color = "#256029";
-                               btn.style.cursor = "not-allowed";
-                               btn.disabled = true;
-                             }
+      contenedor.appendChild(btn);
+    });
+  };
 
-        // Input de fecha próxima dosis — oculto hasta que se seleccione la vacuna
-        const inputFecha = document.createElement("input");
-        inputFecha.type = "date";
-        inputFecha.placeholder = "Próxima dosis (opcional)";
-        inputFecha.style.cssText = "display:none;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;";
-        inputFecha.dataset.esquemaVacunaId = v.id_esquema_vacuna;
+  // ── Bind inicial del botón dosis (si ya había vacunas activas) ───────────
+  if (hayVacunasActivas) {
+    _bindBtnAddDosis(vacunasEsquema);
+  }
+}
 
-        const labelFecha = document.createElement("span");
-        labelFecha.textContent = "Próxima dosis:";
-        labelFecha.style.cssText = "display:none;font-size:12px;color:#888;";
+function _bindBtnAddDosis(vacunasEsquema) {
+  const btnDosis = document.getElementById("btn-add-dosis");
+  if (!btnDosis) return;
 
-        const sel = dosisPendientes.find(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
-        if (sel) {
+  btnDosis.onclick = () => {
+    const contenedor = document.getElementById("lista-dosis");
+    contenedor.innerHTML = "";
+
+    const vacunasActivas = vacunasEsquema.filter(v => v.dosis_aplicadas < v.dosis_requeridas);
+
+    // vacunas nuevas seleccionadas en esta misma consulta
+    const vacunasNuevas = vacunasCache
+      .filter(v => vacunasPendientes.has(v.id_vacuna))
+      .map(v => ({
+        ...v,
+        id_esquema_vacuna: null,
+        dosis_aplicadas: 0,
+        dosis_requeridas: 1,
+        esNueva: true,
+      }));
+
+    const todas = [...vacunasActivas, ...vacunasNuevas];
+
+    if (todas.length === 0) {
+      contenedor.innerHTML = `<p style="color:#888;font-size:13px;">No hay vacunas activas para registrar dosis.</p>`;
+      return;
+    }
+
+    const titulo = document.createElement("p");
+    titulo.textContent = "Seleccioná las dosis a registrar hoy:";
+    titulo.style.cssText = "font-size:12px;color:#888;margin-bottom:6px;";
+    contenedor.appendChild(titulo);
+
+    todas.forEach(v => {
+      const clave = v.esNueva ? `nueva:${v.id_vacuna}` : v.id_esquema_vacuna;
+
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0;flex-wrap:wrap;";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = v.esNueva
+        ? `${v.nombre} (primera dosis)`
+        : `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
+      btn.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;font-size:13px;";
+
+      const inputFecha = document.createElement("input");
+      inputFecha.type = "date";
+      inputFecha.style.cssText = "display:none;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;";
+
+      const labelFecha = document.createElement("span");
+      labelFecha.textContent = "Próxima dosis:";
+      labelFecha.style.cssText = "display:none;font-size:12px;color:#888;";
+
+      // restaurar estado si ya estaba seleccionada
+      const selExistente = dosisPendientes.find(d => d._clave === clave);
+      if (selExistente) {
+        btn.style.background = "#ffd699";
+        btn.style.borderColor = "#f0a500";
+        inputFecha.style.display = "block";
+        labelFecha.style.display = "inline";
+        if (selExistente.fecha_proxima_dosis) inputFecha.value = selExistente.fecha_proxima_dosis;
+      }
+
+      btn.onclick = () => {
+        const idx = dosisPendientes.findIndex(d => d._clave === clave);
+        if (idx >= 0) {
+          dosisPendientes.splice(idx, 1);
+          btn.style.background = "white";
+          btn.style.borderColor = "#ccc";
+          inputFecha.style.display = "none";
+          labelFecha.style.display = "none";
+          inputFecha.value = "";
+        } else {
+          dosisPendientes.push({
+            _clave:            clave,
+            id_esquema_vacuna: v.esNueva ? null : v.id_esquema_vacuna,
+            id_vacuna_nueva:   v.esNueva ? v.id_vacuna : null,
+            fecha_aplicacion:  new Date().toISOString().split("T")[0],
+            fecha_proxima_dosis: null,
+          });
           btn.style.background = "#ffd699";
+          btn.style.borderColor = "#f0a500";
           inputFecha.style.display = "block";
           labelFecha.style.display = "inline";
-          if (sel.fecha_proxima_dosis) inputFecha.value = sel.fecha_proxima_dosis;
         }
+      };
 
-        btn.onclick = () => {
+      inputFecha.onchange = () => {
+        const idx = dosisPendientes.findIndex(d => d._clave === clave);
+        if (idx >= 0) dosisPendientes[idx].fecha_proxima_dosis = inputFecha.value || null;
+      };
 
-          if (esquemaCompleto) {return;}
-
-          const idx = dosisPendientes.findIndex(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
-          if (idx >= 0) {
-            dosisPendientes.splice(idx, 1);
-            btn.style.background = "white";
-            inputFecha.style.display = "none";
-            labelFecha.style.display = "none";
-            inputFecha.value = "";
-          } else {
-            dosisPendientes.push({
-              id_esquema_vacuna: v.id_esquema_vacuna,
-              fecha_aplicacion: new Date().toISOString().split("T")[0],
-              fecha_proxima_dosis: null,
-              id_consulta: null
-            });
-            btn.style.background = "#ffd699";
-            inputFecha.style.display = "block";
-            labelFecha.style.display = "inline";
-          }
-    };
-
-    inputFecha.onchange = () => {
-      const idx = dosisPendientes.findIndex(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
-      if (idx >= 0) {
-        dosisPendientes[idx].fecha_proxima_dosis = inputFecha.value || null;
-      }
-    };
-
-    wrapper.appendChild(btn);
-    wrapper.appendChild(labelFecha);
-    wrapper.appendChild(inputFecha);
-    lista.appendChild(wrapper);
-  });
-};
+      wrapper.appendChild(btn);
+      wrapper.appendChild(labelFecha);
+      wrapper.appendChild(inputFecha);
+      contenedor.appendChild(wrapper);
+    });
+  };
 }
 
   // ───────── GUARDAR CONSULTA ────────────────────────────────────────────────
   formConsulta.onsubmit = async (e) => {
     e.preventDefault();
+
+    const vetId = localStorage.getItem("veterinaria_id");
+  if (!vetId || vetId === "null" || vetId === "undefined") {
+    alert("Veterinaria no válida en sesión.");
+    return;
+  }
+
     try {
-      const res = await api.post("/historial/consultas", {
-        id_mascota: idMascota,
-        motivo: document.getElementById("motivo").value,
-        diagnostico: document.getElementById("diag").value
-      });
-      idConsultaActual = res?.id_consulta;
-      if (!idConsultaActual) throw new Error("No se generó idConsultaActual");
+      const payload = {
+      id_mascota:     idMascota,
+      motivo:         document.getElementById("motivo").value,
+      diagnostico:    document.getElementById("diag").value || null,
+      nuevas_vacunas: [...vacunasPendientes],
+      dosis: dosisPendientes.map(d => ({
+        ...(d.id_vacuna_nueva
+          ? { id_vacuna_nueva: d.id_vacuna_nueva }
+          : { id_esquema_vacuna: d.id_esquema_vacuna }
+        ),
+        fecha_aplicacion:    d.fecha_aplicacion,
+        fecha_proxima_dosis: d.fecha_proxima_dosis || null,
+      })),
+    };
 
-      const esquemaId = carnetCache?.[0]?.id_esquema;
-      for (let idVacuna of vacunasPendientes) {
-        await api.post(`/vacunas/${esquemaId}/vacunas/${idVacuna}`);
-      }
-      for (let dosisObj of dosisPendientes) {
-        const vetId = localStorage.getItem("veterinaria_id");
-        if (!vetId || vetId === "null" || vetId === "undefined") throw new Error("Veterinaria no válida en sesión");
-        await api.post("/vacunas/dosis", {
-          id_esquema_vacuna: dosisObj.id_esquema_vacuna,
-          fecha_aplicacion: dosisObj.fecha_aplicacion,
-          fecha_proxima_dosis: dosisObj.fecha_proxima_dosis || null,  // ← nuevo campo
-          id_consulta: idConsultaActual
-        }, { headers: { "x-veterinaria-id": vetId } });
-      }
+    await api.post("/historial/consultas", payload);
 
-      modalConsulta.classList.remove("activo");
-      vacunasPendientes.clear();
-      dosisPendientes = []; vacunasCache = []; carnetCache = [];
+    modalConsulta.classList.remove("activo");
+    vacunasPendientes = new Set();
+    dosisPendientes = [];
+    vacunasCache = [];
+    carnetCache = [];
 
-      // si el historial estaba abierto, refrescarlo
-      if (panelHistorial.style.display === "block") {
-        historialCargado = false;
-        await cargarHistorial();
-      }
-    } catch (err) {
-
-      console.error("Error guardando consulta", err);
-
-      alert(err.message || "Error guardando consulta.");
+    if (panelHistorial.style.display === "block") {
+      historialCargado = false;
+      await cargarHistorial();
     }
-  };
+
+  } catch (err) {
+    console.error("Error guardando consulta", err);
+    alert(err.message || "Error guardando consulta.");
+  }
+};
 
   // ───────── PANEL HISTORIAL (toggle) ────────────────────────────────────────
   document.getElementById("btn-historial").onclick = async () => {

@@ -22,7 +22,7 @@ def crear_esquema(db: Session, id_mascota: str):
 
     return esquema
 
-def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str):
+def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str, commit: bool = True):
 
     esquema = db.query(EsquemaVacunacion).filter_by(
         id_esquema=id_esquema
@@ -55,12 +55,15 @@ def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str):
     )
 
     db.add(esquema_vacuna)
-    db.commit()
-    db.refresh(esquema_vacuna)
+    db.flush()
+    
+    if commit:
+        db.commit()
+        db.refresh(esquema_vacuna)
 
     return esquema_vacuna
 
-def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
+def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str, commit: bool = True):
     esquema_vacuna = db.query(EsquemaVacuna).filter_by(
         id_esquema_vacuna=data.id_esquema_vacuna
     ).first()
@@ -97,8 +100,9 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str):
     _generar_certificado(db, dosis)
     _actualizar_proxima_dosis(db, dosis, data.fecha_proxima_dosis)
 
-    db.commit()
-    db.refresh(dosis)
+    if commit:
+        db.commit()
+        db.refresh(dosis)
     return dosis
 
 
