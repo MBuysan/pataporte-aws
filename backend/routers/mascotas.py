@@ -85,8 +85,12 @@ def actualizar_mascota(
 
 
 @router.delete("/{id_mascota}", status_code=204, summary="Eliminar mascota")
-def eliminar_mascota(id_mascota: str, db: Session = Depends(get_db)):
-    mascota_service.eliminar(db, id_mascota)
+def eliminar_mascota(
+    id_mascota: str,
+    db: Session = Depends(get_db),
+    id_tutor: str = Depends(get_current_tutor),
+):
+    mascota_service.eliminar(db, id_mascota, id_tutor)
 
 
 @router.post(
