@@ -21,7 +21,8 @@ class ConsultaCreate(BaseModel):
                 "id_mascota":       "uuid-mascota",
                 "motivo":           "Control anual",
                 "diagnostico":      "Animal sano",
-                "agregar_dosis":    False,
+                "nuevas_vacunas":   [],
+                "dosis":            [],
             }
         }
 

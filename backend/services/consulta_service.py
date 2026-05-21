@@ -4,14 +4,12 @@ from fastapi import HTTPException
 
 from services import tratamiento_service, vacuna_service
 from schemas.consulta import ConsultaCreate
-from config.database import Consulta, Dosis, EsquemaVacuna, Mascota, TipoVacunas, Veterinaria, Tratamiento
+from config.database import Consulta, Dosis, EsquemaVacuna, EsquemaVacunacion, Mascota, TipoVacunas, Veterinaria, Tratamiento
 
 
 def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
     """
-    Registra una consulta clinica.
-    El id_veterinario viene del token JWT, no del body del request.
-    La fecha_hora la pone el sistema, el veterinario no puede manipularla.
+    Registra una consulta con sus vacunas y dosis en una sola transacción.
     """
     
     #verifica si la mascota existe y esté activa
@@ -42,30 +40,60 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
         fecha_edicion        = None,
     )
     db.add(consulta)
-    db.commit()
-    db.refresh(consulta)  # actualiza el objeto con los datos generados por la BD 
- 
-    #flujos opcionales
- 
+    db.flush()  # para generar el id_consulta antes de hacer otras operaciones que lo necesitan
+    
+   
+    esquema = db.query(EsquemaVacunacion).filter_by(
+        id_mascota=data.id_mascota
+    ).first()
+    if not esquema:
+        raise HTTPException(status_code=404, detail="La mascota no tiene esquema de vacunación")
 
- 
-    if data.agregar_dosis and data.datos_dosis:
+    
+    esquemas_nuevos: dict = {}
+    for id_vacuna in data.nuevas_vacunas:
+        ev = vacuna_service.agregar_vacuna_a_esquema(
+            db, esquema.id_esquema, id_vacuna, commit=False
+        )
+        esquemas_nuevos[id_vacuna] = ev.id_esquema_vacuna
 
+    
+    for dosis_data in data.dosis:
+        if dosis_data.id_esquema_vacuna:
+            id_ev = dosis_data.id_esquema_vacuna
+        elif dosis_data.id_vacuna_nueva:
+            id_ev = esquemas_nuevos.get(dosis_data.id_vacuna_nueva)
+            if not id_ev:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"La vacuna {dosis_data.id_vacuna_nueva} no fue agregada en esta consulta"
+                )
+        else:
+            raise HTTPException(status_code=400, detail="Dosis sin vacuna asociada")
+
+       
+        from schemas.vacuna import DosisCreate
         vacuna_service.registrar_dosis(
             db=db,
-            data=data.datos_dosis,
+            data=DosisCreate(
+                id_esquema_vacuna=id_ev,
+                fecha_aplicacion=dosis_data.fecha_aplicacion,
+                fecha_proxima_dosis=dosis_data.fecha_proxima_dosis,
+                id_consulta=consulta.id_consulta,
+            ),
             id_veterinaria=id_veterinario,
-            id_consulta=consulta.id_consulta,
+            commit=False,
         )
 
- 
+   
+    db.commit()
+    db.refresh(consulta)
     return consulta
 
 def obtener_detalle(db: Session, id_consulta: str) -> dict:
     """
     Devuelve una consulta con los tratamientos y dosis creados en ella.
  
-
     """
     consulta = db.query(Consulta).filter(Consulta.id_consulta == id_consulta).first()
     if not consulta:
@@ -88,8 +116,7 @@ def obtener_detalle(db: Session, id_consulta: str) -> dict:
         "id_veterinario":       consulta.id_veterinario,
         "fecha_hora":           consulta.fecha_hora,
         "motivo":               consulta.motivo,
-        "diagnostico":          consulta.diagnostico,
-        
+        "diagnostico":          consulta.diagnostico,      
         "dosis": [
             {
                 "nombre_vacuna":   nombre_vacuna,
