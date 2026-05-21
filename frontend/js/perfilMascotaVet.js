@@ -386,6 +386,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     carnetCache = [];
     vacunasCache = [];
 
+    // limpia formulario
+    formConsulta.reset();
+    vacunasDiv.innerHTML = "";
+
     modalConsulta.classList.add("activo");
 
     vacunasCache = await api.get("/vacunas/tipos");
