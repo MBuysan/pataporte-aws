@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   let modoEdicion = false;
   let tratamientoEditando = null;
   let valoresOriginales = null;
-  let especieMascota = null;
 
   const idMascota = new URLSearchParams(location.search).get("id");
 
@@ -42,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
   try {
     const m = await api.get(`/mascotas/${idMascota}`);
-    especieMascota = m.especie?.toLowerCase();
     nombreEl.textContent = m.nombre;
     detalleEl.textContent = `${m.especie}${m.raza ? " · " + m.raza : ""}`;
     if (m.foto_url) {
@@ -390,7 +388,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     modalConsulta.classList.add("activo");
 
-    vacunasCache = await api.get(`/vacunas/tipos?especie=${encodeURIComponent(especieMascota)}`);    
+    vacunasCache = await api.get("/vacunas/tipos");
     const response = await api.get(`/vacunas/${idMascota}/carnet`);
     carnetCache = Array.isArray(response) ? response : [];
     renderVacunas();

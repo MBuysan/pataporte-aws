@@ -1,4 +1,4 @@
-from schemas.vacuna import DosisResponse, DosisCreate, DosisDetalleConsultaResponse
+from schemas.vacuna import DosisEnConsulta, DosisDetalleConsultaResponse
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
@@ -10,8 +10,9 @@ class ConsultaCreate(BaseModel):
     motivo:               str
     diagnostico:          Optional[str]  = None
     
-    agregar_dosis: bool = False
-    nueva_dosis: Optional[DosisCreate] = None
+    nuevas_vacunas:       List[str] = []
+    dosis:                List[DosisEnConsulta] = []
+    
 
     
     class Config:

@@ -38,6 +38,12 @@ class DosisCreate(BaseModel):
     fecha_aplicacion: date
     fecha_proxima_dosis: Optional[date] = None
     id_consulta: Optional[str] = None
+    
+class DosisEnConsulta(BaseModel):
+    id_esquema_vacuna:   Optional[str] = None  # vacuna ya en el esquema
+    id_vacuna_nueva:     Optional[str] = None  # vacuna recien agregada en esta misma consulta
+    fecha_aplicacion:    date
+    fecha_proxima_dosis: Optional[date] = None
 
 
 # ── Dosis (usa CertificadoResponse) ───────────────────────
