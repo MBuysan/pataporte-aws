@@ -11,13 +11,28 @@ class TutorCreate(BaseModel):
     password: str
     telefono: Optional[str] = None
 
-    @field_validator("cedula")  # hay que agregar el api que valida el numero de cedula
+    @field_validator("cedula")
     @classmethod
-    def cedula_no_vacia(cls, v: str) -> str:
-        v = v.strip()
-        if not v:
-            raise ValueError("La cedula no puede estar vacia")
-        return v
+    def validar_cedula(cls, v: str) -> str:
+        cedula = "".join(filter(str.isdigit, v.strip()))
+
+        if len(cedula) < 7 or len(cedula) > 8:
+            raise ValueError("La cédula debe tener 7 u 8 números")
+
+        cedula = cedula.zfill(8)
+
+        pesos = [2, 9, 8, 7, 6, 3, 4]
+        suma = 0
+
+        for i in range(7):
+            suma += int(cedula[i]) * pesos[i]
+
+        digito = (10 - (suma % 10)) % 10
+
+        if digito != int(cedula[7]):
+            raise ValueError("La cédula ingresada no es válida")
+
+        return cedula
 
     class Config:
         json_schema_extra = {

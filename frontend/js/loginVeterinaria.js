@@ -16,6 +16,7 @@ function inicializarPantallaLogin() {
         event.preventDefault();
 
         const identificador = identificadorInput.value.trim();
+        const esEmail = identificador.includes("@");
         const password = passwordInput.value.trim();
 
         errorMessage.textContent = "";
@@ -24,10 +25,13 @@ function inicializarPantallaLogin() {
             errorMessage.textContent = "Por favor, completa todos los campos.";
             return;
         }
-
+        if (!esEmail && !validarRutUruguayo(identificador)) {
+            errorMessage.textContent = "El RUT ingresado no es válido.";
+            return;
+        }
         try {
             const response = await api.post("/auth/login/veterinaria", {
-                identificador,
+                identificador: esEmail ? identificador : limpiarDocumento(identificador),
                 password,
             });
 
