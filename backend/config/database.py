@@ -55,10 +55,10 @@ class Mascota(Base):
     fecha_registro:      Mapped[datetime]  = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     estado:              Mapped[str]       = mapped_column(estado_general_enum, nullable=False, default="activo")
 
-    tutores:      Mapped[list["MascotaTutor"]]     = relationship("MascotaTutor",     back_populates="mascota")
-    consultas:    Mapped[list["Consulta"]]          = relationship("Consulta",          back_populates="mascota")
-    tratamientos: Mapped[list["Tratamiento"]]       = relationship("Tratamiento",       back_populates="mascota")
-    esquemas:     Mapped[list["EsquemaVacunacion"]] = relationship("EsquemaVacunacion", back_populates="mascota")
+    tutores:      Mapped[list["MascotaTutor"]]      = relationship("MascotaTutor",      back_populates="mascota",cascade="all, delete-orphan",)    
+    consultas:    Mapped[list["Consulta"]]          = relationship("Consulta",          back_populates="mascota",cascade="all, delete-orphan",)
+    tratamientos: Mapped[list["Tratamiento"]]       = relationship("Tratamiento",       back_populates="mascota",cascade="all, delete-orphan",)
+    esquemas:     Mapped[list["EsquemaVacunacion"]] = relationship("EsquemaVacunacion", back_populates="mascota",cascade="all, delete-orphan",)
 
 
 class MascotaTutor(Base):
@@ -127,7 +127,7 @@ class Consulta(Base):
     )
 
     id_consulta:          Mapped[str]           = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_mascota:           Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota",        ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
+    id_mascota:           Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota",        ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     id_veterinario:       Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("veterinaria.id_veterinaria", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     fecha_hora:           Mapped[datetime]      = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     motivo:               Mapped[str]           = mapped_column(Text, nullable=False)
@@ -148,7 +148,7 @@ class Tratamiento(Base):
     )
 
     id_tratamiento: Mapped[str]           = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_mascota:     Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
+    id_mascota:     Mapped[str]           = mapped_column(UUID(as_uuid=False), ForeignKey("mascota.id_mascota", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     nombre:         Mapped[str]           = mapped_column(VARCHAR(150), nullable=False)
     descripcion:    Mapped[str|None]      = mapped_column(Text, nullable=True)
     frecuencia:     Mapped[str | None]    = mapped_column(VARCHAR(300), nullable=True)
@@ -176,12 +176,12 @@ class EsquemaVacunacion(Base):
     __tablename__ = "esquema_vacunacion"
 
     id_esquema: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_mascota: Mapped[str] = mapped_column(ForeignKey("mascota.id_mascota"), nullable=False)
+    id_mascota: Mapped[str] = mapped_column(ForeignKey("mascota.id_mascota", ondelete="CASCADE"),nullable=False)
     fecha_inicio: Mapped[date] = mapped_column(Date, default=date.today)
     estado: Mapped[str] = mapped_column(estado_esquema_enum, default="activo")
 
     mascota: Mapped["Mascota"] = relationship("Mascota", back_populates="esquemas")
-    vacunas: Mapped[list["EsquemaVacuna"]] = relationship("EsquemaVacuna", back_populates="esquema")
+    vacunas: Mapped[list["EsquemaVacuna"]] = relationship("EsquemaVacuna", back_populates="esquema", cascade="all, delete-orphan",)
 
 class EsquemaVacuna(Base):
     __tablename__ = "esquema_vacuna"
@@ -196,7 +196,7 @@ class EsquemaVacuna(Base):
     esquema: Mapped["EsquemaVacunacion"] = relationship("EsquemaVacunacion", back_populates="vacunas")
     tipo_vacuna: Mapped["TipoVacunas"] = relationship("TipoVacunas", back_populates="esquemas_vacuna")
 
-    dosis: Mapped[list["Dosis"]] = relationship("Dosis", back_populates="esquema_vacuna")
+    dosis: Mapped[list["Dosis"]] = relationship("Dosis", back_populates="esquema_vacuna", cascade="all, delete-orphan")
 
 
 class Dosis(Base):
@@ -212,7 +212,7 @@ class Dosis(Base):
     esquema_vacuna: Mapped["EsquemaVacuna"] = relationship("EsquemaVacuna", back_populates="dosis")
     veterinario: Mapped["Veterinaria"] = relationship("Veterinaria", back_populates="dosis")
     id_consulta: Mapped[str|None] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta", ondelete="SET NULL", onupdate="CASCADE"),nullable=True)
-    certificado: Mapped["Certificado | None"] = relationship("Certificado", back_populates="dosis")
+    certificado: Mapped["Certificado | None"] = relationship("Certificado", back_populates="dosis", cascade="all, delete-orphan")
 
 
 class Certificado(Base):
@@ -228,7 +228,7 @@ class Certificado(Base):
     )
 
     id_certificado:         Mapped[str]       = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_dosis:               Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("dosis.id_dosis",              ondelete="RESTRICT",  onupdate="CASCADE"), nullable=False)
+    id_dosis:               Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("dosis.id_dosis",              ondelete="CASCADE",  onupdate="CASCADE"), nullable=False)
     id_veterinario_emisor:  Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("veterinaria.id_veterinaria",  ondelete="RESTRICT",  onupdate="CASCADE"), nullable=False)
     id_revisor:             Mapped[str|None]  = mapped_column(UUID(as_uuid=False), ForeignKey("veterinaria.id_veterinaria",  ondelete="SET NULL",  onupdate="CASCADE"), nullable=True)
     hash_verificacion:      Mapped[str|None]  = mapped_column(VARCHAR(128), nullable=True)

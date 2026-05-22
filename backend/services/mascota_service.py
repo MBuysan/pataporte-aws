@@ -1,13 +1,21 @@
 import secrets
 import string
+import smtplib
+import os
+from io import BytesIO
 from datetime import date, datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
+from config.settings import settings
 from schemas.mascota import MascotaCreate, MascotaUpdate
 from config.database import Mascota, CodigoAccesoMascota, UsuarioTutor, MascotaTutor
 
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from reportlab.pdfgen import canvas
 
 def listar(db: Session):
     return db.query(Mascota).filter(Mascota.estado == "activo").all()
@@ -147,17 +155,214 @@ def actualizar(db: Session, id_mascota: str, data: MascotaUpdate):
     pass
 
 
-def eliminar(db: Session, id_mascota: str):
-    """
-    Antes de eliminar, envia el historial clinico al tutor por email.
-    Regla de negocio: el tutor debe recibir toda la informacion antes del borrado.
-    """
-    pass
+def eliminar(db: Session, id_mascota: str, id_tutor: str):
+    mascota = (
+        db.query(Mascota)
+        .join(MascotaTutor)
+        .filter(
+            Mascota.id_mascota == id_mascota,
+            Mascota.estado == "activo",
+            MascotaTutor.id_tutor == id_tutor,
+        )
+        .first()
+    )
 
+    if not mascota:
+        raise HTTPException(
+            status_code=404,
+            detail="Mascota no encontrada o sin permisos"
+        )
+
+    _enviar_historial_por_email(db, mascota)
+
+    try:
+        db.delete(mascota)
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"No se pudo eliminar la mascota: {str(e)}"
+        )
 
 def _enviar_historial_por_email(db: Session, mascota):
-    """
-    Funcion privada. Recopila el historial y lo envia al correo del tutor.
-    TODO: implementar con libreria de email (sendgrid, smtp, etc.)
-    """
-    pass
+    tutor = (
+        db.query(UsuarioTutor)
+        .join(MascotaTutor)
+        .filter(
+            MascotaTutor.id_mascota == mascota.id_mascota,
+            MascotaTutor.rol_tutor == "principal",
+        )
+        .first()
+    )
+
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor principal no encontrado")
+
+    pdf_buffer = BytesIO()
+    pdf = canvas.Canvas(pdf_buffer)
+    y = 800
+
+    def salto_pagina_si_necesita():
+        nonlocal y
+        if y < 80:
+            pdf.showPage()
+            y = 800
+            pdf.setFont("Helvetica", 10)
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, y, f"Historial clínico de {mascota.nombre}")
+    y -= 40
+
+    pdf.setFont("Helvetica", 11)
+    pdf.drawString(50, y, f"Especie: {mascota.especie}")
+    y -= 20
+    pdf.drawString(50, y, f"Raza: {mascota.raza or 'No registrada'}")
+    y -= 20
+    pdf.drawString(50, y, f"Fecha de registro: {mascota.fecha_registro}")
+    y -= 40
+
+    # CONSULTAS
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(50, y, "Consultas:")
+    y -= 25
+
+    pdf.setFont("Helvetica", 10)
+
+    if mascota.consultas:
+        for consulta in mascota.consultas:
+            salto_pagina_si_necesita()
+            pdf.drawString(60, y, f"- {consulta.fecha_hora.date()} | {consulta.motivo}")
+            y -= 18
+
+            if consulta.diagnostico:
+                salto_pagina_si_necesita()
+                pdf.drawString(75, y, f"Diagnóstico: {consulta.diagnostico}")
+                y -= 18
+
+            if consulta.tratamiento_indicado:
+                salto_pagina_si_necesita()
+                pdf.drawString(75, y, f"Tratamiento indicado: {consulta.tratamiento_indicado}")
+                y -= 18
+    else:
+        pdf.drawString(60, y, "Sin consultas registradas")
+        y -= 20
+
+    y -= 20
+
+    # TRATAMIENTOS
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(50, y, "Tratamientos:")
+    y -= 25
+
+    pdf.setFont("Helvetica", 10)
+
+    if mascota.tratamientos:
+        for tratamiento in mascota.tratamientos:
+            salto_pagina_si_necesita()
+            pdf.drawString(60, y, f"- {tratamiento.nombre}")
+            y -= 18
+
+            if tratamiento.descripcion:
+                salto_pagina_si_necesita()
+                pdf.drawString(75, y, f"Descripción: {tratamiento.descripcion}")
+                y -= 18
+
+            if tratamiento.frecuencia:
+                salto_pagina_si_necesita()
+                pdf.drawString(75, y, f"Frecuencia: {tratamiento.frecuencia}")
+                y -= 18
+    else:
+        pdf.drawString(60, y, "Sin tratamientos registrados")
+        y -= 20
+
+    y -= 20
+
+    # VACUNAS
+    salto_pagina_si_necesita()
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(50, y, "Vacunas:")
+    y -= 25
+
+    pdf.setFont("Helvetica", 10)
+
+    hay_vacunas = False
+
+    for esquema in mascota.esquemas:
+        for esquema_vacuna in esquema.vacunas:
+            hay_vacunas = True
+
+            nombre_vacuna = (
+                esquema_vacuna.tipo_vacuna.nombre
+                if esquema_vacuna.tipo_vacuna
+                else "Vacuna sin nombre"
+            )
+
+            salto_pagina_si_necesita()
+            pdf.drawString(60, y, f"- {nombre_vacuna} | Estado: {esquema_vacuna.estado}")
+            y -= 18
+
+            if esquema_vacuna.fecha_proxima_dosis:
+                salto_pagina_si_necesita()
+                pdf.drawString(75, y, f"Próxima dosis: {esquema_vacuna.fecha_proxima_dosis}")
+                y -= 18
+
+            if esquema_vacuna.dosis:
+                for dosis in esquema_vacuna.dosis:
+                    salto_pagina_si_necesita()
+                    pdf.drawString(
+                        75,
+                        y,
+                        f"Dosis {dosis.numero_dosis} aplicada el {dosis.fecha_aplicacion}"
+                    )
+                    y -= 18
+            else:
+                salto_pagina_si_necesita()
+                pdf.drawString(75, y, "Sin dosis aplicadas")
+                y -= 18
+
+    if not hay_vacunas:
+        pdf.drawString(60, y, "Sin vacunas registradas")
+        y -= 20
+
+    # GUARDAR PDF
+    pdf.save()
+    pdf_buffer.seek(0)
+
+    # EMAIL
+    mensaje = MIMEMultipart()
+    mensaje["Subject"] = f"Respaldo clínico de {mascota.nombre}"
+    mensaje["From"] = settings.MAIL_FROM
+    mensaje["To"] = tutor.email
+
+    cuerpo = f"""
+Hola,
+
+Adjuntamos el respaldo clínico de {mascota.nombre}
+previo a la eliminación definitiva de su perfil en Pataporte.
+
+Equipo Pataporte
+"""
+
+    mensaje.attach(MIMEText(cuerpo, "plain", "utf-8"))
+
+    adjunto = MIMEApplication(pdf_buffer.read(), _subtype="pdf")
+    adjunto.add_header(
+        "Content-Disposition",
+        "attachment",
+        filename=f"historial_{mascota.nombre}.pdf"
+    )
+
+    mensaje.attach(adjunto)
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
+            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
+            servidor.sendmail(settings.MAIL_FROM, tutor.email, mensaje.as_string())
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"No se pudo enviar el respaldo: {str(e)}"
+        )

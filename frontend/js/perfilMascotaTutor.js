@@ -9,12 +9,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const detalleEl = document.getElementById("detalle-mascota");
   const fotoEl = document.getElementById("foto-mascota");
   const mensajePagina = document.getElementById("mensaje-pagina");
-  const seccionTrat   = document.getElementById("seccion-tratamientos");
-  const seccionHist   = document.getElementById("seccion-historial");
-  const btnHist       = document.getElementById("btn-historial");
-  const btnVacunas    = document.getElementById("btn-vacunas");
-  const btnCert       = document.getElementById("btn-certificado");
-  const modalDetalle     = document.getElementById("modal-detalle");
+  const seccionTrat = document.getElementById("seccion-tratamientos");
+  const seccionHist = document.getElementById("seccion-historial");
+  const btnHist = document.getElementById("btn-historial");
+  const btnVacunas = document.getElementById("btn-vacunas");
+  const btnCert = document.getElementById("btn-certificado");
+  const btnEliminar = document.getElementById("btn-eliminar");
+  const modalDetalle = document.getElementById("modal-detalle");
   const contenidoDetalle = document.getElementById("contenido-detalle");
   const cerrarDetalle = document.getElementById("cerrar-modal-detalle");
   const cerrarDetallBtn = document.getElementById("cerrar-detalle-btn");
@@ -28,13 +29,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ── Listeners de Acciones Adicionales ─────────────────────────────────────
-  
+
   btnVacunas.addEventListener("click", () => {
     window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=tutor`;
   });
 
   btnCert.addEventListener("click", () => {
     alert("Funcionalidad de descarga de certificado estará disponible próximamente.");
+  });
+
+  btnEliminar.addEventListener("click", async () => {
+    const nombreMascota = nombreEl.textContent;
+    const textoEsperado = `eliminar perfil ${nombreMascota}`;
+
+    const confirmacion = prompt(
+      `Esta acción eliminará definitivamente el perfil de ${nombreMascota}.\n\nAntes de eliminarlo, se enviará un respaldo clínico por correo.\n\nPara confirmar, escribí exactamente:\n${textoEsperado}`
+    );
+
+    if (confirmacion !== textoEsperado) {
+      alert("Confirmación incorrecta. No se eliminó la mascota.");
+      return;
+    }
+
+    try {
+      await api.delete(`/mascotas/${idMascota}`);
+      alert("Mascota eliminada correctamente. Se envió el respaldo clínico por correo.");
+      window.location.href = "dashboard.html";
+    } catch (error) {
+      alert(`No se pudo eliminar la mascota: ${error.message}`);
+    }
   });
 
   // Carga en paralelo: datos de mascota + tratamientos activos
@@ -53,38 +76,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   await Promise.all([cargarMascota(), cargarTratamientos()]);
 
   async function validarAccesoTutor() {
-  try {
-    const mascotas = await api.get(`/tutores/${tutor.id_tutor}/mascotas`);
+    try {
+      const mascotas = await api.get(`/tutores/${tutor.id_tutor}/mascotas`);
 
-    const puedeVer = mascotas.some((m) => m.id_mascota === idMascota);
+      const puedeVer = mascotas.some((m) => m.id_mascota === idMascota);
 
-    if (!puedeVer) {
-      nombreEl.textContent = "Acceso denegado";
-      detalleEl.textContent = "";
-      seccionTrat.innerHTML = "";
-      seccionHist.innerHTML = "";
-      btnHist.style.display = "none";
+      if (!puedeVer) {
+        nombreEl.textContent = "Acceso denegado";
+        detalleEl.textContent = "";
+        seccionTrat.innerHTML = "";
+        seccionHist.innerHTML = "";
+        btnHist.style.display = "none";
 
+        mostrarMensaje(
+          mensajePagina,
+          "No tenés permisos para ver la información de esta mascota.",
+          "error"
+        );
+
+        return false;
+      }
+
+      return true;
+    } catch (error) {
       mostrarMensaje(
         mensajePagina,
-        "No tenés permisos para ver la información de esta mascota.",
+        `No se pudo validar el acceso: ${error.message}`,
         "error"
       );
 
       return false;
     }
-
-    return true;
-  } catch (error) {
-    mostrarMensaje(
-      mensajePagina,
-      `No se pudo validar el acceso: ${error.message}`,
-      "error"
-    );
-
-    return false;
   }
-}
 
   // ── Datos de la mascota ───────────────────────────────────────────────────
 
@@ -143,48 +166,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnHist.addEventListener("click", async () => {
 
-  const abierto = seccionHist.style.display === "block";
+    const abierto = seccionHist.style.display === "block";
 
-  seccionHist.style.display = abierto ? "none" : "block";
+    seccionHist.style.display = abierto ? "none" : "block";
 
-  btnHist.textContent =
-    abierto
-      ? "Historial clínico"
-      : "Cerrar historial";
+    btnHist.textContent =
+      abierto
+        ? "Historial clínico"
+        : "Cerrar historial";
 
-  if (!abierto && !historialCargado) {
-    await cargarHistorial();
-  }
+    if (!abierto && !historialCargado) {
+      await cargarHistorial();
+    }
   });
 
   async function cargarHistorial() {
 
-  seccionHist.innerHTML =
-    `<p class="cargando">Cargando historial de consultas...</p>`;
+    seccionHist.innerHTML =
+      `<p class="cargando">Cargando historial de consultas...</p>`;
 
-  try {
+    try {
 
-    const response =
+      const response =
         await api.get(`/historial/${idMascota}/unificado`);
 
-    const eventos = response.eventos; 
+      const eventos = response.eventos;
 
-    historialCargado = true;
+      historialCargado = true;
 
-    if (!eventos || eventos.length === 0) {
+      if (!eventos || eventos.length === 0) {
 
-      seccionHist.innerHTML =
-        `<p class="sin-datos">No hay consultas registradas.</p>`;
+        seccionHist.innerHTML =
+          `<p class="sin-datos">No hay consultas registradas.</p>`;
 
-      return;
-    }
+        return;
+      }
 
-    eventos.sort(
-      (a, b) =>
-        new Date(b.fecha) - new Date(a.fecha)
-    );
+      eventos.sort(
+        (a, b) =>
+          new Date(b.fecha) - new Date(a.fecha)
+      );
 
-    seccionHist.innerHTML = `
+      seccionHist.innerHTML = `
       <p style="
         font-size: 14px;
         font-weight: 700;
@@ -198,45 +221,45 @@ document.addEventListener("DOMContentLoaded", async () => {
       ${eventos.map(renderEvento).join("")}
     `;
 
-  } catch (e) {
+    } catch (e) {
 
-    seccionHist.innerHTML = `
+      seccionHist.innerHTML = `
       <p class="error-seccion">
         No se pudo cargar el historial:
         ${e.message}
       </p>
     `;
-  }
+    }
   }
 
   seccionHist.addEventListener("click", async (e) => {
 
-  const fila = e.target.closest(".fila-consulta");
+    const fila = e.target.closest(".fila-consulta");
 
-  if (!fila) return;
+    if (!fila) return;
 
-  await abrirModalDetalle(fila.dataset.id);
+    await abrirModalDetalle(fila.dataset.id);
   });
 
   function renderEvento(e) {
 
 
-  const fecha = new Date(e.fecha).toLocaleDateString("es-UY", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
+    const fecha = new Date(e.fecha).toLocaleDateString("es-UY", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
 
-  const hora = new Date(e.fecha).toLocaleTimeString("es-UY", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+    const hora = new Date(e.fecha).toLocaleTimeString("es-UY", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-  // CONSULTA
+    // CONSULTA
 
-  if (e.tipo === "consulta") {
+    if (e.tipo === "consulta") {
 
-    return `
+      return `
       <button
         class="fila-consulta"
         data-id="${e.id}"
@@ -262,30 +285,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       </button>
     `;
-  }
+    }
 
-  // TRATAMIENTO
+    // TRATAMIENTO
 
-  const fin = e.finalizacion
-    ? new Date(e.finalizacion).toLocaleDateString("es-UY", {
+    const fin = e.finalizacion
+      ? new Date(e.finalizacion).toLocaleDateString("es-UY", {
         day: "numeric",
         month: "short",
         year: "numeric"
       })
-    : "Sin fecha de fin";
+      : "Sin fecha de fin";
 
-  const estado =
-    e.finalizacion &&
-    new Date(e.finalizacion) < new Date()
-      ? "FINALIZADO"
-      : "ACTIVO";
+    const estado =
+      e.finalizacion &&
+        new Date(e.finalizacion) < new Date()
+        ? "FINALIZADO"
+        : "ACTIVO";
 
-  const colorEstado =
-    estado === "FINALIZADO"
-      ? "#bbb"
-      : "#f57c00";
+    const colorEstado =
+      estado === "FINALIZADO"
+        ? "#bbb"
+        : "#f57c00";
 
-  return `
+    return `
     <div class="item-card">
 
       <div style="
@@ -331,30 +354,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     </div>
   `;
-}
+  }
 
 
   // ── Modal detalle consulta (solo lectura) ─────────────────────────────────
 
   if (cerrarDetalle) {
-  cerrarDetalle.addEventListener("click", cerrarModalDetalle);
-}
+    cerrarDetalle.addEventListener("click", cerrarModalDetalle);
+  }
 
-if (cerrarDetallBtn) {
-  cerrarDetallBtn.addEventListener("click", cerrarModalDetalle);
-}
+  if (cerrarDetallBtn) {
+    cerrarDetallBtn.addEventListener("click", cerrarModalDetalle);
+  }
 
-if (modalDetalle) {
-  modalDetalle.addEventListener("click", (e) => {
-    if (e.target === modalDetalle) {
-      cerrarModalDetalle();
-    }
-  });
+  if (modalDetalle) {
+    modalDetalle.addEventListener("click", (e) => {
+      if (e.target === modalDetalle) {
+        cerrarModalDetalle();
+      }
+    });
   }
 
   async function abrirModalDetalle(idConsulta) {
-    
-    if (!modalDetalle || !contenidoDetalle) {return;}
+
+    if (!modalDetalle || !contenidoDetalle) { return; }
     contenidoDetalle.innerHTML = `<p style="color:#aaa;text-align:center;padding:20px 0">Cargando...</p>`;
     modalDetalle.classList.add("activo");
 
