@@ -10,7 +10,7 @@
 
     <form id="formOrganizacion">
         <label>RUT:</label><br>
-        <input type="text" id="rut" required><br><br>
+        <input type="text" id="rut" required inputmode="numeric" maxlength="12"><br><br>
 
         <label>Nombre de la Organización:</label><br>
         <input type="text" id="nombre" required><br><br>
@@ -33,7 +33,7 @@
     <div style="margin-top: 15px;">
         <p><a href="../index.html">← Volver al inicio</a></p>
     </div>
-
+    <script src="../js/validacionesDocumentos.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/registrarOrganizacion.js"></script>
 </body>
