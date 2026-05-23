@@ -39,18 +39,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
 
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
+
+  let mascotaActual = null;
+
   try {
-    const m = await api.get(`/mascotas/${idMascota}`);
-    nombreEl.textContent = m.nombre;
-    detalleEl.textContent = `${m.especie}${m.raza ? " · " + m.raza : ""}`;
-    if (m.foto_url) {
-      fotoEl.outerHTML = `<img src="${m.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
+    mascotaActual = await api.get(`/mascotas/${idMascota}`);
+    nombreEl.textContent = mascotaActual.nombre;
+    detalleEl.textContent = `${mascotaActual.especie}${mascotaActual.raza ? " · " + mascotaActual.raza : ""}`;
+    if (mascotaActual.foto_url) {
+      fotoEl.outerHTML = `<img src="${mascotaActual.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
     } else {
-      fotoEl.textContent = m.nombre.charAt(0).toUpperCase();
+      fotoEl.textContent = mascotaActual.nombre.charAt(0).toUpperCase();
     }
   } catch (e) {
     console.error("Error cargando mascota", e);
     return;
+  }
+
+    if (mascotaActual.especie === "otro") {
+
+      btnVacunas.style.display = "none";
+      btnCert.style.display = "none";
+
   }
 
   // ───────── TRATAMIENTOS — carga automática al abrir el perfil ──────────────
@@ -392,10 +402,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     modalConsulta.classList.add("activo");
 
-    vacunasCache = await api.get("/vacunas/tipos");
-    const response = await api.get(`/vacunas/${idMascota}/carnet`);
-    carnetCache = Array.isArray(response) ? response : [];
-    renderVacunas();
+    if (mascotaActual.especie !== "otro") {
+      vacunasCache = await api.get(`/vacunas/tipos?especie=${mascotaActual.especie}`);
+      const response = await api.get(`/vacunas/${idMascota}/carnet`);
+      carnetCache = Array.isArray(response) ? response : [];
+      renderVacunas();
+    }
   };
 
   document.getElementById("cerrar-modal-consulta").onclick = () =>
@@ -514,7 +526,7 @@ function _bindBtnAddDosis(vacunasEsquema) {
         ...v,
         id_esquema_vacuna: null,
         dosis_aplicadas: 0,
-        dosis_requeridas: 1,
+        dosis_requeridas: v.cantidad_dosis_requeridas,
         esNueva: true,
       }));
 

@@ -53,7 +53,7 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
 
-    console.error("BACKEND ERROR:", error);
+    console.error("BACKEND ERROR:", JSON.stringify(error, null, 2));
 
     throw new Error(error.detail || "Ocurrió un error");
   }

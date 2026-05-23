@@ -20,9 +20,9 @@ class EstadoEnum(str, Enum):
     inactivo = "inactivo"
 
 class EspecieEnum(str, Enum):
-    perro = "Perro"
-    gato = "Gato"
-    otro = "Otro"
+    perro = "perro"
+    gato = "gato"
+    otro = "otro"
 
 # ── Lo que se recibe al CREAR una mascota ──────────────────
 class MascotaCreate(BaseModel):
@@ -111,7 +111,7 @@ class MascotaResumen(BaseModel):
     
     id_mascota: str
     nombre:     str
-    especie:    str
+    especie:    EspecieEnum
     foto_url:   Optional[str]
     edad:       Optional[int]
  

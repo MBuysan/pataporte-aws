@@ -25,7 +25,7 @@ estado_esquema_enum = SAEnum("activo", "completado",                            
 estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
 sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
 rol_tutor_enum      = SAEnum("principal", "secundario",                               name="rol_tutor")
-especie_enum        = SAEnum("Perro", "Gato", "Otro",                                       name="especie")
+especie_enum        = SAEnum("perro", "gato", "otro",                                       name="especie")
 
 # ── MODELOS ───────────────────────────────────────────────────────────────────
 class UsuarioTutor(Base):
@@ -307,9 +307,17 @@ def create_tables():
 
         vacunas_base = [
             TipoVacunas(
-                nombre="Antirrábica",
-                descripcion="Prevención de rabia",
-                especie_objetivo="perro/gato",
+                nombre="Antirrábica canina",
+                descripcion="Prevención de rabia en perros",
+                especie_objetivo="perro",
+                cantidad_dosis_requeridas=1,
+                intervalo_entre_dosis_dias=None,
+                activo=True,
+            ),
+            TipoVacunas(
+                nombre="Antirrábica felina",
+                descripcion="Prevención de rabia en gatos",
+                especie_objetivo="gato",
                 cantidad_dosis_requeridas=1,
                 intervalo_entre_dosis_dias=None,
                 activo=True,
