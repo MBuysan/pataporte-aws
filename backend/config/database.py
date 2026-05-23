@@ -327,7 +327,7 @@ def create_tables():
                 descripcion="Distemper canino",
                 especie_objetivo="perro",
                 cantidad_dosis_requeridas=3,
-                intervalo_entre_dosis_dias=21,
+                intervalo_entre_dosis_dias=30,
                 activo=True,
             ),
             TipoVacunas(
@@ -335,7 +335,7 @@ def create_tables():
                 descripcion="Protección contra parvovirus",
                 especie_objetivo="perro",
                 cantidad_dosis_requeridas=3,
-                intervalo_entre_dosis_dias=21,
+                intervalo_entre_dosis_dias=30,
                 activo=True,
             ),
             TipoVacunas(
@@ -343,7 +343,7 @@ def create_tables():
                 descripcion="Rinotraqueitis + Calicivirus + Panleucopenia",
                 especie_objetivo="gato",
                 cantidad_dosis_requeridas=2,
-                intervalo_entre_dosis_dias=21,
+                intervalo_entre_dosis_dias=30,
                 activo=True,
             ),
         ]

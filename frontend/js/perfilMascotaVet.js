@@ -547,6 +547,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       todas.forEach(v => {
         const clave = v.esNueva ? `nueva:${v.id_vacuna}` : v.id_esquema_vacuna;
 
+        const esUltimaDosis = v.dosis_aplicadas + 1 >= v.dosis_requeridas;
+
         const wrapper = document.createElement("div");
         wrapper.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0;flex-wrap:wrap;";
 
@@ -562,7 +564,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         inputFecha.style.cssText = "display:none;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;";
 
         const labelFecha = document.createElement("span");
-        labelFecha.textContent = "Próxima dosis:";
+        labelFecha.textContent = esUltimaDosis ? "" : "Próxima dosis:";
         labelFecha.style.cssText = "display:none;font-size:12px;color:#888;";
 
         // restaurar estado si ya estaba seleccionada
@@ -570,8 +572,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (selExistente) {
           btn.style.background = "#ffd699";
           btn.style.borderColor = "#f0a500";
-          inputFecha.style.display = "block";
-          labelFecha.style.display = "inline";
+
+          if (!esUltimaDosis) {
+            inputFecha.style.display = "block";
+            labelFecha.style.display = "inline";
+          }
           if (selExistente.fecha_proxima_dosis) inputFecha.value = selExistente.fecha_proxima_dosis;
         }
 
@@ -594,8 +599,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
             btn.style.background = "#ffd699";
             btn.style.borderColor = "#f0a500";
+            if (!esUltimaDosis) {
             inputFecha.style.display = "block";
             labelFecha.style.display = "inline";
+            }
           }
         };
 
