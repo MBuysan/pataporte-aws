@@ -25,6 +25,7 @@ estado_esquema_enum = SAEnum("activo", "completado",                            
 estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
 sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
 rol_tutor_enum      = SAEnum("principal", "secundario",                               name="rol_tutor")
+especie_enum        = SAEnum("perro", "gato", "otro",                                       name="especie")
 
 # ── MODELOS ───────────────────────────────────────────────────────────────────
 class UsuarioTutor(Base):
@@ -49,7 +50,7 @@ class Mascota(Base):
     nombre:              Mapped[str]       = mapped_column(VARCHAR(100), nullable=False)
     fecha_de_nacimiento: Mapped[date|None] = mapped_column(Date, nullable=True)
     sexo:                Mapped[str]       = mapped_column(sexo_mascota_enum, nullable=False, default="desconocido")
-    especie:             Mapped[str]       = mapped_column(VARCHAR(60), nullable=False)
+    especie:             Mapped[str]       = mapped_column(especie_enum, nullable=False)
     raza:                Mapped[str|None]  = mapped_column(VARCHAR(60), nullable=True)
     foto_url:            Mapped[str|None]  = mapped_column(Text, nullable=True)
     fecha_registro:      Mapped[datetime]  = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
@@ -165,7 +166,7 @@ class TipoVacunas(Base):
     id_vacuna:                  Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     nombre:                     Mapped[str]      = mapped_column(VARCHAR(120), nullable=False, unique=True)
     descripcion:                Mapped[str|None] = mapped_column(Text, nullable=True)
-    especie_objetivo:           Mapped[str|None] = mapped_column(VARCHAR(60), nullable=True)
+    especie_objetivo:           Mapped[str|None] = mapped_column(especie_enum, nullable=True)
     cantidad_dosis_requeridas:  Mapped[int]      = mapped_column(SmallInteger, nullable=False)
     intervalo_entre_dosis_dias: Mapped[int|None] = mapped_column(SmallInteger, nullable=True)
     activo:                     Mapped[bool]     = mapped_column(Boolean, nullable=False, default=True)
@@ -306,9 +307,17 @@ def create_tables():
 
         vacunas_base = [
             TipoVacunas(
-                nombre="Antirrábica",
-                descripcion="Prevención de rabia",
-                especie_objetivo="canino/felino",
+                nombre="Antirrábica canina",
+                descripcion="Prevención de rabia en perros",
+                especie_objetivo="perro",
+                cantidad_dosis_requeridas=1,
+                intervalo_entre_dosis_dias=None,
+                activo=True,
+            ),
+            TipoVacunas(
+                nombre="Antirrábica felina",
+                descripcion="Prevención de rabia en gatos",
+                especie_objetivo="gato",
                 cantidad_dosis_requeridas=1,
                 intervalo_entre_dosis_dias=None,
                 activo=True,
@@ -316,7 +325,7 @@ def create_tables():
             TipoVacunas(
                 nombre="Moquillo",
                 descripcion="Distemper canino",
-                especie_objetivo="canino",
+                especie_objetivo="perro",
                 cantidad_dosis_requeridas=3,
                 intervalo_entre_dosis_dias=21,
                 activo=True,
@@ -324,7 +333,7 @@ def create_tables():
             TipoVacunas(
                 nombre="Parvovirus",
                 descripcion="Protección contra parvovirus",
-                especie_objetivo="canino",
+                especie_objetivo="perro",
                 cantidad_dosis_requeridas=3,
                 intervalo_entre_dosis_dias=21,
                 activo=True,
@@ -332,7 +341,7 @@ def create_tables():
             TipoVacunas(
                 nombre="Triple felina",
                 descripcion="Rinotraqueitis + Calicivirus + Panleucopenia",
-                especie_objetivo="felino",
+                especie_objetivo="gato",
                 cantidad_dosis_requeridas=2,
                 intervalo_entre_dosis_dias=21,
                 activo=True,

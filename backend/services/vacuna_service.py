@@ -6,9 +6,19 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from schemas.vacuna import DosisCreate
-from config.database import Dosis, EsquemaVacunacion, Certificado, EsquemaVacuna, TipoVacunas
+from config.database import Dosis, EsquemaVacunacion, EsquemaVacuna, Mascota, TipoVacunas
 
 def crear_esquema(db: Session, id_mascota: str):
+    
+    mascota = db.query(Mascota).filter_by(
+        id_mascota=id_mascota).first()
+    
+    if mascota.especie not in ["perro", "gato"]:
+        raise HTTPException(
+            status_code=400,
+            detail="La mascota debe ser perro o gato para crear un esquema de vacunación"
+        )
+    
     esquema = EsquemaVacunacion(
         id_esquema=str(uuid.uuid4()),
         id_mascota=id_mascota,
@@ -30,6 +40,14 @@ def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str, commi
 
     if not esquema:
         raise HTTPException(status_code=404, detail="Esquema no existe")
+    
+    mascota = esquema.mascota
+    
+    if vacuna.especie_objetivo != mascota.especie:
+        raise HTTPException(
+            status_code=400,
+            detail=f"La vacuna no es compatible con la especie de la mascota ({mascota.especie})"
+        )
 
     vacuna = db.query(TipoVacunas).filter_by(
         id_vacuna=id_vacuna
@@ -305,27 +323,15 @@ def editar_esquema_vacuna(
     return esquema_vacuna
 
 def obtener_tipos_vacuna(db: Session, especie: Optional[str] = None):
+    
     query = db.query(TipoVacunas).filter(
         TipoVacunas.activo == True
     )
 
     if especie:
-        especie = especie.lower()
-
-        if especie == "perro":
-            query = query.filter(
-                TipoVacunas.especie_objetivo.in_([
-                    "canino",
-                    "canino/felino"
-                ])
-            )
-
-        elif especie == "gato":
-            query = query.filter(
-                TipoVacunas.especie_objetivo.in_([
-                    "felino",
-                    "canino/felino"
-                ])
-            )
+        
+        query = query.filter(
+            TipoVacunas.especie_objetivo == especie
+        )
 
     return query.all()

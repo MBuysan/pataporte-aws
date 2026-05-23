@@ -18,7 +18,7 @@ form.addEventListener("submit", async (e) => {
     id_tutor: tutor.id_tutor,
     foto_url: document.getElementById("foto_url").value,
     nombre: capitalizar(document.getElementById("nombre").value),
-    especie: capitalizar(document.getElementById("especie").value),
+    especie: (document.getElementById("especie").value),
     raza: capitalizar(document.getElementById("raza").value),
     fecha_de_nacimiento: document.getElementById("fecha_de_nacimiento").value,
     sexo: capitalizar(document.getElementById("sexo").value),

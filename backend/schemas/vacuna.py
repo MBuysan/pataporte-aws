@@ -7,7 +7,6 @@ from typing import List
 class EstadoEsquemaEnum(str, Enum):
     activo = "activo"
     completado = "completado"
-    atrasado = "atrasado"
 
 
 class EstadoCertificadoEnum(str, Enum):
@@ -74,6 +73,7 @@ class VacunaResponse(BaseModel):
     id_esquema_vacuna: str
     id_vacuna: str
     nombre: str
+    especie_objetivo: str
     estado: EstadoEsquemaEnum
     fecha_inicio: date
     fecha_proxima_dosis: Optional[date]

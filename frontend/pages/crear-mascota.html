@@ -25,12 +25,12 @@
       /><br /><br />
 
       <label>Especie:</label><br />
-      <input
-        type="text"
-        id="especie"
-        placeholder="Ej: Perro, Gato, Conejo"
-        required
-      /><br /><br />
+      <select id="especie" required>
+        <option value="perro">Perro</option>
+        <option value="gato">Gato</option>
+        <option value="otro" selected>Otro</option>
+      </select>
+      <br /><br />
 
       <label>Raza:</label><br />
       <input
@@ -45,9 +45,9 @@
 
       <label>Sexo:</label><br />
       <select id="sexo" required>
-        <option value="Macho">Macho</option>
-        <option value="Hembra">Hembra</option>
-        <option value="Desconocido" selected>Desconocido</option></select
+        <option value="macho">Macho</option>
+        <option value="hembra">Hembra</option>
+        <option value="desconocido" selected>Desconocido</option></select
       ><br /><br />
 
       <button type="submit">Registrar</button>
