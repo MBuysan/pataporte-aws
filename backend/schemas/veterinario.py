@@ -2,21 +2,15 @@ from pydantic import BaseModel, EmailStr, field_validator
 from typing import List, Optional
 from datetime import datetime
 
-class SucursalResponse(BaseModel):
-    id_sucursal: str
-    nombre: str
-    estado: str
 
-    class Config:
-        from_attributes = True
-
-class VeterinariaCreate(BaseModel):
-    rut: str
+class VeterinarioCreate(BaseModel):
+    rut_organizacion: str
+    matricula: str
     nombre: str
     email: EmailStr
     password: str
 
-    @field_validator("rut")
+    @field_validator("rut_organizacion")
     @classmethod
     def validar_rut(cls, v: str) -> str:
         rut = "".join(filter(str.isdigit, v.strip()))
@@ -37,14 +31,14 @@ class VeterinariaCreate(BaseModel):
 
         return rut
     
-class VeterinariaResponse(BaseModel):
-    id_veterinaria: str
-    rut: str
+class VeterinarioResponse(BaseModel):
+    id_veterinario: str
+    rut_organizacion: str
+    matricula: str
     nombre: str
     email: EmailStr
     estado: str
     fecha_registro: datetime
-    sucursales: List[SucursalResponse] = []
 
     class Config:
         from_attributes = True

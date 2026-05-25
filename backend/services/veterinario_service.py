@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from config.database import UsuarioTutor, Veterinario, Sucursal
+from config.database import UsuarioTutor, Veterinario
 from services import tutor_service, mascota_service
 from schemas.mascota import MascotaResumen, ResultadoBusquedaTutor
 
@@ -66,15 +66,7 @@ def registrar_veterinaria(db: Session, vet_data) -> Veterinario:
     db.commit()
     db.refresh(nueva_vet)
 
-    # Crear Sucursal por defecto
-    sucursal_default = Sucursal(
-        id_veterinaria=nueva_vet.id_veterinaria,
-        nombre="Casa Central",
-        estado="activo"
-    )
-    db.add(sucursal_default)
-    db.commit()
-    db.refresh(nueva_vet)
+
 
     # Generamos el código de verificación y lo enviamos por correo
     generar_y_enviar_codigo_verificacion(db, nueva_vet.email, "veterinario")

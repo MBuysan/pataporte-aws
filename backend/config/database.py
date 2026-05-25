@@ -22,7 +22,7 @@ class Base(DeclarativeBase):
 # ── ENUMs (reflejan los tipos del DDL) ───────────────────────────────────────
 estado_general_enum = SAEnum("activo", "inactivo", "pendiente_verificacion",          name="estado_general")
 estado_esquema_enum = SAEnum("activo", "completado",                                  name="estado_esquema")
-estado_cert_enum    = SAEnum("vigente", "pendiente_revision", "vencido", "revocado",  name="estado_cert")
+estado_cert_enum    = SAEnum("vigente", "revocado",  name="estado_cert")
 sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
 rol_tutor_enum      = SAEnum("principal", "secundario",                               name="rol_tutor")
 especie_enum        = SAEnum("perro", "gato", "otro",                                       name="especie")
@@ -87,22 +87,31 @@ class CodigoAccesoMascota(Base):
 
     mascota: Mapped["Mascota"] = relationship("Mascota")
 
+class Organizacion(Base):
+    __tablename__ = "organizacion"
+
+    id_organizacion: Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    rut:            Mapped[str]      = mapped_column(VARCHAR(20),  nullable=False, unique=True)
+    fecha_registro: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+   
+
 
 class Veterinario(Base):
     __tablename__ = "veterinario"
 
     id_veterinario:        Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    matricula:             Mapped[str]      = mapped_column(VARCHAR(50),  nullable=False, unique=True)
     nombre:                Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
     email:                 Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="pendiente_verificacion")
     fecha_registro:        Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-
+    id_organizacion:      Mapped[str|None] = mapped_column(UUID(as_uuid=False), ForeignKey("organizacion.id_organizacion", ondelete="SET NULL", onupdate="CASCADE"), nullable=True)
+    
     consultas:              Mapped[list["Consulta"]]    = relationship("Consulta",    back_populates="veterinario")
     dosis:                  Mapped[list["Dosis"]]       = relationship("Dosis",       back_populates="veterinario")
-    certificados_emitidos:  Mapped[list["Certificado"]] = relationship("Certificado", back_populates="emisor",  foreign_keys="Certificado.id_veterinario_emisor")
-    certificados_revisados: Mapped[list["Certificado"]] = relationship("Certificado", back_populates="revisor", foreign_keys="Certificado.id_revisor")
-    sucursales:             Mapped[list["Sucursal"]]    = relationship("Sucursal",    back_populates="veterinario")
+    
+    
 
 
 
@@ -202,36 +211,20 @@ class Dosis(Base):
     esquema_vacuna: Mapped["EsquemaVacuna"] = relationship("EsquemaVacuna", back_populates="dosis")
     veterinario: Mapped["Veterinario"] = relationship("Veterinario", back_populates="dosis")
     id_consulta: Mapped[str|None] = mapped_column(UUID(as_uuid=False),ForeignKey("consulta.id_consulta", ondelete="SET NULL", onupdate="CASCADE"),nullable=True)
-    certificado: Mapped["Certificado | None"] = relationship("Certificado", back_populates="dosis", cascade="all, delete-orphan")
+    
+
+class Pataporte(Base):
+    __tablename__ = "pataporte"
+
+    id_pataporte: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id_mascota: Mapped[str] = mapped_column(ForeignKey("mascota.id_mascota", ondelete="CASCADE"), nullable=False)
+    id_veterinario_emisor: Mapped[str] = mapped_column(ForeignKey("veterinario.id_veterinario", ondelete="RESTRICT"), nullable=False)
+    hash_verificacion: Mapped[str] = mapped_column(VARCHAR(255), nullable=False)
+    credencial_json: Mapped[str] = mapped_column(Text, nullable=False)
+    fecha_emision: Mapped[date] = mapped_column(Date, default=date.today)
+    estado: Mapped[str] = mapped_column(estado_cert_enum, default="vigente")
 
 
-class Certificado(Base):
-    __tablename__ = "certificado"
-    __table_args__ = (
-        UniqueConstraint("id_dosis",             name="uq_cert_dosis"),
-        UniqueConstraint("hash_verificacion",    name="uq_cert_hash"),
-        # Si es certificacion manual y esta vigente, debe tener revisor
-        CheckConstraint(
-            "certificacion_manual = FALSE OR estado != 'vigente' OR id_revisor IS NOT NULL",
-            name="chk_cert_manual"
-        ),
-    )
-
-    id_certificado:         Mapped[str]       = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
-    id_dosis:               Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("dosis.id_dosis",              ondelete="CASCADE",  onupdate="CASCADE"), nullable=False)
-    id_veterinario_emisor:  Mapped[str]       = mapped_column(UUID(as_uuid=False), ForeignKey("veterinario.id_veterinario",  ondelete="RESTRICT",  onupdate="CASCADE"), nullable=False)
-    id_revisor:             Mapped[str|None]  = mapped_column(UUID(as_uuid=False), ForeignKey("veterinario.id_veterinario",  ondelete="SET NULL",  onupdate="CASCADE"), nullable=True)
-    hash_verificacion:      Mapped[str|None]  = mapped_column(VARCHAR(128), nullable=True)
-    url_documento:          Mapped[str|None]  = mapped_column(Text, nullable=True)
-    estado:                 Mapped[str]       = mapped_column(estado_cert_enum, nullable=False, default="pendiente_revision")
-    fecha_emision:          Mapped[datetime]  = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    fecha_vencimiento:      Mapped[date|None] = mapped_column(Date, nullable=True)
-    certificacion_manual:   Mapped[bool]      = mapped_column(Boolean, nullable=False, default=False)
-    observaciones_revision: Mapped[str|None]  = mapped_column(Text, nullable=True)
-
-    dosis:   Mapped["Dosis"]            = relationship("Dosis",       back_populates="certificado")
-    emisor:  Mapped["Veterinario"]      = relationship("Veterinario", back_populates="certificados_emitidos",  foreign_keys=[id_veterinario_emisor])
-    revisor: Mapped["Veterinario|None"] = relationship("Veterinario", back_populates="certificados_revisados", foreign_keys=[id_revisor])
 
 class RecuperacionPassword(Base):
      """
