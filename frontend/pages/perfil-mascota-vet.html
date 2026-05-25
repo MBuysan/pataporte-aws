@@ -137,11 +137,12 @@
     <button class="modal-cerrar" id="cerrar-modal-consulta">✕</button>
     <h3>Nueva consulta</h3>
     <form id="form-consulta">
-      <label>Motivo</label>
+      <label>Motivo *</label>
       <input id="motivo" required />
       <label>Diagnóstico</label>
       <textarea id="diag"></textarea>
       <div id="vacunas"></div>
+      <p class="modal-error" id="consulta-error" style="color: #c0392b; font-size: 13px; margin-top: 10px; min-height: 18px;"></p>
       <button type="submit" class="primary" style="margin-top:16px;width:100%;">Guardar consulta</button>
     </form>
   </div>
@@ -156,13 +157,13 @@
     <label>Nombre *</label>
     <input type="text" id="trat-nombre" placeholder="Ej: Amoxicilina" />
 
-    <label>Descripción</label>
+    <label>Descripción *</label>
     <textarea id="trat-descripcion" placeholder="Ej: Antibiótico para infección urinaria"></textarea>
 
-    <label>Frecuencia</label>
+    <label>Frecuencia *</label>
     <input type="text" id="trat-frecuencia" placeholder="Ej: 1 comprimido de 250 mg cada 12 hs" />
 
-    <label>Fecha de inicio</label>
+    <label>Fecha de inicio *</label>
     <input type="datetime-local" id="trat-inicio" />
 
     <label>Fecha de finalización (opcional)</label>

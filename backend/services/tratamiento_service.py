@@ -42,14 +42,15 @@ def crear_tratamiento(db: Session,id_mascota: str,data: TratamientoCreate) -> Tr
             detail="Ya existe un tratamiento con ese nombre para esta mascota"
         )
 
-    _check_fecha_finalizacion(data.finalizacion, data.inicio)
+    fecha_inicio = data.inicio or datetime.now(timezone.utc)
+    _check_fecha_finalizacion(data.finalizacion, fecha_inicio)
     
     tratamiento = Tratamiento(
         id_mascota=id_mascota,
         nombre=data.nombre,
         descripcion=data.descripcion,
         frecuencia = data.frecuencia,
-        inicio = data.inicio,
+        inicio = fecha_inicio,
         finalizacion= data.finalizacion
     )
 
@@ -185,6 +186,8 @@ def actualizar_tratamiento(db: Session, id_tratamiento: str, data: TratamientoUp
 
 
 def _check_fecha_finalizacion(finalizacion: datetime | None, inicio: datetime) -> None:
+    if finalizacion is None:
+        return
 
     if finalizacion < datetime.now(timezone.utc):
         raise HTTPException(

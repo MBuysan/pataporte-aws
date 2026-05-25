@@ -43,18 +43,18 @@ def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str, commi
     
     mascota = esquema.mascota
     
-    if vacuna.especie_objetivo != mascota.especie:
-        raise HTTPException(
-            status_code=400,
-            detail=f"La vacuna no es compatible con la especie de la mascota ({mascota.especie})"
-        )
-
     vacuna = db.query(TipoVacunas).filter_by(
         id_vacuna=id_vacuna
     ).first()
 
     if not vacuna:
         raise HTTPException(status_code=404, detail="Vacuna no existe")
+
+    if vacuna.especie_objetivo != mascota.especie:
+        raise HTTPException(
+            status_code=400,
+            detail=f"La vacuna no es compatible con la especie de la mascota ({mascota.especie})"
+        )
 
     existe = db.query(EsquemaVacuna).filter_by(
         id_esquema=id_esquema,
