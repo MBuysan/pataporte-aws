@@ -8,15 +8,14 @@
     <h2>Registrar Mascota</h2>
 
     <form id="formMascota">
-      <label>Foto (URL):</label><br />
+      <label>Foto (URL) (opcional):</label><br />
       <input
         type="url"
         id="foto_url"
         placeholder="https://ejemplo.com/foto.jpg"
-        required
       /><br /><br />
 
-      <label>Nombre:</label><br />
+      <label>Nombre *:</label><br />
       <input
         type="text"
         id="nombre"
@@ -24,7 +23,7 @@
         required
       /><br /><br />
 
-      <label>Especie:</label><br />
+      <label>Especie *:</label><br />
       <select id="especie" required>
         <option value="perro">Perro</option>
         <option value="gato">Gato</option>
@@ -32,18 +31,17 @@
       </select>
       <br /><br />
 
-      <label>Raza:</label><br />
+      <label>Raza (opcional):</label><br />
       <input
         type="text"
         id="raza"
         placeholder="Ej: Labrador, Siamés"
-        required
       /><br /><br />
 
-      <label>Fecha de nacimiento:</label><br />
-      <input type="date" id="fecha_de_nacimiento" required /><br /><br />
+      <label>Fecha de nacimiento (opcional):</label><br />
+      <input type="date" id="fecha_de_nacimiento" /><br /><br />
 
-      <label>Sexo:</label><br />
+      <label>Sexo *:</label><br />
       <select id="sexo" required>
         <option value="macho">Macho</option>
         <option value="hembra">Hembra</option>

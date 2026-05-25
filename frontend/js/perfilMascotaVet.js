@@ -279,24 +279,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     errorEl.textContent = "";
 
-    const nombre =
-      document.getElementById("trat-nombre").value.trim();
+    const nombre = document.getElementById("trat-nombre").value.trim();
+    const descripcion = document.getElementById("trat-descripcion").value.trim();
+    const frecuencia = document.getElementById("trat-frecuencia").value.trim();
+    const inicio = document.getElementById("trat-inicio").value;
+    const finalizacion = document.getElementById("trat-finalizacion").value;
 
     if (!nombre) {
-
-      errorEl.textContent =
-        "El nombre del tratamiento es obligatorio.";
-
+      errorEl.textContent = "El nombre del tratamiento es obligatorio.";
       document.getElementById("trat-nombre").focus();
-
       return;
     }
 
-    const inicio =
-      document.getElementById("trat-inicio").value;
+    if (!descripcion) {
+      errorEl.textContent = "La descripción del tratamiento es obligatoria.";
+      document.getElementById("trat-descripcion").focus();
+      return;
+    }
 
-    const finalizacion =
-      document.getElementById("trat-finalizacion").value;
+    if (!frecuencia) {
+      errorEl.textContent = "La frecuencia del tratamiento es obligatoria.";
+      document.getElementById("trat-frecuencia").focus();
+      return;
+    }
+
+    if (!inicio) {
+      errorEl.textContent = "La fecha de inicio es obligatoria.";
+      document.getElementById("trat-inicio").focus();
+      return;
+    }
 
     // validacion frontend fechas
 
@@ -324,35 +335,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const inicioValue =
-      document.getElementById("trat-inicio").value;
-
-    const finalizacionValue =
-      document.getElementById("trat-finalizacion").value;
-
     const payload = {
-
       nombre,
-
-      descripcion:
-        document.getElementById("trat-descripcion")
-          .value
-          .trim() || null,
-
-      frecuencia:
-        document.getElementById("trat-frecuencia")
-          .value
-          .trim() || null,
-
-      inicio:
-        inicioValue
-          ? new Date(inicioValue).toISOString()
-          : null,
-
-      finalizacion:
-        finalizacionValue
-          ? new Date(finalizacionValue).toISOString()
-          : null,
+      descripcion,
+      frecuencia,
+      inicio: inicio ? new Date(inicio).toISOString() : null,
+      finalizacion: finalizacion ? new Date(finalizacion).toISOString() : null,
     };
 
     try {
@@ -627,6 +615,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!vetId || vetId === "null" || vetId === "undefined") {
       alert("Veterinaria no válida en sesión.");
       return;
+    }
+
+    const consultaErrorEl = document.getElementById("consulta-error");
+    if (consultaErrorEl) consultaErrorEl.textContent = "";
+
+    const listaVacunasNuevas = document.getElementById("lista-vacunas-nuevas");
+    if (listaVacunasNuevas && listaVacunasNuevas.children.length > 0) {
+      if (vacunasPendientes.size === 0) {
+        if (consultaErrorEl) {
+          consultaErrorEl.textContent = "Debe seleccionar al menos una vacuna de la lista.";
+        }
+        return;
+      }
+    }
+
+    const listaDosis = document.getElementById("lista-dosis");
+    if (listaDosis && listaDosis.children.length > 0) {
+      if (dosisPendientes.length === 0) {
+        if (consultaErrorEl) {
+          consultaErrorEl.textContent = "Debe seleccionar al menos una dosis a registrar.";
+        }
+        return;
+      }
     }
 
     try {

@@ -11,6 +11,20 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  const nombreRaw = document.getElementById("nombre").value.trim();
+  const especie = document.getElementById("especie").value;
+
+  if (!nombreRaw || !especie) {
+    mensaje.innerText = "Por favor complete todos los campos obligatorios.";
+    mensaje.style.color = "red";
+    return;
+  }
+
+  const capitalizar = (str) => {
+    if (!str || !str.trim()) return null;
+    const s = str.trim();
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  };
   const fechaNacimiento =
   document.getElementById("fecha_de_nacimiento").value;
 
@@ -38,12 +52,12 @@ form.addEventListener("submit", async (e) => {
 
   const data = {
     id_tutor: tutor.id_tutor,
-    foto_url: document.getElementById("foto_url").value,
-    nombre: capitalizar(document.getElementById("nombre").value),
-    especie: (document.getElementById("especie").value),
+    foto_url: document.getElementById("foto_url").value.trim() || null,
+    nombre: capitalizar(nombreRaw),
+    especie: especie,
     raza: capitalizar(document.getElementById("raza").value),
-    fecha_de_nacimiento: document.getElementById("fecha_de_nacimiento").value,
-    sexo: capitalizar(document.getElementById("sexo").value),
+    fecha_de_nacimiento: document.getElementById("fecha_de_nacimiento").value || null,
+    sexo: capitalizar(document.getElementById("sexo").value) || "Desconocido",
   };
 
   try {

@@ -6,6 +6,15 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const rut = document.getElementById("rut").value.trim();
+        const nombre = document.getElementById("nombre").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!rut || !nombre || !email || !password) {
+            mensajeP.textContent = "Por favor complete todos los campos obligatorios.";
+            mensajeP.style.color = "red";
+            return;
+        }
 
         if (!validarRutUruguayo(rut)) {
             mensajeP.textContent = "El RUT ingresado no es válido.";
@@ -15,10 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         mensajeP.textContent = "Registrando...";
         mensajeP.style.color = "blue";
-
-        const nombre = document.getElementById("nombre").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
 
         try {
             await api.post("/veterinarios/", {
