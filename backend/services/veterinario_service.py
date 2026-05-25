@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from services.auth_service import _hashear, generar_y_enviar_codigo_verificacion
 from config.database import UsuarioTutor, Veterinario
 from services import tutor_service, mascota_service
 from schemas.mascota import MascotaResumen, ResultadoBusquedaTutor
@@ -40,8 +41,8 @@ def buscar_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTutor:
     )
 
 
-def registrar_veterinaria(db: Session, vet_data) -> Veterinario:
-    from services.auth_service import _hashear, generar_y_enviar_codigo_verificacion
+def registrar_veterinario(db: Session, vet_data) -> Veterinario:
+    
     
     # Validar que no exista el rut o el email
     existente = db.query(Veterinario).filter(
