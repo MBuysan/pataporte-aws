@@ -4,7 +4,17 @@ const mensaje = document.getElementById("mensaje");
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const nombre = document.getElementById("nombre").value.trim();
     const cedula = document.getElementById("cedula").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const telefono = document.getElementById("telefono").value.trim();
+
+    if (!nombre || !cedula || !email || !password) {
+        mensaje.innerText = "Por favor complete todos los campos obligatorios.";
+        mensaje.style.color = "red";
+        return;
+    }
 
     if (!validarCedulaUruguaya(cedula)) {
         mensaje.innerText = "La cédula ingresada no es válida.";
@@ -13,11 +23,11 @@ form.addEventListener("submit", async (e) => {
     }
 
     const data = {
-        nombre: document.getElementById("nombre").value,
+        nombre,
         cedula: limpiarDocumento(cedula),
-        email: document.getElementById("email").value,
-        password: document.getElementById("password").value,
-        telefono: document.getElementById("telefono").value
+        email,
+        password,
+        telefono: telefono || null
     };
 
     try {
