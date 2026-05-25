@@ -2,10 +2,10 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from services.auth_service import _hashear, generar_y_enviar_codigo_verificacion
-from config.database import UsuarioTutor, Veterinario
+from config.database import UsuarioTutor, Veterinario, Organizacion
 from services import tutor_service, mascota_service
 from schemas.mascota import MascotaResumen, ResultadoBusquedaTutor
-
+from schemas.veterinario import VeterinarioCreate
 
 def buscar_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTutor:
     """
@@ -41,35 +41,56 @@ def buscar_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTutor:
     )
 
 
-def registrar_veterinario(db: Session, vet_data) -> Veterinario:
+
+def registrar_veterinario(db: Session, vet_data: VeterinarioCreate) -> Veterinario:
     
     
     # Validar que no exista el rut o el email
-    existente = db.query(Veterinario).filter(
+    existente_email = db.query(Veterinario).filter(
         (Veterinario.rut == vet_data.rut) | (Veterinario.email == vet_data.email)
     ).first()
     
-    if existente:
-        if existente.rut == vet_data.rut:
-            raise HTTPException(status_code=400, detail="El RUT ya está registrado")
-        if existente.email == vet_data.email:
-            raise HTTPException(status_code=400, detail="El correo electrónico ya está registrado")
+    if existente_email:
+        raise HTTPException(status_code=400, detail="El correo electrónico ya está registrado")
+    
+    existente_matricula = db.query(Veterinario).filter(
+        Veterinario.matricula == vet_data.matricula
+        ).first()
+    
+    if existente_matricula:
+        raise HTTPException(status_code=400, detail="La matrícula ya está registrada")
+    
+    organizacion = _obtener_o_crear_organizacion(db, vet_data.rut)
 
-    # Crear Veterinario (Organización) en estado pendiente_verificacion
-    nueva_vet = Veterinario(
+    # Crear Veterinario asociado a esa organización 
+    nuevo_vet = Veterinario(
+        id_organizacion=organizacion.id_organizacion,
+        matricula=vet_data.matricula,
         rut=vet_data.rut,
         nombre=vet_data.nombre,
         email=vet_data.email,
         password_hash=_hashear(vet_data.password),
         estado="pendiente_verificacion"
     )
-    db.add(nueva_vet)
+    db.add(nuevo_vet)
     db.commit()
-    db.refresh(nueva_vet)
-
+    db.refresh(nuevo_vet)
 
 
     # Generamos el código de verificación y lo enviamos por correo
-    generar_y_enviar_codigo_verificacion(db, nueva_vet.email, "veterinario")
+    generar_y_enviar_codigo_verificacion(db, nuevo_vet.email, "veterinario")
     
-    return nueva_vet
+    return nuevo_vet
+
+def _obtener_o_crear_organizacion(db: Session, rut: str) -> Organizacion:
+    
+    org = db.query(Organizacion).filter(Organizacion.rut == rut).first()
+    if org:
+        return org
+ 
+    nueva_org = Organizacion(
+        rut=rut
+        )
+    db.add(nueva_org)
+    db.flush()  
+    return nueva_org
