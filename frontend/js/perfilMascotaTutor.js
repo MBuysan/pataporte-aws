@@ -122,6 +122,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         fotoEl.textContent = m.nombre.charAt(0).toUpperCase();
       }
+
+      if (m.especie !== "perro" && m.especie !== "gato") {
+        btnVacunas.style.display = "none";
+        btnCert.style.display = "none";
+      }
     } catch (error) {
       mostrarMensaje(mensajePagina, `No se pudo cargar la mascota: ${error.message}`, "error");
     }

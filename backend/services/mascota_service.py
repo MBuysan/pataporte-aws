@@ -67,6 +67,12 @@ def crear(db: Session, data: MascotaCreate):
             status_code=409,
             detail="Ya existe una mascota con ese nombre, especie y fecha de nacimiento para este tutor",
         )
+        
+    if data.fecha_de_nacimiento and data.fecha_de_nacimiento > date.today():
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha de nacimiento no puede ser futura"
+        )
 
     nueva_mascota = Mascota(
         nombre=data.nombre,

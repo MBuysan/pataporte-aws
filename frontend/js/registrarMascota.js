@@ -11,6 +11,28 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  const fechaNacimiento =
+  document.getElementById("fecha_de_nacimiento").value;
+
+  if (fechaNacimiento) {
+
+      const hoy = new Date();
+      const fechaIngresada = new Date(fechaNacimiento);
+
+      // quitar horas para comparar solo fechas
+      hoy.setHours(0, 0, 0, 0);
+
+      if (fechaIngresada > hoy) {
+
+        mensaje.innerText =
+          "La fecha de nacimiento no puede ser futura";
+
+        mensaje.style.color = "red";
+
+        return;
+      }
+  }
+
   const capitalizar = (str) =>
     str.trim().charAt(0).toUpperCase() + str.trim().slice(1).toLowerCase();
 

@@ -36,6 +36,7 @@ class VeterinariaCreate(BaseModel):
             raise ValueError("El RUT ingresado no es válido")
 
         return rut
+    
 class VeterinariaResponse(BaseModel):
     id_veterinaria: str
     rut: str
