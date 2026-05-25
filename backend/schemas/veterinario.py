@@ -31,14 +31,32 @@ class VeterinarioCreate(BaseModel):
 
         return rut
     
+    @field_validator("matricula")
+    @classmethod
+    def validar_matricula(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("La matrícula no puede estar vacía")
+        return v
+    
+
+class OrganizacionResponse(BaseModel):
+    id_organizacion: str
+    rut:             str
+    fecha_registro:  datetime
+ 
+    class Config:
+        from_attributes = True
+ 
+
 class VeterinarioResponse(BaseModel):
     id_veterinario: str
-    rut_organizacion: str
     matricula: str
     nombre: str
     email: EmailStr
     estado: str
     fecha_registro: datetime
+    organizacion: OrganizacionResponse
 
     class Config:
         from_attributes = True
