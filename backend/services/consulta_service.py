@@ -42,48 +42,53 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
     db.add(consulta)
     db.flush()  # para generar el id_consulta antes de hacer otras operaciones que lo necesitan
     
-   
-    esquema = db.query(EsquemaVacunacion).filter_by(
-        id_mascota=data.id_mascota
-    ).first()
-    if not esquema:
-        raise HTTPException(status_code=404, detail="La mascota no tiene esquema de vacunación")
+    requiere_esquema = mascota.especie != "otro"
+    
+    esquema = None
+    
+    if requiere_esquema:
+        
+        esquema = db.query(EsquemaVacunacion).filter_by(
+            id_mascota=data.id_mascota
+        ).first()
+        if not esquema:
+            raise HTTPException(status_code=404, detail="La mascota no tiene esquema de vacunación")
 
     
-    esquemas_nuevos: dict = {}
-    for id_vacuna in data.nuevas_vacunas:
-        ev = vacuna_service.agregar_vacuna_a_esquema(
-            db, esquema.id_esquema, id_vacuna, commit=False
-        )
-        esquemas_nuevos[id_vacuna] = ev.id_esquema_vacuna
+        esquemas_nuevos: dict = {}
+        for id_vacuna in data.nuevas_vacunas:
+            ev = vacuna_service.agregar_vacuna_a_esquema(
+                db, esquema.id_esquema, id_vacuna, commit=False
+            )
+            esquemas_nuevos[id_vacuna] = ev.id_esquema_vacuna
 
-    
-    for dosis_data in data.dosis:
-        if dosis_data.id_esquema_vacuna:
-            id_ev = dosis_data.id_esquema_vacuna
-        elif dosis_data.id_vacuna_nueva:
-            id_ev = esquemas_nuevos.get(dosis_data.id_vacuna_nueva)
-            if not id_ev:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"La vacuna {dosis_data.id_vacuna_nueva} no fue agregada en esta consulta"
-                )
-        else:
-            raise HTTPException(status_code=400, detail="Dosis sin vacuna asociada")
+        
+        for dosis_data in data.dosis:
+            if dosis_data.id_esquema_vacuna:
+                id_ev = dosis_data.id_esquema_vacuna
+            elif dosis_data.id_vacuna_nueva:
+                id_ev = esquemas_nuevos.get(dosis_data.id_vacuna_nueva)
+                if not id_ev:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"La vacuna {dosis_data.id_vacuna_nueva} no fue agregada en esta consulta"
+                    )
+            else:
+                raise HTTPException(status_code=400, detail="Dosis sin vacuna asociada")
 
-       
-        from schemas.vacuna import DosisCreate
-        vacuna_service.registrar_dosis(
-            db=db,
-            data=DosisCreate(
-                id_esquema_vacuna=id_ev,
-                fecha_aplicacion=dosis_data.fecha_aplicacion,
-                fecha_proxima_dosis=dosis_data.fecha_proxima_dosis,
-                id_consulta=consulta.id_consulta,
-            ),
-            id_veterinaria=id_veterinario,
-            commit=False,
-        )
+        
+            from schemas.vacuna import DosisCreate
+            vacuna_service.registrar_dosis(
+                db=db,
+                data=DosisCreate(
+                    id_esquema_vacuna=id_ev,
+                    fecha_aplicacion=dosis_data.fecha_aplicacion,
+                    fecha_proxima_dosis=dosis_data.fecha_proxima_dosis,
+                    id_consulta=consulta.id_consulta,
+                ),
+                id_veterinaria=id_veterinario,
+                commit=False,
+            )
 
    
     db.commit()
