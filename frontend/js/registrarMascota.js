@@ -13,20 +13,14 @@ form.addEventListener("submit", async (e) => {
 
   const nombreRaw = document.getElementById("nombre").value.trim();
   const especie = document.getElementById("especie").value;
+  const fechaNacimiento = document.getElementById("fecha_de_nacimiento").value;
+
 
   if (!nombreRaw || !especie) {
     mensaje.innerText = "Por favor complete todos los campos obligatorios.";
     mensaje.style.color = "red";
     return;
   }
-
-  const capitalizar = (str) => {
-    if (!str || !str.trim()) return null;
-    const s = str.trim();
-    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-  };
-  const fechaNacimiento =
-  document.getElementById("fecha_de_nacimiento").value;
 
   if (fechaNacimiento) {
 
