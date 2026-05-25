@@ -29,7 +29,7 @@ def obtener_carnet(
 # TODO: reemplazar por dependencia real de autenticación JWT
 def _get_id_veterinaria(x_veterinaria_id: str = Header(...)) -> str:
     """
-    Dependencia temporal: el id de la veterinaria se pasa en el header X-Veterinaria-Id.
+    Dependencia temporal: el id de la veterinario se pasa en el header X-Veterinario-Id.
     En producción debe extraerse del token JWT.
     """
     return x_veterinaria_id

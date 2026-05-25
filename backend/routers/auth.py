@@ -44,7 +44,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     return auth_service.login_tutor(db, data.identificador, data.password)
 
 
-@router.post("/login/veterinaria", response_model=VeterinariaLoginResponse, summary="Iniciar sesión de organización/veterinaria")
+@router.post("/login/veterinario", response_model=VeterinariaLoginResponse, summary="Iniciar sesión de organización/veterinario")
 def login_veterinaria_endpoint(data: LoginRequest, db: Session = Depends(get_db)):
     return auth_service.login_veterinaria(db, data.identificador, data.password)
 

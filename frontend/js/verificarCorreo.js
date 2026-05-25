@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. Extraer parámetros de la URL para saber a quién verificar
   const params = new URLSearchParams(window.location.search);
   const email = params.get("email");
-  const tipo = params.get("tipo"); // "tutor" o "veterinaria"
+  const tipo = params.get("tipo"); // "tutor" o "veterinario"
 
   // 2. Elementos del DOM
   const mostrarEmail  = document.getElementById("mostrar-email");
@@ -62,12 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1500);
 
       } else {
-        // Imitando loginVeterinaria.js: Guardamos las llaves de contexto necesarias para una veterinaria
+        // Imitando loginVeterinaria.js: Guardamos las llaves de contexto necesarias para una veterinario
         localStorage.setItem("user", JSON.stringify(response.user));
-        localStorage.setItem("rol", "veterinaria");
+        localStorage.setItem("rol", "veterinario");
         localStorage.setItem("veterinaria_id", response.user.id_veterinaria);
 
-        // Redireccionamos a la pantalla principal de la veterinaria
+        // Redireccionamos a la pantalla principal de la veterinario
         setTimeout(() => {
           window.location.href = "buscar-mascotas.html";
         }, 1500);

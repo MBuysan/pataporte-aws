@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const vetId = localStorage.getItem("veterinaria_id");
     if (!vetId || vetId === "null" || vetId === "undefined") {
-      alert("Veterinaria no válida en sesión.");
+      alert("Veterinario no válida en sesión.");
       return;
     }
 

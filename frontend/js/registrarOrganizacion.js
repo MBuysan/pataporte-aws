@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mensajeP.style.color = "green";
             form.reset();
             setTimeout(() => {
-                window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinaria`;
+                window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinario`;
             }, 1500);
 
         } catch (error) {

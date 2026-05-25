@@ -30,7 +30,7 @@ function inicializarPantallaLogin() {
             return;
         }
         try {
-            const response = await api.post("/auth/login/veterinaria", {
+            const response = await api.post("/auth/login/veterinario", {
                 identificador: esEmail ? identificador : limpiarDocumento(identificador),
                 password,
             });
@@ -39,7 +39,7 @@ function inicializarPantallaLogin() {
             localStorage.setItem("access_token", response.access_token);
             if (response.user) {
                 localStorage.setItem("user", JSON.stringify(response.user));
-                localStorage.setItem("rol", "veterinaria");
+                localStorage.setItem("rol", "veterinario");
                 const vetId = response.user?.id_veterinaria;
 
                 if (!vetId) {

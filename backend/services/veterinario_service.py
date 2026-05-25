@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from config.database import UsuarioTutor, Veterinaria, Sucursal
+from config.database import UsuarioTutor, Veterinario, Sucursal
 from services import tutor_service, mascota_service
 from schemas.mascota import MascotaResumen, ResultadoBusquedaTutor
 
@@ -40,12 +40,12 @@ def buscar_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTutor:
     )
 
 
-def registrar_veterinaria(db: Session, vet_data) -> Veterinaria:
+def registrar_veterinaria(db: Session, vet_data) -> Veterinario:
     from services.auth_service import _hashear, generar_y_enviar_codigo_verificacion
     
     # Validar que no exista el rut o el email
-    existente = db.query(Veterinaria).filter(
-        (Veterinaria.rut == vet_data.rut) | (Veterinaria.email == vet_data.email)
+    existente = db.query(Veterinario).filter(
+        (Veterinario.rut == vet_data.rut) | (Veterinario.email == vet_data.email)
     ).first()
     
     if existente:
@@ -54,8 +54,8 @@ def registrar_veterinaria(db: Session, vet_data) -> Veterinaria:
         if existente.email == vet_data.email:
             raise HTTPException(status_code=400, detail="El correo electrónico ya está registrado")
 
-    # Crear Veterinaria (Organización) en estado pendiente_verificacion
-    nueva_vet = Veterinaria(
+    # Crear Veterinario (Organización) en estado pendiente_verificacion
+    nueva_vet = Veterinario(
         rut=vet_data.rut,
         nombre=vet_data.nombre,
         email=vet_data.email,
@@ -77,6 +77,6 @@ def registrar_veterinaria(db: Session, vet_data) -> Veterinaria:
     db.refresh(nueva_vet)
 
     # Generamos el código de verificación y lo enviamos por correo
-    generar_y_enviar_codigo_verificacion(db, nueva_vet.email, "veterinaria")
+    generar_y_enviar_codigo_verificacion(db, nueva_vet.email, "veterinario")
     
     return nueva_vet
