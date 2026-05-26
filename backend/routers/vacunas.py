@@ -1,11 +1,14 @@
+import os
+
 from fastapi import APIRouter, Depends, Header, Query
 from sqlalchemy.orm import Session
 
 from config.database import get_db
 from schemas.vacuna import DosisCreate, DosisResponse, EsquemaVacunacionResponse, EditarEsquemaVacuna
 from services import vacuna_service
-from config.database import TipoVacunas, Dosis, EsquemaVacunacion, EsquemaVacuna
+from config.database import Dosis, EsquemaVacunacion, EsquemaVacuna
 from typing import Optional
+
 
 router = APIRouter()
 
