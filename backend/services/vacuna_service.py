@@ -88,7 +88,7 @@ def agregar_vacuna_a_esquema(db: Session, id_esquema: str, id_vacuna: str, commi
 
     return esquema_vacuna
 
-def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str, commit: bool = True):
+def registrar_dosis(db: Session, data: DosisCreate, id_veterinario: str, commit: bool = True):
     esquema_vacuna = db.query(EsquemaVacuna).filter_by(
         id_esquema_vacuna=data.id_esquema_vacuna
     ).first()
@@ -112,7 +112,7 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str, commit:
     dosis = Dosis(
         id_dosis=str(uuid.uuid4()),
         id_esquema_vacuna=data.id_esquema_vacuna,
-        id_veterinaria=id_veterinaria,
+        id_veterinario=id_veterinario,
         id_consulta=data.id_consulta,
         numero_dosis=cantidad_actual + 1,  # Número calculado automáticamente
         fecha_aplicacion=data.fecha_aplicacion,
@@ -122,7 +122,7 @@ def registrar_dosis(db: Session, data: DosisCreate, id_veterinaria: str, commit:
     db.add(dosis)
     db.flush()
 
-    _generar_certificado(db, dosis)
+    
     _actualizar_proxima_dosis(db, dosis, data.fecha_proxima_dosis)
 
     if commit:
@@ -185,13 +185,7 @@ def esquema_por_mascota(db: Session, id_mascota: str):
     return resultado
 
 
-def _generar_certificado(db: Session, dosis: Dosis):
-    """
-    Funcion privada. Genera el certificado de la dosis.
-    - Vet interno: estado = 'vigente'
-    - Vet externo: estado = 'pendiente_revision' (regla 3.4.5)
-    """
-    pass
+
 
 
 def _actualizar_proxima_dosis(db: Session, dosis: Dosis, fecha_proxima_dosis: Optional[date]):
@@ -227,7 +221,7 @@ def editar_esquema_vacuna(
     id_esquema_vacuna: str,
     agregar_dosis: list[DosisCreate] = None,
     eliminar_dosis: list[str] = None,
-    id_veterinaria: str = None
+    id_veterinario: str = None
 ):
 
     esquema_vacuna = db.query(EsquemaVacuna).filter_by(
@@ -294,7 +288,7 @@ def editar_esquema_vacuna(
             dosis = Dosis(
                 id_dosis=str(uuid.uuid4()),
                 id_esquema_vacuna=id_esquema_vacuna,
-                id_veterinaria=id_veterinaria,
+                id_veterinario=id_veterinario,
                 id_consulta=nueva.id_consulta,
                 numero_dosis=cantidad_actual,
                 fecha_aplicacion=nueva.fecha_aplicacion,
@@ -303,7 +297,7 @@ def editar_esquema_vacuna(
             db.add(dosis)
             db.flush()
 
-            _generar_certificado(db, dosis)
+            
             _actualizar_proxima_dosis(db, dosis, nueva.fecha_proxima_dosis)
 
     # -------------------------

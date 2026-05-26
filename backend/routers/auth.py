@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from schemas.auth import VeterinariaLoginResponse
+from schemas.auth import VeterinariaLoginResponse, VeterinarioLoginResponse
 
 from config.database import get_db
 from schemas.recuperacion_password import (
@@ -44,9 +44,9 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     return auth_service.login_tutor(db, data.identificador, data.password)
 
 
-@router.post("/login/veterinario", response_model=VeterinariaLoginResponse, summary="Iniciar sesión de organización/veterinario")
-def login_veterinaria_endpoint(data: LoginRequest, db: Session = Depends(get_db)):
-    return auth_service.login_veterinaria(db, data.identificador, data.password)
+@router.post("/login/veterinario", response_model=VeterinarioLoginResponse, summary="Iniciar sesión de veterinario")
+def login_veterinario_endpoint(data: LoginRequest, db: Session = Depends(get_db)):
+    return auth_service.login_veterinario(db, data.identificador, data.password)
 
 
 @router.post(

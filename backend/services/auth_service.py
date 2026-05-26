@@ -425,20 +425,23 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
         # --- GENERAR TOKEN DE AUTO-LOGIN ---
         access_token = crear_access_token(
             {
-                "sub": str(usuario.id_veterinaria),
+                "sub": str(usuario.id_veterinario),
                 "rol": "veterinario",
                 "nombre": usuario.nombre,
                 "email": usuario.email,
+                "matricula": usuario.matricula,
+                "id_organizacion": usuario.id_organizacion,
             }
         )
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "user": {
-                "id_veterinaria": usuario.id_veterinaria,
+                "id_veterinario": usuario.id_veterinario,
                 "nombre": usuario.nombre,
                 "email": usuario.email,
-                "rut": usuario.rut,
+                "matricula": usuario.matricula,
+                "id_organizacion": usuario.id_organizacion,
             },
         }
 
@@ -497,6 +500,7 @@ def login_tutor(db: Session, identificador: str, password: str):
             "rol": "tutor",
             "nombre": tutor.nombre,
             "email": tutor.email,
+            
         }
     )
 
@@ -511,13 +515,13 @@ def login_tutor(db: Session, identificador: str, password: str):
         },
     }
 
-def login_veterinaria(db: Session, identificador: str, password: str):
+def login_veterinario(db: Session, identificador: str, password: str):
     vet = (
         db.query(Veterinario)
         .filter(
             or_(
                 Veterinario.email == identificador,
-                Veterinario.rut == identificador,
+                Veterinario.matricula == identificador,
             ),
         )
         .first()
@@ -538,10 +542,12 @@ def login_veterinaria(db: Session, identificador: str, password: str):
 
     access_token = crear_access_token(
         {
-            "sub": str(vet.id_veterinaria),
+            "sub": str(vet.id_veterinario),
             "rol": "veterinario",
             "nombre": vet.nombre,
             "email": vet.email,
+            "matricula": vet.matricula,
+            "id_organizacion": vet.id_organizacion,
         }
     )
 
@@ -549,9 +555,10 @@ def login_veterinaria(db: Session, identificador: str, password: str):
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id_veterinaria": vet.id_veterinaria,
+            "id_veterinario": vet.id_veterinario,
             "nombre": vet.nombre,
             "email": vet.email,
-            "rut": vet.rut,
+            "matricula": vet.matricula,
+            "id_organizacion": vet.id_organizacion,
         },
     }

@@ -19,13 +19,16 @@ class LoginResponse(BaseModel):
     token_type: Literal["bearer"]
     user: UserLoginResponse
 
-class VeterinariaLoginResponseData(BaseModel):
-    id_veterinaria: str
-    nombre: str
-    email: str
-    rut: str
 
-class VeterinariaLoginResponse(BaseModel):
+class VeterinarioLoginResponseData(BaseModel):
+    id_veterinario:  str
+    nombre:          str
+    email:           str
+    matricula:       str
+    id_organizacion: str
+ 
+ 
+class VeterinarioLoginResponse(BaseModel):
     access_token: str
-    token_type: Literal["bearer"]
-    user: VeterinariaLoginResponseData
+    token_type:   Literal["bearer"]
+    user:         VeterinarioLoginResponseData
