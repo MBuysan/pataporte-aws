@@ -21,6 +21,8 @@ import jwt
 from sqlalchemy import or_
 from config.settings import settings
 
+from messaging.publisher import publicar_email
+
 """
 configuracion de hashing 
     CryptContext es el objeto que sabe como hashear y verificar con bcrypt.
@@ -239,7 +241,11 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     db.add(recuperacion)
     db.commit()
 
-    _enviar_email_recuperacion(tutor.email, codigo_plano)
+    publicar_email({
+        "tipo": "verificacion_email",
+        "email": tutor.email,
+        "codigo": codigo_plano
+    })
 
     return {
         "mensaje": "Si el email está registrado, recibirás un código de recuperación"
@@ -340,8 +346,11 @@ def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: 
     db.add(nueva_verificacion)
     db.commit()
 
-    _enviar_email_verificacion(email, codigo_plano)
-
+    publicar_email({
+        "tipo": "verificacion_email",
+        "email": email,
+        "codigo": codigo_plano
+    })
 
 def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
     """
