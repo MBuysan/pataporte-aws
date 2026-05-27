@@ -111,7 +111,6 @@ class Veterinario(Base):
     consultas:              Mapped[list["Consulta"]]    = relationship("Consulta",    back_populates="veterinario")
     dosis:                  Mapped[list["Dosis"]]       = relationship("Dosis",       back_populates="veterinario")
     organizacion:           Mapped["Organizacion"]     = relationship("Organizacion", back_populates="veterinarios")
-    pataportes_emitidos:    Mapped[list["Pataporte"]] = relationship("Pataporte",   back_populates="veterinario_emisor")
     
     
 
@@ -223,14 +222,14 @@ class Pataporte(Base):
 
     id_pataporte: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_mascota: Mapped[str] = mapped_column(ForeignKey("mascota.id_mascota", ondelete="CASCADE"), nullable=False)
-    id_veterinario_emisor: Mapped[str] = mapped_column(ForeignKey("veterinario.id_veterinario", ondelete="RESTRICT"), nullable=False)
-    hash_verificacion: Mapped[str] = mapped_column(VARCHAR(255), nullable=False)
+    emitido_por_rol: Mapped[str] = mapped_column(VARCHAR(20), nullable=False) # "veterinario" | "organizacion"
+    emitido_por_id: Mapped[str] = mapped_column(UUID(as_uuid=False), nullable=False) # id_veterinario u id_organizacion según emitido_por_rol
+    hash_verificacion: Mapped[str] = mapped_column(VARCHAR(255), nullable=False, unique=True)
     credencial_json: Mapped[str] = mapped_column(Text, nullable=False)
     fecha_emision: Mapped[date] = mapped_column(Date, default=date.today)
     estado: Mapped[str] = mapped_column(estado_pataporte_enum, default="vigente")
     
     mascota: Mapped["Mascota"] = relationship("Mascota",back_populates="pataportes")
-    emisor: Mapped["Veterinario"] = relationship("Veterinario", back_populates="pataportes_emitidos")
 
 
 
