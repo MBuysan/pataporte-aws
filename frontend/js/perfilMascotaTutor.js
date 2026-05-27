@@ -34,8 +34,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=tutor`;
   });
 
-  btnCert.addEventListener("click", () => {
-    alert("Funcionalidad de descarga de certificado estará disponible próximamente.");
+  btnCert.addEventListener("click", async () => {
+
+    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
+
+    btnCert.disabled = true;
+    btnCert.textContent = "Generando...";
+
+    try {
+      const res = await api.post(`/pataporte/${idMascota}`);
+
+      alert(
+        `Pataporte generado correctamente.\n\n` +
+        `El certificado PDF fue enviado al correo del tutor.\n\n`
+      );
+
+    } catch (err) {
+
+      alert(`Error al generar el Pataporte: ${err.message}`);
+
+    } finally {
+      
+      btnCert.disabled = false;
+      btnCert.textContent = "Generar Pataporte";
+    }
   });
 
   btnEliminar.addEventListener("click", async () => {

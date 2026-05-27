@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from services import tratamiento_service, vacuna_service
 from schemas.consulta import ConsultaCreate
-from config.database import Consulta, Dosis, EsquemaVacuna, EsquemaVacunacion, Mascota, TipoVacunas, Veterinaria, Tratamiento
+from config.database import Consulta, Dosis, EsquemaVacuna, EsquemaVacunacion, Mascota, TipoVacunas, Veterinario, Tratamiento
 
 
 def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
@@ -21,9 +21,9 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
         raise HTTPException(status_code=404, detail="Mascota no encontrada o inactiva")
  
     # verifica que el veterinario existe y esté activo
-    veterinario = db.query(Veterinaria).filter(
-        Veterinaria.id_veterinaria == id_veterinario,
-        Veterinaria.estado == "activo"
+    veterinario = db.query(Veterinario).filter(
+        Veterinario.id_veterinario == id_veterinario,
+        Veterinario.estado == "activo"
     ).first()
     if not veterinario:
         raise HTTPException(status_code=404, detail="Veterinario no encontrado o inactivo")
@@ -86,7 +86,7 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
                     fecha_proxima_dosis=dosis_data.fecha_proxima_dosis,
                     id_consulta=consulta.id_consulta,
                 ),
-                id_veterinaria=id_veterinario,
+                id_veterinario=id_veterinario,
                 commit=False,
             )
 

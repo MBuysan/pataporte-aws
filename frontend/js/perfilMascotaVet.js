@@ -32,9 +32,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=vet`;
   };
 
-  btnCert.onclick = () => {
-    alert("La generación de certificados estará disponible en la próxima versión.");
+  btnCert.onclick = async () => {
+    
+    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
+
+    btnCert.disabled    = true;
+    btnCert.textContent = "Generando...";
+
+    try {
+      const res = await api.post(`/pataporte/${idMascota}`);
+
+      alert(
+        `Pataporte generado correctamente.\n\n` +
+        `El certificado PDF fue enviado al correo del tutor.\n\n`
+      );
+
+    } catch (err) {
+
+      alert(`Error al generar el Pataporte: ${err.message}`);
+
+    } finally {
+
+      btnCert.disabled    = false;
+      btnCert.textContent = "Generar Certificado";
+    }
   };
+
   const modalDetalleConsulta = document.getElementById("modal-detalle-consulta");
   const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
@@ -611,9 +634,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   formConsulta.onsubmit = async (e) => {
     e.preventDefault();
 
-    const vetId = localStorage.getItem("veterinaria_id");
+    const vetId = localStorage.getItem("veterinario_id");
     if (!vetId || vetId === "null" || vetId === "undefined") {
-      alert("Veterinaria no válida en sesión.");
+      alert("Veterinario no válido en sesión.");
       return;
     }
 

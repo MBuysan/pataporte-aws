@@ -10,9 +10,9 @@ tambien hereda de str para poder manejarse en json y la base de datos
 
 
 class SexoEnum(str, Enum):
-    macho = "Macho"
-    hembra = "Hembra"
-    desconocido = "Desconocido"
+    macho = "macho"
+    hembra = "hembra"
+    desconocido = "desconocido"
 
 
 class EstadoEnum(str, Enum):

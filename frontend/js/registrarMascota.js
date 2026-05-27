@@ -41,17 +41,15 @@ form.addEventListener("submit", async (e) => {
       }
   }
 
-  const capitalizar = (str) =>
-    str.trim().charAt(0).toUpperCase() + str.trim().slice(1).toLowerCase();
 
   const data = {
     id_tutor: tutor.id_tutor,
     foto_url: document.getElementById("foto_url").value.trim() || null,
     nombre: capitalizar(nombreRaw),
     especie: especie,
-    raza: capitalizar(document.getElementById("raza").value),
+    raza: (document.getElementById("raza").value),
     fecha_de_nacimiento: document.getElementById("fecha_de_nacimiento").value || null,
-    sexo: capitalizar(document.getElementById("sexo").value) || "Desconocido",
+    sexo: (document.getElementById("sexo").value) || "desconocido",
   };
 
   try {

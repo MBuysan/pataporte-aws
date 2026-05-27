@@ -2,21 +2,15 @@ from pydantic import BaseModel, EmailStr, field_validator
 from typing import List, Optional
 from datetime import datetime
 
-class SucursalResponse(BaseModel):
-    id_sucursal: str
-    nombre: str
-    estado: str
 
-    class Config:
-        from_attributes = True
-
-class VeterinariaCreate(BaseModel):
-    rut: str
+class VeterinarioCreate(BaseModel):
+    rut_organizacion: str
+    matricula: str
     nombre: str
     email: EmailStr
     password: str
 
-    @field_validator("rut")
+    @field_validator("rut_organizacion")
     @classmethod
     def validar_rut(cls, v: str) -> str:
         rut = "".join(filter(str.isdigit, v.strip()))
@@ -37,14 +31,32 @@ class VeterinariaCreate(BaseModel):
 
         return rut
     
-class VeterinariaResponse(BaseModel):
-    id_veterinaria: str
-    rut: str
+    @field_validator("matricula")
+    @classmethod
+    def validar_matricula(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("La matrícula no puede estar vacía")
+        return v
+    
+
+class OrganizacionResponse(BaseModel):
+    id_organizacion: str
+    rut:             str
+    fecha_registro:  datetime
+ 
+    class Config:
+        from_attributes = True
+ 
+
+class VeterinarioResponse(BaseModel):
+    id_veterinario: str
+    matricula: str
     nombre: str
     email: EmailStr
     estado: str
     fecha_registro: datetime
-    sucursales: List[SucursalResponse] = []
+    organizacion: OrganizacionResponse
 
     class Config:
         from_attributes = True

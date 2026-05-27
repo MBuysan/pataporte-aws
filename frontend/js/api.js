@@ -27,7 +27,7 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     localStorage.removeItem("rol");
-    localStorage.removeItem("veterinaria_id");
+    localStorage.removeItem("veterinario_id");
     localStorage.removeItem("tutor");
 
     const paginaActual = window.location.pathname;
@@ -35,13 +35,13 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
     // Evitar redirect infinito
     if (
       !paginaActual.includes("login.html") &&
-      !paginaActual.includes("login-veterinaria.html")
+      !paginaActual.includes("login-veterinario.html")
     ) {
 
       alert("Tu sesión expiró. Volvé a iniciar sesión.");
 
-      if (rol === "veterinaria") {
-        window.location.href = "login-veterinaria.html";
+      if (rol === "veterinario") {
+        window.location.href = "login-veterinario.html";
       } else {
         window.location.href = "login.html";
       }

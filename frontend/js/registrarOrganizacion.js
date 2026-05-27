@@ -5,8 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const rut = document.getElementById("rut").value.trim();
+        const rut = document.getElementById("rut_organizacion").value.trim();
         const nombre = document.getElementById("nombre").value.trim();
+        const matricula = document.getElementById("matricula").value.trim();
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
 
@@ -27,8 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             await api.post("/veterinarios/", {
-                rut: limpiarDocumento(rut),
+                rut_organizacion: limpiarDocumento(rut),
                 nombre,
+                matricula,
                 email,
                 password
             });
@@ -37,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mensajeP.style.color = "green";
             form.reset();
             setTimeout(() => {
-                window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinaria`;
+                window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinario`;
             }, 1500);
 
         } catch (error) {
