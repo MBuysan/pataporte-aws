@@ -35,7 +35,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   btnCert.addEventListener("click", () => {
-    alert("Funcionalidad de descarga de certificado estará disponible próximamente.");
+    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
+
+    btnCert.disabled = true;
+    btnCert.textContent = "Generando...";
+
+    try {
+      const res = await api.post(`/pataporte/${idMascota}`);
+      alert(
+        `Pataporte generado correctamente.\n\n` +
+        `El certificado PDF fue enviado al correo del tutor.\n\n` +
+        `Código de verificación:\n${res.hash_verificacion}`
+      );
+    } catch (err) {
+      alert(`Error al generar el Pataporte: ${err.message}`);
+    } finally {
+      btnCert.disabled = false;
+      btnCert.textContent = "Generar Pataporte";
+    }
   });
 
   btnEliminar.addEventListener("click", async () => {

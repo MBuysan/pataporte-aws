@@ -33,7 +33,7 @@ from config.database import (
 
 
 
-def generar_pataporte(db: Session, id_mascota: str, id_veterinario: str, emitido_por_rol: str, emitido_por_id: str) -> Pataporte:
+def generar_pataporte(db: Session, id_mascota: str, emitido_por_rol: str, emitido_por_id: str) -> Pataporte:
     """
     Genera (o actualiza) el pataporte digital de una mascota.
         - Verifica que la mascota, el veterinario emisor, su organización y el tutor existan.
@@ -58,7 +58,7 @@ def generar_pataporte(db: Session, id_mascota: str, id_veterinario: str, emitido
         .first()
         )
     if not tutor:
-        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+        raise HTTPException(status_code=400, detail="Tutor no encontrado")
     
     esquemas = (
         db.query(EsquemaVacunacion)
@@ -188,7 +188,7 @@ def _construir_credencial_json(mascota: Mascota, tutor: UsuarioTutor, esquemas: 
                 )
                 
                 
-                return {
+            return {
                     "@context": ["https://www.w3.org/2018/credentials/v1"],
                     "type": ["CredencialVerificable", "PataporteMascota"],
                     "issuanceDate": fecha_emision.isoformat(),
