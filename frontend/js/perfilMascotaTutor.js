@@ -34,7 +34,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=tutor`;
   });
 
-  btnCert.addEventListener("click", () => {
+  btnCert.addEventListener("click", async () => {
+
     if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
 
     btnCert.disabled = true;

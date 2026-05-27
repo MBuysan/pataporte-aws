@@ -23,7 +23,7 @@ class Base(DeclarativeBase):
 estado_general_enum = SAEnum("activo", "inactivo", "pendiente_verificacion",          name="estado_general")
 estado_esquema_enum = SAEnum("activo", "completado",                                  name="estado_esquema")
 estado_pataporte_enum    = SAEnum("vigente", "deprecado", "revocado",  name="estado_pataporte")
-sexo_mascota_enum   = SAEnum("Macho", "Hembra", "Desconocido",                        name="sexo_mascota")
+sexo_mascota_enum   = SAEnum("macho", "hembra", "desconocido",                        name="sexo_mascota")
 rol_tutor_enum      = SAEnum("principal", "secundario",                               name="rol_tutor")
 especie_enum        = SAEnum("perro", "gato", "otro",                                       name="especie")
 
@@ -34,6 +34,7 @@ class UsuarioTutor(Base):
     id_tutor:       Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     cedula:         Mapped[str]      = mapped_column(VARCHAR(20),  nullable=False, unique=True)
     nombre:         Mapped[str]      = mapped_column(VARCHAR(120), nullable=False)
+    rol_tutor:      Mapped[str]      = mapped_column(rol_tutor_enum, nullable=False, default="principal")
     email:          Mapped[str]      = mapped_column(VARCHAR(254), nullable=False, unique=True)
     telefono:       Mapped[str|None] = mapped_column(VARCHAR(30),  nullable=True)
     password_hash:  Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
@@ -60,7 +61,7 @@ class Mascota(Base):
     consultas:    Mapped[list["Consulta"]]          = relationship("Consulta",          back_populates="mascota",cascade="all, delete-orphan",)
     tratamientos: Mapped[list["Tratamiento"]]       = relationship("Tratamiento",       back_populates="mascota",cascade="all, delete-orphan",)
     esquemas:     Mapped[list["EsquemaVacunacion"]] = relationship("EsquemaVacunacion", back_populates="mascota",cascade="all, delete-orphan",)
-
+    pataportes:    Mapped[list["Pataporte"]]          = relationship("Pataporte",         back_populates="mascota",cascade="all, delete-orphan",)
 
 class MascotaTutor(Base):
     #Tabla intermedia N:M. Solo puede haber un tutor principal por mascota (índice parcial).
@@ -106,7 +107,7 @@ class Veterinario(Base):
     password_hash:         Mapped[str]      = mapped_column(VARCHAR(255), nullable=False)
     estado:                Mapped[str]      = mapped_column(estado_general_enum, nullable=False, default="pendiente_verificacion")
     fecha_registro:        Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    id_organizacion:      Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("organizacion.id_organizacion", ondelete="RESTRICT", onupdate="CASCADE"), nullable=True)
+    id_organizacion:      Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("organizacion.id_organizacion", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     
     consultas:              Mapped[list["Consulta"]]    = relationship("Consulta",    back_populates="veterinario")
     dosis:                  Mapped[list["Dosis"]]       = relationship("Dosis",       back_populates="veterinario")
@@ -222,7 +223,7 @@ class Pataporte(Base):
 
     id_pataporte: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     id_mascota: Mapped[str] = mapped_column(ForeignKey("mascota.id_mascota", ondelete="CASCADE"), nullable=False)
-    emitido_por_rol: Mapped[str] = mapped_column(VARCHAR(20), nullable=False) # "veterinario" | "organizacion"
+    emitido_por_rol: Mapped[str] = mapped_column(VARCHAR(20), nullable=False) # "veterinario" | "tutor"
     emitido_por_id: Mapped[str] = mapped_column(UUID(as_uuid=False), nullable=False) # id_veterinario u id_organizacion según emitido_por_rol
     hash_verificacion: Mapped[str] = mapped_column(VARCHAR(255), nullable=False, unique=True)
     credencial_json: Mapped[str] = mapped_column(Text, nullable=False)

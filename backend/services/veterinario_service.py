@@ -45,28 +45,25 @@ def buscar_por_cedula(db: Session, cedula: str) -> ResultadoBusquedaTutor:
 def registrar_veterinario(db: Session, vet_data: VeterinarioCreate) -> Veterinario:
     
     
-    # Validar que no exista el rut o el email
+    # Validar que no exista el email
     existente_email = db.query(Veterinario).filter(
-        (Veterinario.rut == vet_data.rut) | (Veterinario.email == vet_data.email)
-    ).first()
-    
+        Veterinario.email == vet_data.email
+        ).first()
     if existente_email:
         raise HTTPException(status_code=400, detail="El correo electrónico ya está registrado")
     
     existente_matricula = db.query(Veterinario).filter(
         Veterinario.matricula == vet_data.matricula
         ).first()
-    
     if existente_matricula:
         raise HTTPException(status_code=400, detail="La matrícula ya está registrada")
     
-    organizacion = _obtener_o_crear_organizacion(db, vet_data.rut)
+    organizacion = _obtener_o_crear_organizacion(db, vet_data.rut_organizacion)
 
     # Crear Veterinario asociado a esa organización 
     nuevo_vet = Veterinario(
         id_organizacion=organizacion.id_organizacion,
         matricula=vet_data.matricula,
-        rut=vet_data.rut,
         nombre=vet_data.nombre,
         email=vet_data.email,
         password_hash=_hashear(vet_data.password),

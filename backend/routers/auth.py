@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from schemas.auth import VeterinariaLoginResponse, VeterinarioLoginResponse
+from schemas.auth import VeterinarioLoginResponse
 
 from config.database import get_db
 from schemas.recuperacion_password import (

@@ -2,8 +2,8 @@ from http.client import HTTPException
 import os
 import jwt
 from jwt import PyJWTError
-from backend.utils import password_utils
-from fastapi import APIRouter, Depends, Header, Query
+from utils import password_utils
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from config.database import get_db
