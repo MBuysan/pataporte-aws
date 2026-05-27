@@ -174,18 +174,20 @@ def _construir_credencial_json(mascota: Mascota, tutor: UsuarioTutor, esquemas: 
                     }
                 })
                 
+            esquema_completo = (len(dosis_lista) >= tipo.cantidad_dosis_requeridas)
+                
             vacunas_snapshot.append({
                 "nombre": tipo.nombre,
                 "descripcion": tipo.descripcion,
                 "dosis_requeridas": tipo.cantidad_dosis_requeridas,
                 "dosis_aplicadas": dosis_snapshot,
-                "esquema_completo": ev.estado == "completo",
+                "esquema_completo": esquema_completo,
             })
                 
-            esquema_general_completo = (
-                all(v["esquema_completo"] for v in vacunas_snapshot)
-                if vacunas_snapshot else False
-            )
+    esquema_general_completo = (
+        all(v["esquema_completo"] for v in vacunas_snapshot)
+        if vacunas_snapshot else False
+    )
                 
                 
     return {
