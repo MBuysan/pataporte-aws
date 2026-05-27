@@ -196,23 +196,43 @@ def _actualizar_proxima_dosis(db: Session, dosis: Dosis, fecha_proxima_dosis: Op
     cantidad_actual = db.query(Dosis).filter_by(
         id_esquema_vacuna=esquema_vacuna.id_esquema_vacuna
     ).count()
-
-    if fecha_proxima_dosis is not None and fecha_proxima_dosis <= dosis.fecha_aplicacion:
+    
+    
+    if (
+        fecha_proxima_dosis is not None
+        and fecha_proxima_dosis <= dosis.fecha_aplicacion
+    ):
         raise HTTPException(
             status_code=400,
-            detail="La fecha de la próxima dosis debe ser posterior a la fecha de aplicación"
+            detail="La fecha de la próxima dosis debe ser posterior"
         )
+
+
+    if cantidad_actual >= tipo_vacuna.cantidad_dosis_requeridas:
         
-    fecha_calculada = dosis.fecha_aplicacion + timedelta(days=tipo_vacuna.intervalo_entre_dosis_dias)
-
-    if cantidad_actual < tipo_vacuna.cantidad_dosis_requeridas:
-        # se usa la fecha indicada por el veterinario, o si no se ingresa se asume la fecha de aplicación + 21 días
-        esquema_vacuna.fecha_proxima_dosis = fecha_proxima_dosis or fecha_calculada
-
-    else:
-        # Todas las dosis aplicadas
-        esquema_vacuna.fecha_proxima_dosis = None
         esquema_vacuna.estado = "completado"
+        esquema_vacuna.fecha_proxima_dosis = None
+        
+        db.add(esquema_vacuna)
+        return
+
+    
+
+    if fecha_proxima_dosis is not None:
+        
+        esquema_vacuna.fecha_proxima_dosis = fecha_proxima_dosis
+    
+    elif tipo_vacuna.intervalo_entre_dosis_dias is not None:
+        
+        esquema_vacuna.fecha_proxima_dosis = dosis.fecha_aplicacion + timedelta(days=tipo_vacuna.intervalo_entre_dosis_dias)
+    
+    else:
+        
+        esquema_vacuna.fecha_proxima_dosis = None
+        
+    
+    esquema_vacuna.estado = "activo"
+    
 
     db.add(esquema_vacuna)
 

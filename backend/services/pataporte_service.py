@@ -12,11 +12,11 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 
 from datetime import datetime, timezone
-from config import settings
+from config.settings import settings
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -174,43 +174,43 @@ def _construir_credencial_json(mascota: Mascota, tutor: UsuarioTutor, esquemas: 
                     }
                 })
                 
-                vacunas_snapshot.append({
-                    "nombre": tipo.nombre,
-                    "descripcion": tipo.descripcion,
-                    "dosis_requeridas": tipo.cantidad_dosis_requeridas,
-                    "dosis_aplicadas": dosis_snapshot,
-                    "esquema_completo": ev.estado == "completo",
-                })
+            vacunas_snapshot.append({
+                "nombre": tipo.nombre,
+                "descripcion": tipo.descripcion,
+                "dosis_requeridas": tipo.cantidad_dosis_requeridas,
+                "dosis_aplicadas": dosis_snapshot,
+                "esquema_completo": ev.estado == "completo",
+            })
                 
-                esquema_general_completo = (
-                    all(v["esquema_completo"] for v in vacunas_snapshot)
-                    if vacunas_snapshot else False
-                )
+            esquema_general_completo = (
+                all(v["esquema_completo"] for v in vacunas_snapshot)
+                if vacunas_snapshot else False
+            )
                 
                 
-            return {
-                    "@context": ["https://www.w3.org/2018/credentials/v1"],
-                    "type": ["CredencialVerificable", "PataporteMascota"],
-                    "issuanceDate": fecha_emision.isoformat(),
-                    "issuer": {
-                        "id":     "urn:sistema:pataporte",
-                        "nombre": "Pataporte",
-                    },
-                    "credentialSubject": {
-                        "id":               f"urn:mascota:{mascota.id_mascota}",
-                        "nombre":           mascota.nombre,
-                        "especie":          mascota.especie,
-                        "raza":             mascota.raza,
-                        "fecha_nacimiento": str(mascota.fecha_de_nacimiento) if mascota.fecha_de_nacimiento else None,
-                        "sexo":             mascota.sexo,
-                        "tutor": {
-                            "nombre": tutor.nombre if tutor else None,
-                            "cedula": tutor.cedula if tutor else None,
-                        },
-                        "vacunas":                    vacunas_snapshot,
-                        "esquema_general_completo":   esquema_general_completo,
-                    },
-                }
+    return {
+            "@context": ["https://www.w3.org/2018/credentials/v1"],
+            "type": ["CredencialVerificable", "PataporteMascota"],
+            "issuanceDate": fecha_emision.isoformat(),
+            "issuer": {
+                "id":     "urn:sistema:pataporte",
+                "nombre": "Pataporte",
+            },
+            "credentialSubject": {
+                "id":               f"urn:mascota:{mascota.id_mascota}",
+                "nombre":           mascota.nombre,
+                "especie":          mascota.especie,
+                "raza":             mascota.raza,
+                "fecha_nacimiento": str(mascota.fecha_de_nacimiento) if mascota.fecha_de_nacimiento else None,
+                "sexo":             mascota.sexo,
+                "tutor": {
+                    "nombre": tutor.nombre if tutor else None,
+                    "cedula": tutor.cedula if tutor else None,
+                },
+                "vacunas":                    vacunas_snapshot,
+                "esquema_general_completo":   esquema_general_completo,
+            },
+        }
                 
 def _calcular_hash(credencial: dict) -> str:
     
@@ -283,7 +283,7 @@ def _generar_pdf(credencial: dict, hash_verificacion: str) -> bytes:
     story = []
  
     # ── Encabezado ────────────────────────────────────────────────────────────
-    story.append(Paragraph("🐾 Pataporte", sty_titulo))
+    story.append(Paragraph("Pataporte", sty_titulo))
     story.append(Spacer(1, 4))
     story.append(Paragraph("Certificado de Vacunación", sty_subtitulo))
     story.append(Spacer(1, 4))

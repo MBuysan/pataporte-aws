@@ -22,7 +22,7 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
  
     # verifica que el veterinario existe y esté activo
     veterinario = db.query(Veterinario).filter(
-        Veterinario.id_veterinaria == id_veterinario,
+        Veterinario.id_veterinario == id_veterinario,
         Veterinario.estado == "activo"
     ).first()
     if not veterinario:
@@ -86,7 +86,7 @@ def crear(db: Session, data: ConsultaCreate, id_veterinario: str):
                     fecha_proxima_dosis=dosis_data.fecha_proxima_dosis,
                     id_consulta=consulta.id_consulta,
                 ),
-                id_veterinaria=id_veterinario,
+                id_veterinario=id_veterinario,
                 commit=False,
             )
 

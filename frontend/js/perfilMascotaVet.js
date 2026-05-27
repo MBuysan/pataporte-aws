@@ -33,7 +33,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   btnCert.onclick = async () => {
-    if (!confirm("¿Generar el Pataporte...")) return;
+    
+    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
 
     btnCert.disabled    = true;
     btnCert.textContent = "Generando...";
@@ -42,7 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const res = await api.post(`/pataporte/${idMascota}`);
 
       alert(
-        `Pataporte generado correctamente...`
+        `Pataporte generado correctamente.\n\n` +
+        `El certificado PDF fue enviado al correo del tutor.\n\n`
       );
 
     } catch (err) {

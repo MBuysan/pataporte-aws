@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderResultado(d) {
     const claseEstado = { vigente: "vigente", deprecado: "deprecado", revocado: "revocado" }[d.estado] ?? "deprecado";
-    const iconos      = { vigente: "✅", deprecado: "⚠️", revocado: "❌" };
     const titulos     = { vigente: "Pataporte válido", deprecado: "Pataporte deprecado", revocado: "Pataporte revocado" };
     const subtitulos  = {
       vigente:   "Este certificado es auténtico y se encuentra vigente.",
@@ -69,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div>
           <span class="vacuna-nombre">${v.nombre}</span>
           <span class="vacuna-estado ${v.esquema_completo ? "completo" : "incompleto"}">
-            ${v.esquema_completo ? "✅ Completo" : "⏳ Incompleto"}
+            ${v.esquema_completo ? "Completo" : "Incompleto"}
           </span>
         </div>
         ${v.descripcion ? `<div style="font-size:12px;color:#6B7280;margin-top:2px;">${v.descripcion}</div>` : ""}
@@ -89,12 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
     `).join("") || '<p style="color:#9CA3AF;font-size:13px;">Sin vacunas registradas.</p>';
 
     const badgeGeneral = d.esquema_general_completo
-      ? `<div class="badge-general completo">✅ Esquema de vacunación general completo</div>`
-      : `<div class="badge-general incompleto">⏳ Esquema de vacunación general incompleto</div>`;
+      ? `<div class="badge-general completo">Esquema de vacunación general completo</div>`
+      : `<div class="badge-general incompleto">Esquema de vacunación general incompleto</div>`;
 
     return `
       <div class="estado-banner ${claseEstado}">
-        <div class="estado-icono">${iconos[d.estado] ?? "❓"}</div>
         <div class="estado-texto">
           <h3>${titulos[d.estado] ?? "Estado desconocido"}</h3>
           <p>${subtitulos[d.estado] ?? ""}</p>
@@ -138,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const esNoEncontrado = mensaje?.toLowerCase().includes("no encontrado") || mensaje?.includes("404");
     return `
       <div class="estado-banner revocado">
-        <div class="estado-icono">❌</div>
         <div class="estado-texto">
           <h3>${esNoEncontrado ? "Código no encontrado" : "Error al verificar"}</h3>
           <p>${esNoEncontrado

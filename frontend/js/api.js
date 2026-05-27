@@ -27,7 +27,7 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     localStorage.removeItem("rol");
-    localStorage.removeItem("veterinaria_id");
+    localStorage.removeItem("veterinario_id");
     localStorage.removeItem("tutor");
 
     const paginaActual = window.location.pathname;

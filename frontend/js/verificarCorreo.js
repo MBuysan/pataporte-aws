@@ -62,12 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1500);
 
       } else {
-        // Imitando loginVeterinaria.js: Guardamos las llaves de contexto necesarias para una veterinario
+        // Imitando loginVeterinario.js: Guardamos las llaves de contexto necesarias para un veterinario
         localStorage.setItem("user", JSON.stringify(response.user));
         localStorage.setItem("rol", "veterinario");
-        localStorage.setItem("veterinaria_id", response.user.id_veterinaria);
+        localStorage.setItem("veterinario_id", response.user.id_veterinario);
 
-        // Redireccionamos a la pantalla principal de la veterinario
+        // Redireccionamos a la pantalla principal del veterinario
         setTimeout(() => {
           window.location.href = "buscar-mascotas.html";
         }, 1500);

@@ -49,7 +49,7 @@ class DosisEnConsulta(BaseModel):
 class DosisResponse(BaseModel):
     id_dosis: str
     id_esquema_vacuna: str
-    id_veterinaria: str
+    id_veterinario: str
     numero_dosis: int
     fecha_aplicacion: date
     id_consulta: Optional[str]
