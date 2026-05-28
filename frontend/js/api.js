@@ -32,7 +32,6 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
 
     const paginaActual = window.location.pathname;
 
-    // Evitar redirect infinito
     if (
       !paginaActual.includes("login.html") &&
       !paginaActual.includes("login-veterinario.html")
@@ -47,7 +46,7 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
       }
     }
 
-    return;
+    throw new Error("Credenciales inválidas");
   }
 
   if (!response.ok) {
