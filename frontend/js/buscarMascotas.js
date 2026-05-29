@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mascota.edad != null
         ? `${mascota.edad} ${mascota.edad === 1 ? "año" : "años"}`
         : null,
-    ].filter(Boolean).join(" · ");
+    ].filter(Boolean).join(" | ");
 
     const foto = mascota.foto_url
       ? `<img src="${mascota.foto_url}" alt="${mascota.nombre}" class="foto-mascota" />`

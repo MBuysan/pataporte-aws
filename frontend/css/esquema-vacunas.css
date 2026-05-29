@@ -1,0 +1,136 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --azul: #04308a;
+  --fondo: #fbf9ef;
+  --texto: #0b1215;
+  --gris: #616161;
+  --gris-claro: #e2e2e1;
+  --verde: #048a06;
+  --verde-bg: #eef5ee;
+  --mostaza: #be8b38;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+}
+
+.contenedor {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+.volver {
+  display: inline-block;
+  margin-bottom: 28px;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  font-size: 44px;
+  font-weight: 800;
+}
+
+#mensaje {
+  margin-bottom: 18px;
+
+  color: #777;
+
+  font-size: 14px;
+}
+
+#resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vacuna-card {
+  background: #fffefa;
+
+  border: 1.5px solid var(--texto);
+
+  padding: 16px 18px;
+
+  position: relative;
+}
+
+.vacuna-card.finalizada {
+  background: var(--verde-bg);
+}
+
+.vacuna-titulo {
+  font-size: 24px;
+  font-weight: 800;
+
+  margin-bottom: 12px;
+}
+
+.vacuna-meta {
+  margin: 4px 0;
+
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.finalizada-texto {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  color: var(--verde);
+
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.alerta {
+  margin-top: 10px;
+
+  color: #d97706;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+
+  .contenedor {
+    padding: 40px 18px 60px;
+  }
+
+  .header h1 {
+    font-size: 36px;
+  }
+
+  .vacuna-titulo {
+    font-size: 20px;
+  }
+
+  .finalizada-texto {
+    position: static;
+    display: block;
+    margin-bottom: 10px;
+  }
+}

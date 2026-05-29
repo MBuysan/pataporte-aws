@@ -1,0 +1,668 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+    --azul: #04308a;
+    --azul-claro: #99b6f1;
+    --fondo: #fbf9ef;
+    --texto: #0b1215;
+    --gris: #616161;
+    --gris-claro: #e2e2e1;
+    --mostaza: #C89B3C;
+    --rojo: #c90a0a;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: "Inter", sans-serif;
+    min-height: 100vh;
+}
+
+.contenedor {
+    width: min(100%, 860px);
+    margin: 0 auto;
+    padding: 54px 24px 70px;
+}
+
+/* HEADER SUPERIOR */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.volver-link {
+    color: var(--azul);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.eliminar-link {
+    color: var(--rojo);
+    text-decoration: underline;
+    font-size: 14px;
+}
+
+/* HEADER MASCOTA */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    padding: 18px 20px;
+
+    background: #fffefa;
+    border: 1.5px solid var(--texto);
+
+    margin-bottom: 14px;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.foto {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+
+    background: var(--mostaza);
+    color: white;
+
+    border: 2px solid var(--texto);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 26px;
+    font-weight: 800;
+
+    flex-shrink: 0;
+}
+
+.foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+#nombre {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+#detalle {
+    color: var(--gris);
+    font-size: 14px;
+}
+
+#btn-certificado {
+    width: 170px;
+    height: 38px;
+
+    border: none;
+
+    background: var(--azul);
+    color: white;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+/* TRATAMIENTOS */
+
+.tratamientos-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    margin-bottom: 24px;
+}
+
+.seccion-titulo {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.sin-datos-inline {
+    color: #888;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* BOTONES */
+
+.acciones {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+
+    margin-bottom: 30px;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+}
+
+.primary {
+    min-width: 150px;
+    height: 42px;
+
+    background: var(--azul);
+    color: white;
+
+    font-size: 16px;
+    font-weight: 800;
+
+    border: 1.5px solid var(--texto);
+}
+
+.sec {
+    min-width: 150px;
+    height: 42px;
+
+    background: var(--azul-claro);
+    color: var(--texto);
+
+    font-size: 16px;
+    font-weight: 700;
+
+    border: 1.5px solid var(--texto);
+}
+
+.primary:hover,
+.sec:hover,
+#btn-certificado:hover {
+    opacity: 0.92;
+}
+
+/* CARDS */
+
+.card {
+    background: #fffefa;
+
+    border: 1.5px solid var(--texto);
+
+    padding: 16px;
+
+    margin-bottom: 10px;
+}
+
+.card-titulo {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.card-desc {
+    margin-top: 5px;
+    color: #444;
+    font-size: 14px;
+}
+
+.card-freq {
+    margin-top: 5px;
+    color: var(--azul);
+    font-size: 14px;
+}
+
+.card-meta {
+    margin-top: 8px;
+    color: #888;
+    font-size: 13px;
+}
+
+/* HISTORIAL */
+
+.panel {
+    display: none;
+    margin-top: 28px;
+}
+
+.fila {
+    width: 100%;
+    min-height: 68px;
+    background: #fffefa;
+    border: 1.5px solid var(--texto);
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+
+.etiqueta-consulta {
+    position: relative;
+
+    background: var(--texto);
+    color: var(--azul);
+
+    padding: 2px;
+
+    display: inline-flex;
+
+    clip-path: polygon(12px 0%,
+            calc(100% - 12px) 0%,
+            100% 50%,
+            calc(100% - 12px) 100%,
+            12px 100%,
+            0% 50%);
+}
+
+.etiqueta-consulta::before {
+    content: attr(data-text);
+
+    background: #f1dfbd;
+
+    padding: 6px 18px;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    clip-path: polygon(10px 0%,
+            calc(100% - 10px) 0%,
+            100% 50%,
+            calc(100% - 10px) 100%,
+            10px 100%,
+            0% 50%);
+}
+
+.fila-fecha {
+    font-weight: 800;
+    color: var(--texto);
+}
+
+.fila-desc {
+    color: var(--gris);
+}
+
+.flecha-historial {
+    margin-left: auto;
+    font-size: 34px;
+    color: var(--texto);
+}
+
+.sin-datos,
+.cargando {
+    color: #888;
+    font-size: 14px;
+    padding: 16px 0;
+}
+
+.error-panel {
+    color: var(--rojo);
+    padding: 12px 0;
+}
+
+/* MODALES */
+
+.modal-bg {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.modal-bg.activo {
+    display: flex;
+}
+
+.modal {
+    width: min(92vw, 760px);
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: var(--fondo);
+
+    border: none;
+
+    padding: 34px 44px 38px;
+
+    position: relative;
+}
+
+.modal h3 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.modal label {
+    display: block;
+
+    margin-top: 14px;
+    margin-bottom: 6px;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modal input,
+.modal textarea {
+    width: 100%;
+
+    border: 1.5px solid var(--texto);
+
+    background: white;
+
+    padding: 5px 8px;
+
+    font-size: 13px;
+
+    font-family: inherit;
+}
+
+.modal textarea {
+    min-height: 62px;
+    resize: vertical;
+}
+
+.modal input:focus,
+.modal textarea:focus {
+    outline: none;
+    border-color: var(--azul);
+}
+
+.modal-error {
+    min-height: 18px;
+
+    margin-top: 12px;
+
+    color: var(--rojo);
+    font-size: 13px;
+}
+
+.modal-cerrar {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+
+    background: transparent;
+    border: none;
+
+    font-size: 22px;
+    color: #666;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 760px) {
+
+    .contenedor {
+        padding: 36px 18px 60px;
+    }
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-info {
+        width: 100%;
+    }
+
+    #btn-certificado {
+        width: 100%;
+    }
+
+    .acciones {
+        flex-direction: column;
+    }
+
+    .primary,
+    .sec {
+        width: 100%;
+    }
+
+    .tratamientos-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
+
+.btn-editar-trat {
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+
+    color: var(--texto);
+
+    padding: 0;
+
+    min-width: auto;
+    height: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-editar-trat svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-editar-trat:hover {
+    opacity: .7;
+}
+
+.tratamiento-layout {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.tratamiento-info {
+    flex: 1;
+}
+
+.tratamiento-fechas {
+    min-width: 190px;
+    color: var(--gris);
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#modal-tratamiento .modal {
+    width: min(92vw, 760px);
+}
+
+#modal-tratamiento .modal label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#modal-tratamiento .modal label::after {
+    content: " *";
+    color: var(--rojo);
+    font-weight: 800;
+}
+
+#modal-tratamiento .label-opcional::after {
+    content: "" !important;
+}
+
+#modal-tratamiento .modal h3 {
+    font-size: 18px;
+    margin-bottom: 18px;
+}
+
+#modal-tratamiento #trat-inicio,
+#modal-tratamiento #trat-finalizacion {
+    width: 160px;
+}
+
+#modal-tratamiento .fechas-tratamiento {
+    display: flex;
+    gap: 36px;
+    align-items: flex-end;
+}
+
+#modal-tratamiento #btn-guardar-trat {
+    width: 150px !important;
+    height: 34px;
+    margin-left: auto;
+    display: block;
+    font-size: 12px;
+}
+
+input[type="date"] {
+  padding-right: 6px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+#modal-consulta .modal {
+  width: min(92vw, 760px);
+  padding: 34px 44px 38px;
+}
+
+#modal-consulta .modal h3 {
+  font-size: 18px;
+  margin-bottom: 18px;
+}
+
+#modal-consulta .modal label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#modal-consulta .modal input,
+#modal-consulta .modal textarea {
+  border: 1.5px solid var(--texto);
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+#modal-consulta .modal textarea {
+  min-height: 62px;
+}
+
+#modal-consulta h4 {
+  font-size: 16px;
+  margin: 18px 0 10px;
+}
+
+#modal-consulta #btn-add-vacuna,
+#modal-consulta #btn-add-dosis {
+  min-width: 120px;
+  height: 34px;
+  font-size: 12px;
+  border: 1.5px solid var(--texto);
+}
+
+#modal-consulta #btn-add-vacuna {
+  background: var(--azul);
+  color: white;
+}
+
+#modal-consulta #btn-add-dosis {
+  background: var(--azul-claro);
+  color: var(--texto);
+}
+
+#modal-consulta button[type="submit"] {
+  width: 150px !important;
+  height: 34px;
+  margin-left: auto;
+  display: block;
+  font-size: 12px;
+}
+
+.required {
+  color: #c90a0a;
+  font-weight: 700;
+}
+
+.vacunas-subtitulo {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  color: #777;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.chip-vacuna {
+  padding: 5px 14px;
+  margin: 3px;
+  background: white;
+  border: 1.5px solid #048a06;
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chip-dosis {
+  height: 30px;
+
+  padding: 0 14px;
+
+  display: flex;
+  align-items: center;
+
+  background: #f1dfbd;
+  border: 1.5px solid var(--texto);
+
+  color: var(--texto);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  box-sizing: border-box;
+}
+
+.fila-dosis {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.label-fecha-dosis {
+  color: #777;
+  font-size: 12px;
+  font-style: italic;
+}
