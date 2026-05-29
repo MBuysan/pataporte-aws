@@ -1,745 +1,422 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <title>PATAPORTE</title>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-
-    :root{
-      --azul:#04308a;
-      --azul-dark:#02256a;
-      --dorado:#be8b38;
-      --crema:#fbf9ef;
-      --texto:#1f2d3d;
-      --gris:#04308a;
-      --white:#ffffff;
-    }
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
-
-    body{
-      min-height:100vh;
-
-      font-family:'Manrope', sans-serif;
-
-      background:
-      radial-gradient(circle at top left, rgba(190,139,56,0.10), transparent 25%),
-      radial-gradient(circle at bottom right, rgba(4,48,138,0.10), transparent 30%),
-      var(--crema);
-
-      color:var(--texto);
-
-      overflow-x:hidden;
-    }
-
-    /* NAVBAR */
-
-    .navbar{
-      width:100%;
-
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-
-      padding:28px 8%;
-    }
-
-    .logo{
-      display:flex;
-      align-items:center;
-      gap:16px;
-    }
-
-    .logo-icon{
-      width:60px;
-      height:60px;
-
-      border-radius:18px;
-
-      background:
-      linear-gradient(
-      135deg,
-      var(--azul),
-      var(--azul-dark)
-      );
-
-      display:flex;
-      justify-content:center;
-      align-items:center;
-
-      color:white;
-      font-size:1.5rem;
-
-      box-shadow:
-      0 14px 30px rgba(4,48,138,0.25);
-    }
-
-    .logo h2{
-      font-family:'Playfair Display', serif;
-      font-size:2rem;
-      color:var(--azul-dark);
-      letter-spacing:1px;
-    }
-
-    .official-badge{
-      padding:12px 20px;
-
-      border-radius:999px;
-
-      background:white;
-
-      border:1px solid rgba(4,48,138,0.08);
-
-      color:var(--azul-dark);
-
-      font-size:0.92rem;
-      font-weight:700;
-
-      box-shadow:
-      0 8px 20px rgba(0,0,0,0.04);
-    }
-
-    /* MAIN */
-
-    .main{
-      width:100%;
-      max-width:1450px;
-
-      margin:auto;
-
-      padding:40px 8% 70px;
-
-      display:grid;
-      grid-template-columns:1.1fr 0.9fr;
-
-      gap:60px;
-
-      align-items:center;
-    }
-
-    /* HERO */
-
-    .hero{
-      width:100%;
-      min-width:0;
-    }
-
-    .hero small{
-      display:inline-block;
-
-      margin-bottom:20px;
-
-      color:var(--dorado);
-
-      font-weight:700;
-      letter-spacing:2px;
-
-      text-transform:uppercase;
-    }
-
-    .hero h1{
-      font-family:'Playfair Display', serif;
-
-      font-size:5.2rem;
-      line-height:0.98;
-
-      color:var(--azul-dark);
-
-      margin-bottom:28px;
-    }
-
-    .hero h1 span{
-      color:var(--dorado);
-      font-style:italic;
-    }
-
-    .hero p{
-      font-size:1.08rem;
-      line-height:1.9;
-
-      max-width:650px;
-
-      color:var(--gris);
-
-      margin-bottom:45px;
-    }
-
-    /* STATS */
-
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-
-      gap:18px;
-
-      margin-top:40px;
-    }
-
-    .stat{
-      background:white;
-
-      padding:26px;
-
-      border-radius:22px;
-
-      border:1px solid rgba(4,48,138,0.06);
-
-      box-shadow:
-      0 10px 24px rgba(0,0,0,0.04);
-
-      text-align:center;
-    }
-
-    .stat h4{
-      font-size:1.9rem;
-      color:var(--azul-dark);
-
-      margin-bottom:8px;
-    }
-
-    .stat span{
-      color:var(--gris);
-      font-size:0.92rem;
-      font-weight:500;
-    }
-
-    /* RIGHT PANEL */
-
-    .right{
-      position:relative;
-    }
-
-    .blur{
-      position:absolute;
-
-      width:230px;
-      height:230px;
-
-      border-radius:50%;
-
-      filter:blur(75px);
-
-      z-index:0;
-    }
-
-    .blur1{
-      background:rgba(190,139,56,0.18);
-
-      top:-30px;
-      right:0;
-    }
-
-    .blur2{
-      background:rgba(4,48,138,0.14);
-
-      bottom:-30px;
-      left:0;
-    }
-
-    .panel{
-      position:relative;
-      z-index:2;
-
-      background:rgba(255,255,255,0.78);
-
-      backdrop-filter:blur(18px);
-
-      border:1px solid rgba(255,255,255,0.8);
-
-      border-radius:34px;
-
-      padding:26px;
-
-      box-shadow:
-      0 25px 60px rgba(0,0,0,0.08);
-    }
-
-    .card{
-      background:white;
-
-      border-radius:28px;
-
-      padding:34px;
-
-      border:1px solid rgba(4,48,138,0.05);
-
-      margin-bottom:22px;
-
-      transition:0.3s ease;
-
-      box-shadow:
-      0 10px 22px rgba(0,0,0,0.04);
-    }
-
-    .card:last-child{
-      margin-bottom:0;
-    }
-
-    .card:hover{
-      transform:translateY(-4px);
-    }
-
-    .card-top{
-      display:flex;
-      align-items:center;
-      gap:16px;
-
-      margin-bottom:22px;
-    }
-
-    .icon{
-      width:70px;
-      height:70px;
-
-      border-radius:22px;
-
-      background:
-      linear-gradient(
-      135deg,
-      rgba(4,48,138,0.10),
-      rgba(190,139,56,0.16)
-      );
-
-      display:flex;
-      justify-content:center;
-      align-items:center;
-
-      font-size:1.8rem;
-    }
-
-    .card h3{
-      font-size:2rem;
-
-      color:var(--azul-dark);
-
-      font-family:'Playfair Display', serif;
-    }
-
-    .card p{
-      color:var(--gris);
-
-      line-height:1.8;
-
-      margin-bottom:28px;
-    }
-
-    .button-group{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
-
-    .primary-btn,
-    .secondary-btn{
-
-      width:100%;
-
-      padding:16px;
-
-      border:none;
-      border-radius:16px;
-
-      font-size:0.98rem;
-      font-weight:700;
-
-      cursor:pointer;
-
-      transition:0.3s ease;
-    }
-
-    .primary-btn{
-      background:
-      linear-gradient(
-      135deg,
-      var(--azul),
-      var(--azul-dark)
-      );
-
-      color:white;
-
-      box-shadow:
-      0 12px 26px rgba(4,48,138,0.22);
-    }
-
-    .secondary-btn{
-      background:rgba(190,139,56,0.12);
-
-      border:1px solid rgba(190,139,56,0.25);
-
-      color:#8a6223;
-    }
-
-    .primary-btn:hover,
-    .secondary-btn:hover{
-      transform:translateY(-2px);
-    }
-
-    a{
-      text-decoration:none;
-    }
-
-    /* RESPONSIVE */
-
-    @media(max-width:1200px){
-
-      .main{
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PATAPORTE</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:#f3f1e8;
+}
+
+/* HERO */
+
+.hero{
+    height:420px;
+    background:#00379e;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.hero-content h1{
+    color:white;
+    font-size:5rem;
+    font-weight:700;
+}
+
+.hero-content p{
+    color:white;
+    font-size:1.2rem;
+}
+
+/* MISION + VISION + CREADORES + GENESIS */
+
+.about{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+}
+
+.left-side{
+    display:flex;
+    flex-direction:column;
+}
+
+.top-cards{
+    background:#00379e;
+    padding:18px;
+    display:flex;
+    gap:20px;
+}
+
+.card{
+    flex:1;
+    background:#f3f1e8;
+    padding:20px;
+    min-height:170px;
+}
+
+.card h2{
+    font-size:2rem;
+    margin-bottom:10px;
+}
+
+.card p{
+    font-size:.9rem;
+    line-height:1.4;
+}
+
+.genesis{
+    background:#d90000;
+    color:white;
+    padding:25px;
+}
+
+.genesis h2{
+    font-size:2.2rem;
+    margin-bottom:20px;
+    line-height:1.1;
+}
+
+.genesis p{
+    line-height:1.5;
+    margin-bottom:15px;
+}
+
+/* CREADORES */
+
+.creadores{
+    background:#f3f1e8;
+    padding:30px;
+}
+
+.creadores h2{
+    text-align:center;
+    margin-bottom:35px;
+    font-size:2rem;
+}
+
+.creadores-grid{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:30px;
+}
+
+.creador{
+    width:130px;
+    text-align:center;
+}
+
+.avatar{
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    background:#d8d8d8;
+    border:1px solid #aaa;
+    margin:0 auto 10px;
+}
+
+.creador h3{
+    font-size:.95rem;
+}
+
+/* BOTONES */
+
+.access-section{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+}
+
+.tutor{
+    background:#08111d;
+    color:white;
+    text-align:center;
+    padding:60px 40px;
+}
+
+.vet{
+    background:#9bb2ea;
+    text-align:center;
+    padding:60px 40px;
+}
+
+.access-section h2{
+    margin-bottom:15px;
+}
+
+.access-section p{
+    margin-bottom:25px;
+    line-height:1.6;
+}
+
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    text-decoration:none;
+    padding:12px 22px;
+    border-radius:4px;
+    font-weight:600;
+}
+
+.btn-light{
+    background:white;
+    color:black;
+}
+
+.btn-outline{
+    border:2px solid white;
+    color:white;
+}
+
+.btn-dark{
+    background:#111;
+    color:white;
+}
+
+.btn-outline-dark{
+    border:2px solid #111;
+    color:#111;
+}
+
+/* FOOTER */
+
+footer{
+    background:#c9974b;
+    color:white;
+    padding:18px 30px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+footer a{
+    color:white;
+    text-decoration:none;
+}
+
+.footer-right{
+    display:flex;
+    gap:15px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+    .about{
         grid-template-columns:1fr;
-        gap:40px;
-        padding:30px 40px 60px;
-      }
-
-      .hero{
-        text-align:center;
-      }
-
-      .hero p{
-        margin:auto auto 35px;
-      }
-
-      .stats{
-        max-width:700px;
-        margin:40px auto 0;
-      }
-
     }
 
-    @media(max-width:900px){
+    .top-cards{
+        flex-direction:column;
+    }
 
-      .navbar{
-        padding:22px 24px;
-      }
-
-      .main{
-        padding:20px 24px 50px;
-        gap:30px;
-      }
-
-      .hero h1{
-        font-size:4rem;
-        line-height:1.05;
-      }
-
-      .stats{
+    .access-section{
         grid-template-columns:1fr;
-      }
-
     }
 
-    @media(max-width:768px){
-
-      .navbar{
-        padding:18px;
-      }
-
-      .main{
-        width:100%;
-        padding:10px 18px 40px;
-        gap:24px;
-      }
-
-      .hero small{
-        font-size:0.72rem;
-        letter-spacing:1px;
-      }
-
-      .hero h1{
-        font-size:2.9rem;
-        line-height:1.08;
-
-        overflow-wrap:break-word;
-        word-break:break-word;
-      }
-
-      .hero p{
-        font-size:0.96rem;
-        line-height:1.7;
-      }
-
-      .stats{
-        grid-template-columns:1fr;
-        gap:14px;
-      }
-
-      .stat{
-        padding:20px;
-      }
-
-      .panel{
-        padding:14px;
-        border-radius:24px;
-      }
-
-      .card{
-        padding:20px;
-        border-radius:22px;
-      }
-
-      .icon{
-        width:56px;
-        height:56px;
-
-        min-width:56px;
-
-        font-size:1.3rem;
-      }
-
-      .card h3{
-        font-size:1.5rem;
-      }
-
-      .card p{
-        font-size:0.94rem;
-      }
-
-      .primary-btn,
-      .secondary-btn{
-        padding:14px;
-        font-size:0.92rem;
-      }
-
+    .hero-content h1{
+        font-size:3rem;
     }
+}
 
-    @media(max-width:480px){
-
-      .navbar{
-        padding:16px;
-      }
-
-      .main{
-        padding:0 14px 30px;
-      }
-
-      .logo{
-        gap:10px;
-      }
-
-      .logo-icon{
-        width:46px;
-        height:46px;
-
-        border-radius:14px;
-
-        font-size:1rem;
-      }
-
-      .logo h2{
-        font-size:1.35rem;
-      }
-
-      .official-badge{
-        display:none;
-      }
-
-      .hero h1{
-        font-size:2.25rem;
-      }
-
-      .hero p{
-        font-size:0.92rem;
-      }
-
-      .panel{
-        padding:10px;
-        border-radius:20px;
-      }
-
-      .card{
-        padding:16px;
-        border-radius:18px;
-      }
-
-      .card h3{
-        font-size:1.3rem;
-      }
-
-      .card p{
-        font-size:0.9rem;
-      }
-
-      .primary-btn,
-      .secondary-btn{
-        font-size:0.88rem;
-        padding:13px;
-      }
-
-    }
-
-  </style>
-
+</style>
 </head>
-
 <body>
 
-  <!-- NAVBAR -->
+<!-- HERO -->
 
-  <nav class="navbar">
+<section class="hero">
+    <div class="hero-content">
+        <h1>Pataporte</h1>
+        <p>El pasaporte para nuestros amigos con patas</p>
+    </div>
+</section>
 
-    <div class="logo">
+<!-- MISION / VISION / CREADORES / GENESIS -->
 
-      <div class="logo-icon">
-        🐾
-      </div>
+<section class="about">
 
-      <h2>PATAPORTE</h2>
+    <div class="left-side">
+
+        <div class="top-cards">
+
+            <div class="card">
+                <h2>Misión</h2>
+                <p>
+                    Darle a cada mascota la identidad digital que se merece.
+                    Pataporte centraliza todo el historial clínico de tu compañero
+                    en un solo lugar, accesible para cualquier veterinaria de confianza.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Visión</h2>
+                <p>
+                    Ser la plataforma de referencia en Uruguay para la gestión
+                    de la salud animal, conectando tutores y veterinarias
+                    en un ecosistema digital integrado.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="creadores">
+
+            <h2>Creadores de PATAPORTE</h2>
+
+            <div class="creadores-grid">
+
+                <div class="creador">
+                    <div class="avatar"></div>
+                    <h3>Matías Buysan</h3>
+                </div>
+
+                <div class="creador">
+                    <div class="avatar"></div>
+                    <h3>Belén Rodríguez</h3>
+                </div>
+
+                <div class="creador">
+                    <div class="avatar"></div>
+                    <h3>Ariana Pérez</h3>
+                </div>
+
+                <div class="creador">
+                    <div class="avatar"></div>
+                    <h3>Lautaro Siri</h3>
+                </div>
+
+                <div class="creador">
+                    <div class="avatar"></div>
+                    <h3>Lihué Rocumpaj</h3>
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
 
-    <div class="official-badge">
-      Plataforma oficial del estado
+    <div class="genesis">
+
+        <h2>Génesis de PATAPORTE</h2>
+
+        <p>
+            Todo empezó con algo cotidiano: uno de los integrantes del equipo
+            llevó su mascota a vacunar y se encontró llenando en papel datos
+            que ya había proporcionado anteriormente.
+        </p>
+
+        <p>
+            Buscar la libreta, recordar qué vacuna tocaba, esperar a que la clínica
+            encontrara el registro anterior... era un proceso que no reflejaba
+            el papel y las buenas maneras de la práctica veterinaria moderna.
+        </p>
+
+        <p>
+            Esa fricción disparó la pregunta:
+            ¿por qué no existe algo mejor para esto en Uruguay?
+        </p>
+
+        <p>
+            Lo que siguió fue un proyecto universitario en la FIUM,
+            donde nuestro equipo se propuso crear una solución digital
+            para mascotas que no existía en el país.
+        </p>
+
     </div>
 
-  </nav>
+</section>
 
-  <!-- MAIN -->
+<!-- BOTONES -->
 
-  <main class="main">
+<section class="access-section">
 
-    <!-- HERO -->
+    <div class="tutor">
 
-    <section class="hero">
+        <h2>Si tenés una mascota</h2>
 
-      <small>
-        Sistema nacional veterinario
-      </small>
+        <p>
+            Con Pataporte podés consultar vacunas,
+            historial clínico y tratamientos desde cualquier lugar.
+        </p>
 
-      <h1>
-        Plataforma oficial para
-        la gestión de
-        <span>mascotas</span>
-      </h1>
+        <div class="buttons">
 
-      <p>
-        PATAPORTE centraliza la información veterinaria, historiales clínicos
-        y la gestión de organizaciones en una plataforma moderna, segura
-        y accesible para tutores y veterinarias de todo el país.
-      </p>
-
-      <!-- STATS -->
-
-      <div class="stats">
-
-        <div class="stat">
-          <h4>24/7</h4>
-          <span>Acceso permanente</span>
-        </div>
-
-        <div class="stat">
-          <h4>100%</h4>
-          <span>Digital</span>
-        </div>
-
-        <div class="stat">
-          <h4>UY</h4>
-          <span>Uso nacional</span>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- RIGHT -->
-
-    <section class="right">
-
-      <div class="blur blur1"></div>
-      <div class="blur blur2"></div>
-
-      <div class="panel">
-
-        <!-- TUTORES -->
-
-        <div class="card">
-
-          <div class="card-top">
-
-            <div class="icon">
-              🐶
-            </div>
-
-            <h3>Tutores</h3>
-
-          </div>
-
-          <p>
-            Accedé a historiales clínicos, vacunas y gestión integral
-            de mascotas desde un único lugar.
-          </p>
-
-          <div class="button-group">
-
-            <a href="pages/login.html">
-              <button class="primary-btn">
-                Iniciar sesión como tutor
-              </button>
+            <a href="pages/login.html" class="btn btn-light">
+                Iniciar sesión
             </a>
 
-            <a href="pages/registrar-tutor.html">
-              <button class="secondary-btn">
-                Registrarse como tutor
-              </button>
+            <a href="pages/registrar-tutor.html" class="btn btn-outline">
+                Registrarse
             </a>
-
-          </div>
 
         </div>
 
-        <!-- VETERINARIAS -->
+    </div>
 
-        <div class="card">
+    <div class="vet">
 
-          <div class="card-top">
+        <h2>Si sos una veterinaria</h2>
 
-            <div class="icon">
-              🏥
-            </div>
+        <p>
+            Gestioná consultas, vacunas y tratamientos
+            desde una plataforma moderna y centralizada.
+        </p>
 
-            <h3>Veterinarias</h3>
+        <div class="buttons">
 
-          </div>
-
-          <p>
-            Plataforma diseñada para clínicas y profesionales
-            veterinarios con herramientas modernas de gestión.
-          </p>
-
-          <div class="button-group">
-
-            <a href="pages/login-veterinaria.html">
-              <button class="primary-btn">
-                Iniciar sesión como veterinario
-              </button>
+            <a href="pages/login-veterinaria.html" class="btn btn-dark">
+                Iniciar sesión
             </a>
 
-            <a href="pages/registrar-organizacion.html">
-              <button class="secondary-btn">
-                Registrar veterinaria
-              </button>
+            <a href="pages/registrar-organizacion.html" class="btn btn-outline-dark">
+                Registrarse
             </a>
-
-          </div>
 
         </div>
 
-      </div>
+    </div>
 
-    </section>
+</section>
 
-  </main>
+<footer>
+
+    <a href="#">Términos y condiciones</a>
+
+    <a href="#">Política de privacidad</a>
+
+    <div class="footer-right">
+        <span>📷</span>
+        <span>✉️</span>
+        <span>© PATAPORTE</span>
+    </div>
+
+</footer>
 
 </body>
-
 </html>
