@@ -1,6 +1,11 @@
 const form = document.getElementById("formMascota");
 const mensaje = document.getElementById("mensaje");
 
+function capitalizar(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
