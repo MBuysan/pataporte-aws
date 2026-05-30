@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,98 +12,97 @@
 
 <body>
 
-<main class="register-page">
+    <main class="register-page">
 
-    <section class="register-panel">
+        <section class="register-panel">
 
-        <div class="register-box">
+            <div class="register-box">
 
-            <h1>¡Regístrate!</h1>
+                <a href="../index.html" class="volver-link">
+                    ← Volver
+                </a>
 
-            <p class="login-text">
-                ¿Ya estas registrado?
-                <a href="login-veterinario.html">Inicia sesión</a>
-            </p>
+                <h1>¡Regístrate!</h1>
 
-            <form id="formOrganizacion">
+                <p class="login-text">
+                    ¿Ya estas registrado?
+                    <a href="login-veterinario.html">Inicia sesión</a>
+                </p>
 
-                <div class="form-grid">
+                <form id="formOrganizacion">
 
-                    <div class="form-group">
-                        <label for="nombre">
-                            Nombre veterinario <span>*</span>
-                        </label>
+                    <div class="form-grid">
 
-                        <input type="text" id="nombre" required />
+                        <div class="form-group">
+                            <label for="nombre">
+                                Nombre veterinario <span>*</span>
+                            </label>
+
+                            <input type="text" id="nombre" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="matricula">
+                                Matrícula veterinario <span>*</span>
+                            </label>
+
+                            <input type="text" id="matricula" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">
+                                Correo electrónico <span>*</span>
+                            </label>
+
+                            <input type="email" id="email" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rut_organizacion">
+                                RUT Veterinaria <span>*</span>
+                            </label>
+
+                            <input type="text" id="rut_organizacion" required inputmode="numeric" maxlength="12" />
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="password">
+                                Contraseña <span>*</span>
+                            </label>
+
+                            <input type="password" id="password" required />
+                        </div>
+
                     </div>
 
-                    <div class="form-group">
-                        <label for="matricula">
-                            Matrícula veterinario <span>*</span>
-                        </label>
+                    <div class="bottom-row">
 
-                        <input type="text" id="matricula" required />
+                        <button type="submit">
+                            Siguiente
+                        </button>
+
+                        <p class="required">
+                            * campos obligatorios
+                        </p>
+
                     </div>
 
-                    <div class="form-group">
-                        <label for="email">
-                            Correo electrónico <span>*</span>
-                        </label>
+                    <p id="mensaje"></p>
 
-                        <input type="email" id="email" required />
-                    </div>
+                </form>
 
-                    <div class="form-group">
-                        <label for="rut_organizacion">
-                            RUT Veterinaria <span>*</span>
-                        </label>
+            </div>
 
-                        <input
-                            type="text"
-                            id="rut_organizacion"
-                            required
-                            inputmode="numeric"
-                            maxlength="12"
-                        />
-                    </div>
+        </section>
 
-                    <div class="form-group full-width">
-                        <label for="password">
-                            Contraseña <span>*</span>
-                        </label>
+        <section class="register-image"></section>
 
-                        <input type="password" id="password" required />
-                    </div>
+    </main>
 
-                </div>
-
-                <div class="bottom-row">
-
-                    <button type="submit">
-                        Siguiente
-                    </button>
-
-                    <p class="required">
-                        * campos obligatorios
-                    </p>
-
-                </div>
-
-                <p id="mensaje"></p>
-
-            </form>
-
-        </div>
-
-    </section>
-
-    <section class="register-image"></section>
-
-</main>
-
-<script src="../js/validacionesDocumentos.js"></script>
-<script src="../js/api.js"></script>
-<script src="../js/registrarOrganizacion.js"></script>
+    <script src="../js/validacionesDocumentos.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/registrarOrganizacion.js"></script>
 
 </body>
+
 </html>
