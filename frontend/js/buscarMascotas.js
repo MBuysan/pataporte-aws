@@ -3,12 +3,20 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const form        = document.getElementById("form-busqueda");
+  const form = document.getElementById("form-busqueda");
   const inputCedula = document.getElementById("input-cedula");
-  const btnBuscar   = document.getElementById("btn-buscar");
-  const mensajeEl   = document.getElementById("mensaje-buscar");
+  const btnBuscar = document.getElementById("btn-buscar");
+  const mensajeEl = document.getElementById("mensaje-buscar");
   const resultadoEl = document.getElementById("resultado");
+  const btnLogout = document.getElementById("btn-logout");
 
+  btnLogout.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    localStorage.removeItem("access_token");
+
+    window.location.href = "login-veterinario.html";
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 

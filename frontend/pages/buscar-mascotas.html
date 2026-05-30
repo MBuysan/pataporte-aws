@@ -1,39 +1,39 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../css/buscar-mascotas.css" />
-    <title>Buscar mascotas — Pataporte</title>
-  </head>
 
-  <body>
-    <div class="contenedor">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../css/buscar-mascotas.css" />
+  <title>Buscar mascotas — Pataporte</title>
+</head>
 
-      <h2>Buscar mascotas</h2>
-      <p class="subtitulo">Ingrese la cédula del tutor para ver sus mascotas.</p>
-
-      <form id="form-busqueda">
-        <div class="fila-busqueda">
-          <input
-            type="text"
-            id="input-cedula"
-            placeholder="Ej: 12345678"
-            autocomplete="off"
-            required
-          />
-          <button type="submit" id="btn-buscar">Buscar</button>
-        </div>
-      </form>
-
-      <div id="mensaje-buscar" class="mensaje"></div>
-
-      <!-- buscar-mascota.js llena este div con nombre del tutor y filas de mascotas -->
-      <div id="resultado"></div>
-
+<body>
+  <div class="contenedor">
+    <div class="topbar">
+      <a href="#" id="btn-logout" class="logout-link">
+        Cerrar sesión
+      </a>
     </div>
+    <h2>Buscar mascotas</h2>
+    <p class="subtitulo">Ingrese la cédula del tutor para ver sus mascotas.</p>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/buscarMascotas.js"></script>
-  </body>
+    <form id="form-busqueda">
+      <div class="fila-busqueda">
+        <input type="text" id="input-cedula" placeholder="Ej: 12345678" autocomplete="off" required />
+        <button type="submit" id="btn-buscar">Buscar</button>
+      </div>
+    </form>
+
+    <div id="mensaje-buscar" class="mensaje"></div>
+
+    <!-- buscar-mascota.js llena este div con nombre del tutor y filas de mascotas -->
+    <div id="resultado"></div>
+
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/buscarMascotas.js"></script>
+</body>
+
 </html>
