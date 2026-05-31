@@ -10,254 +10,17 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    font-family:'Poppins',sans-serif;
-    background:#f3f1e8;
-}
-
-/* HERO */
-
-.hero{
-    height:420px;
-    background:#00379e;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-}
-
-.hero-content h1{
-    color:white;
-    font-size:5rem;
-    font-weight:700;
-}
-
-.hero-content p{
-    color:white;
-    font-size:1.2rem;
-}
-
-/* MISION + VISION + CREADORES + GENESIS */
-
-.about{
-    display:grid;
-    grid-template-columns:2fr 1fr;
-}
-
-.left-side{
-    display:flex;
-    flex-direction:column;
-}
-
-.top-cards{
-    background:#00379e;
-    padding:18px;
-    display:flex;
-    gap:20px;
-}
-
-.card{
-    flex:1;
-    background:#f3f1e8;
-    padding:20px;
-    min-height:170px;
-}
-
-.card h2{
-    font-size:2rem;
-    margin-bottom:10px;
-}
-
-.card p{
-    font-size:.9rem;
-    line-height:1.4;
-}
-
-.genesis{
-    background:#d90000;
-    color:white;
-    padding:25px;
-}
-
-.genesis h2{
-    font-size:2.2rem;
-    margin-bottom:20px;
-    line-height:1.1;
-}
-
-.genesis p{
-    line-height:1.5;
-    margin-bottom:15px;
-}
-
-/* CREADORES */
-
-.creadores{
-    background:#f3f1e8;
-    padding:30px;
-}
-
-.creadores h2{
-    text-align:center;
-    margin-bottom:35px;
-    font-size:2rem;
-}
-
-.creadores-grid{
-    display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
-    gap:30px;
-}
-
-.creador{
-    width:130px;
-    text-align:center;
-}
-
-.avatar{
-    width:85px;
-    height:85px;
-    border-radius:50%;
-    background:#d8d8d8;
-    border:1px solid #aaa;
-    margin:0 auto 10px;
-}
-
-.creador h3{
-    font-size:.95rem;
-}
-
-/* BOTONES */
-
-.access-section{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-}
-
-.tutor{
-    background:#08111d;
-    color:white;
-    text-align:center;
-    padding:60px 40px;
-}
-
-.vet{
-    background:#9bb2ea;
-    text-align:center;
-    padding:60px 40px;
-}
-
-.access-section h2{
-    margin-bottom:15px;
-}
-
-.access-section p{
-    margin-bottom:25px;
-    line-height:1.6;
-}
-
-.buttons{
-    display:flex;
-    justify-content:center;
-    gap:15px;
-    flex-wrap:wrap;
-}
-
-.btn{
-    text-decoration:none;
-    padding:12px 22px;
-    border-radius:4px;
-    font-weight:600;
-}
-
-.btn-light{
-    background:white;
-    color:black;
-}
-
-.btn-outline{
-    border:2px solid white;
-    color:white;
-}
-
-.btn-dark{
-    background:#111;
-    color:white;
-}
-
-.btn-outline-dark{
-    border:2px solid #111;
-    color:#111;
-}
-
-/* FOOTER */
-
-footer{
-    background:#c9974b;
-    color:white;
-    padding:18px 30px;
-
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-}
-
-footer a{
-    color:white;
-    text-decoration:none;
-}
-
-.footer-right{
-    display:flex;
-    gap:15px;
-}
-
-/* RESPONSIVE */
-
-@media(max-width:900px){
-
-    .about{
-        grid-template-columns:1fr;
-    }
-
-    .top-cards{
-        flex-direction:column;
-    }
-
-    .access-section{
-        grid-template-columns:1fr;
-    }
-
-    .hero-content h1{
-        font-size:3rem;
-    }
-}
-
-</style>
+<link rel="stylesheet" href="./css/index.css">
 </head>
+
 <body>
 
-<!-- HERO -->
-
+<!-- HERO (solo fondo) -->
 <section class="hero">
-    <div class="hero-content">
-        <h1>Pataporte</h1>
-        <p>El pasaporte para nuestros amigos con patas</p>
-    </div>
+    <img src="/assets/img_index.png" alt="Hero">
 </section>
 
-<!-- MISION / VISION / CREADORES / GENESIS -->
-
+<!-- ABOUT -->
 <section class="about">
 
     <div class="left-side">
@@ -278,7 +41,7 @@ footer a{
                 <p>
                     Ser la plataforma de referencia en Uruguay para la gestión
                     de la salud animal, conectando tutores y veterinarias
-                    en un ecosistema digital integrado.
+                    en un ecosistema digital integrado donde la información clinica de cada mascota viaje con ella.
                 </p>
             </div>
 
@@ -290,30 +53,11 @@ footer a{
 
             <div class="creadores-grid">
 
-                <div class="creador">
-                    <div class="avatar"></div>
-                    <h3>Matías Buysan</h3>
-                </div>
-
-                <div class="creador">
-                    <div class="avatar"></div>
-                    <h3>Belén Rodríguez</h3>
-                </div>
-
-                <div class="creador">
-                    <div class="avatar"></div>
-                    <h3>Ariana Pérez</h3>
-                </div>
-
-                <div class="creador">
-                    <div class="avatar"></div>
-                    <h3>Lautaro Siri</h3>
-                </div>
-
-                <div class="creador">
-                    <div class="avatar"></div>
-                    <h3>Lihué Rocumpaj</h3>
-                </div>
+                <div class="creador"><div class="avatar"></div><h3>Matías Buysan</h3></div>
+                <div class="creador"><div class="avatar"></div><h3>Belén Rodríguez</h3></div>
+                <div class="creador"><div class="avatar"></div><h3>Ariana Pérez</h3></div>
+                <div class="creador"><div class="avatar"></div><h3>Lautaro Siri</h3></div>
+                <div class="creador"><div class="avatar"></div><h3>Lihué Rocumpaj</h3></div>
 
             </div>
 
@@ -326,80 +70,38 @@ footer a{
         <h2>Génesis de PATAPORTE</h2>
 
         <p>
-            Todo empezó con algo cotidiano: uno de los integrantes del equipo
-            llevó su mascota a vacunar y se encontró llenando en papel datos
-            que ya había proporcionado anteriormente.
-        </p>
+Todo empezó con algo cotidiano: uno de los integrantes del equipo llevó su mascota a vacunar y se encontró lidiando con el papeleo de siempre. Buscar la libreta, recordar qué vacuna tocaba, esperar a que la clínica encontrara el registro anterior... un proceso que en 2026 todavía dependia del papel y de la buena memoria o de la rapidez de un software.
 
-        <p>
-            Buscar la libreta, recordar qué vacuna tocaba, esperar a que la clínica
-            encontrara el registro anterior... era un proceso que no reflejaba
-            el papel y las buenas maneras de la práctica veterinaria moderna.
-        </p>
+Esa fricción disparó la pregunta: ¿por qué no existe algo mejor para esto en Uruguay?
 
-        <p>
-            Esa fricción disparó la pregunta:
-            ¿por qué no existe algo mejor para esto en Uruguay?
-        </p>
-
-        <p>
-            Lo que siguió fue un proyecto universitario en la FIUM,
-            donde nuestro equipo se propuso crear una solución digital
-            para mascotas que no existía en el país.
+Lo que siguió fue un proyecto universitario en la FIUM, donde nuestro equipo se propuso crear la "cédula de identidad" digital para mascotas que no existla: un perfil único, persistente y portable, que no le pertenezca a ninguna veterinaria en particular, sino al animal y a quien lo cuida.
         </p>
 
     </div>
 
 </section>
 
-<!-- BOTONES -->
-
+<!-- ACCESS -->
 <section class="access-section">
 
     <div class="tutor">
-
         <h2>Si tenés una mascota</h2>
-
-        <p>
-            Con Pataporte podés consultar vacunas,
-            historial clínico y tratamientos desde cualquier lugar.
-        </p>
+        <p>Consultá vacunas, historial clínico y tratamientos.</p>
 
         <div class="buttons">
-
-            <a href="pages/login.html" class="btn btn-light">
-                Iniciar sesión
-            </a>
-
-            <a href="pages/registrar-tutor.html" class="btn btn-outline">
-                Registrarse
-            </a>
-
+            <a href="pages/login.html" class="btn btn-light">Iniciar sesión</a>
+            <a href="pages/registrar-tutor.html" class="btn btn-outline">Registrarse</a>
         </div>
-
     </div>
 
     <div class="vet">
-
         <h2>Si sos una veterinaria</h2>
-
-        <p>
-            Gestioná consultas, vacunas y tratamientos
-            desde una plataforma moderna y centralizada.
-        </p>
+        <p>Gestioná consultas, vacunas y tratamientos de forma digital.</p>
 
         <div class="buttons">
-
-            <a href="pages/login-veterinaria.html" class="btn btn-dark">
-                Iniciar sesión
-            </a>
-
-            <a href="pages/registrar-organizacion.html" class="btn btn-outline-dark">
-                Registrarse
-            </a>
-
+            <a href="pages/login-veterinaria.html" class="btn btn-dark">Iniciar sesión</a>
+            <a href="pages/registrar-organizacion.html" class="btn btn-outline-dark">Registrarse</a>
         </div>
-
     </div>
 
 </section>
@@ -407,12 +109,9 @@ footer a{
 <footer>
 
     <a href="#">Términos y condiciones</a>
-
     <a href="#">Política de privacidad</a>
 
     <div class="footer-right">
-        <span>📷</span>
-        <span>✉️</span>
         <span>© PATAPORTE</span>
     </div>
 
