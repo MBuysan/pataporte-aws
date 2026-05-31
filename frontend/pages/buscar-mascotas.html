@@ -1,203 +1,39 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Buscar mascotas — Pataporte</title>
-    <style>
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../css/buscar-mascotas.css" />
+  <title>Buscar mascotas — Pataporte</title>
+</head>
 
-      body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        min-height: 100vh;
-        padding: 40px 16px;
-      }
-
-      .contenedor {
-        max-width: 540px;
-        margin: 0 auto;
-      }
-
-      h2 { color: #222; margin-bottom: 6px; }
-
-      .subtitulo {
-        color: #666;
-        font-size: 14px;
-        margin-bottom: 28px;
-      }
-
-      /* ── Fila de búsqueda ───────────────────────────────── */
-      .fila-busqueda {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-
-      #input-cedula {
-        flex: 1;
-        padding: 10px 14px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 15px;
-        outline: none;
-        transition: border-color 0.2s;
-      }
-
-      #input-cedula:focus { border-color: #4a90e2; }
-
-      #btn-buscar {
-        padding: 10px 22px;
-        background: #4a90e2;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background 0.2s;
-        white-space: nowrap;
-      }
-
-      #btn-buscar:hover    { background: #357abd; }
-      #btn-buscar:disabled { background: #aaa; cursor: not-allowed; }
-
-      /* ── Mensajes ───────────────────────────────────────── */
-      .mensaje {
-        display: none;
-        padding: 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        margin-bottom: 16px;
-      }
-
-      .mensaje-error { background: #fce8e8; color: #c0392b; }
-      .mensaje-exito { background: #e6f4ea; color: #2d6a4f; }
-
-      /* ── Resultado ──────────────────────────────────────── */
-      #resultado { display: none; }
-
-      /* Nombre del tutor — encabezado del bloque de resultados */
-      .nombre-tutor {
-        font-size: 17px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 12px;
-        padding-left: 4px;
-      }
-
-      .sin-mascotas {
-        color: #999;
-        font-size: 14px;
-        padding: 16px 0;
-        text-align: center;
-      }
-
-      /* ── Lista de filas ─────────────────────────────────── */
-      .lista-mascotas {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      /* Cada fila es un enlace al perfil completo de la mascota */
-      .fila-mascota {
-        background: white;
-        border-radius: 10px;
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        text-decoration: none;
-        color: inherit;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        transition: box-shadow 0.15s, transform 0.1s;
-      }
-
-      .fila-mascota:hover {
-        box-shadow: 0 3px 12px rgba(0,0,0,0.12);
-        transform: translateY(-1px);
-      }
-
-      /* ── Foto o placeholder ─────────────────────────────── */
-      .foto-mascota,
-      .foto-placeholder {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        flex-shrink: 0;
-      }
-
-      .foto-mascota {
-        object-fit: cover;
-      }
-
-      .foto-placeholder {
-        background: #dde8f8;
-        color: #4a90e2;
-        font-size: 20px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      /* ── Texto de la fila ───────────────────────────────── */
-      .info-mascota {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      .nombre-mascota {
-        font-size: 15px;
-        font-weight: bold;
-        color: #222;
-      }
-
-      .detalle-mascota {
-        font-size: 13px;
-        color: #888;
-      }
-
-      .flecha {
-        font-size: 18px;
-        color: #ccc;
-        flex-shrink: 0;
-      }
-
-    </style>
-  </head>
-
-  <body>
-    <div class="contenedor">
-
-      <h2>Buscar mascotas</h2>
-      <p class="subtitulo">Ingresá la cédula del tutor para ver sus mascotas.</p>
-
-      <form id="form-busqueda">
-        <div class="fila-busqueda">
-          <input
-            type="text"
-            id="input-cedula"
-            placeholder="Ej: 12345678"
-            autocomplete="off"
-            required
-          />
-          <button type="submit" id="btn-buscar">Buscar</button>
-        </div>
-      </form>
-
-      <div id="mensaje-buscar" class="mensaje"></div>
-
-      <!-- buscar-mascota.js llena este div con nombre del tutor y filas de mascotas -->
-      <div id="resultado"></div>
-
+<body>
+  <div class="contenedor">
+    <div class="topbar">
+      <a href="#" id="btn-logout" class="logout-link">
+        Cerrar sesión
+      </a>
     </div>
+    <h2>Buscar mascotas</h2>
+    <p class="subtitulo">Ingrese la cédula del tutor para ver sus mascotas.</p>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/buscarMascotas.js"></script>
-  </body>
+    <form id="form-busqueda">
+      <div class="fila-busqueda">
+        <input type="text" id="input-cedula" placeholder="Ej: 12345678" autocomplete="off" required />
+        <button type="submit" id="btn-buscar">Buscar</button>
+      </div>
+    </form>
+
+    <div id="mensaje-buscar" class="mensaje"></div>
+
+    <!-- buscar-mascota.js llena este div con nombre del tutor y filas de mascotas -->
+    <div id="resultado"></div>
+
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/buscarMascotas.js"></script>
+</body>
+
 </html>

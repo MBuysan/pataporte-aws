@@ -1,0 +1,212 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --azul: #04308a;
+  --fondo: #fbf9ef;
+  --texto: #0b1215;
+  --gris: #616161;
+  --linea: #99b6f1;
+  --rojo: #c90a0a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "Inter", sans-serif;
+}
+
+.contenedor {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 70px 24px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.logout-link {
+  color: var(--rojo);
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+h2 {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.subtitulo {
+  font-size: 16px;
+  margin-bottom: 18px;
+}
+
+.fila-busqueda {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+#input-cedula {
+  height: 36px;
+  padding: 0 12px;
+  border: 1.5px solid var(--texto);
+  background: white;
+  font-size: 14px;
+  outline: none;
+}
+
+#input-cedula:focus {
+  border-color: var(--azul);
+}
+
+#btn-buscar {
+  height: 36px;
+  border: none;
+  background: var(--azul);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#btn-buscar:hover {
+  opacity: 0.92;
+}
+
+#btn-buscar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mensaje {
+  display: none;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.mensaje-error {
+  background: #fff0f0;
+  color: var(--rojo);
+}
+
+.mensaje-exito {
+  background: #eff8ff;
+  color: var(--azul);
+}
+
+#resultado {
+  display: none;
+  margin-top: 18px;
+}
+
+.nombre-tutor {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.lista-mascotas {
+  display: grid;
+  gap: 12px;
+}
+
+.fila-mascota {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 76px;
+  padding: 14px 16px;
+  background: #fffefa;
+  border: 1.5px solid var(--texto);
+  text-decoration: none;
+  color: var(--texto);
+}
+
+.fila-mascota:hover {
+  transform: translateY(-1px);
+}
+
+.foto-mascota,
+.foto-placeholder {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid var(--texto);
+}
+
+.foto-mascota {
+  object-fit: cover;
+}
+
+.foto-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #C89B3C;
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.info-mascota {
+  flex: 1;
+}
+
+.nombre-mascota {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.detalle-mascota {
+  display: block;
+  margin-top: 3px;
+  font-size: 14px;
+  color: var(--gris);
+}
+
+.flecha {
+  font-size: 28px;
+  color: var(--texto);
+}
+
+.sin-mascotas {
+  padding: 20px;
+  border: 1px solid #e2e2e1;
+  color: var(--gris);
+}
+
+/* Responsive */
+@media (max-width: 650px) {
+  .contenedor {
+    padding: 42px 20px;
+  }
+
+  h2 {
+    font-size: 34px;
+  }
+
+  .fila-busqueda {
+    grid-template-columns: 1fr;
+  }
+
+  #btn-buscar {
+    width: 100%;
+  }
+}
