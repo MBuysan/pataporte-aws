@@ -25,13 +25,9 @@ function inicializarPantallaLogin() {
             errorMessage.textContent = "Por favor, completa todos los campos.";
             return;
         }
-        if (!esEmail && !validarRutUruguayo(identificador)) {
-            errorMessage.textContent = "El RUT ingresado no es válido.";
-            return;
-        }
         try {
             const response = await api.post("/auth/login/veterinario", {
-                identificador: esEmail ? identificador : limpiarDocumento(identificador),
+                identificador,
                 password,
             });
 

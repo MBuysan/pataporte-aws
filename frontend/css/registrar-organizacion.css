@@ -6,6 +6,7 @@
   --texto: #0b1215;
   --linea: #b8c1d1;
   --rojo: #c90a0a;
+  --rojo-bg: #fdf2f2;
 }
 
 * {
@@ -55,9 +56,9 @@ body {
   text-decoration: underline;
 }
 
-h1 {
+.form-title {
   margin: 0 0 24px;
-  font-size: 58px;
+  font-size: 54px;
   font-weight: 800;
   line-height: 1;
 }
@@ -139,8 +140,37 @@ button:hover {
 }
 
 #mensaje {
-  margin-top: 22px;
+  display: none;
+  padding: 12px 16px;
+  border-radius: 4px;
   font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.45;
+}
+
+#mensaje:not(:empty) {
+  display: block;
+}
+
+#mensaje[style*="color: red"],
+#mensaje[style*="color: rgb(255, 0, 0)"] {
+  background-color: var(--rojo-bg) !important;
+  color: var(--rojo) !important;
+  border-left: 4px solid var(--rojo);
+}
+
+#mensaje[style*="color: green"],
+#mensaje[style*="color: rgb(0, 128, 0)"] {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border-left: 4px solid #166534;
+}
+
+#mensaje[style*="color: blue"],
+#mensaje[style*="color: rgb(0, 0, 255)"] {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-left: 4px solid #1d4ed8;
 }
 
 .register-image {
@@ -153,7 +183,6 @@ button:hover {
 /* RESPONSIVE */
 
 @media (max-width: 1100px) {
-
   .register-page {
     grid-template-columns: 1fr;
   }
@@ -170,8 +199,7 @@ button:hover {
 }
 
 @media (max-width: 700px) {
-
-  h1 {
+  .form-title {
     font-size: 44px;
   }
 

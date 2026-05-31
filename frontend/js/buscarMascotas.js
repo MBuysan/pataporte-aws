@@ -3,6 +3,13 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  const rol = localStorage.getItem("rol");
+  const token = localStorage.getItem("access_token");
+  if (!token || rol !== "veterinario") {
+    window.location.href = "login-veterinario.html";
+    return;
+  }
+
   const form = document.getElementById("form-busqueda");
   const inputCedula = document.getElementById("input-cedula");
   const btnBuscar = document.getElementById("btn-buscar");

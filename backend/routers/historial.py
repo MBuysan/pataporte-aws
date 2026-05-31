@@ -21,8 +21,10 @@ def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
             status_code=401,
             detail="No autorizado"
         )
-    id_veterinario = payload.get("sub")
+    if payload.get("rol") != "veterinario":
+        raise HTTPException(status_code=401, detail="No autorizado")
 
+    id_veterinario = payload.get("sub")
     if not id_veterinario:
         raise HTTPException(status_code=401, detail="Token inválido")
 

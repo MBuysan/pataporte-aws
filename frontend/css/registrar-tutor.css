@@ -60,7 +60,7 @@ PANEL FORMULARIO (IZQUIERDA)
 
 .form-title {
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
-  font-size: 38px;
+  font-size: 54px;
   font-weight: 800;
   letter-spacing: -0.5px;
   color: var(--color-text-main);
@@ -302,7 +302,7 @@ DISEÑO RESPONSIVO
   }
 
   .form-title {
-    font-size: 32px;
+    font-size: 38px;
   }
 
   .form-grid {

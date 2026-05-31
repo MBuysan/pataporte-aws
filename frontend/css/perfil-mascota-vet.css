@@ -492,9 +492,15 @@ button {
     min-width: 190px;
     color: var(--gris);
     font-size: 13px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: max-content auto;
+    gap: 4px 8px;
+    align-content: start;
+}
+
+.fecha-label {
+    text-align: right;
+    white-space: nowrap;
 }
 
 #modal-tratamiento .modal {

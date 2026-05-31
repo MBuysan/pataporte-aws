@@ -1,5 +1,12 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
+  const rol = localStorage.getItem("rol");
+  const token = localStorage.getItem("access_token");
+  if (!token || rol !== "veterinario") {
+    window.location.href = "login-veterinario.html";
+    return;
+  }
+
   let idConsultaActual = null;
   let vacunasCache = [];
   let carnetCache = [];
@@ -153,15 +160,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
 
     <div class="tratamiento-fechas">
-
-      <div>
-        Fecha inicio&nbsp;&nbsp;${inicio}
-      </div>
-
-      <div>
-        Fecha fin&nbsp;&nbsp;${fin}
-      </div>
-
+      <span class="fecha-label">Fecha inicio:</span><span>${inicio}</span>
+      <span class="fecha-label">Fecha fin:</span><span>${fin}</span>
     </div>
 
     <button
@@ -848,8 +848,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
 
         <div class="tratamiento-fechas">
-          <div>Fecha inicio&nbsp;&nbsp;${fecha}</div>
-          <div>Fecha fin&nbsp;&nbsp;${fin}</div>
+          <span class="fecha-label">Fecha inicio:</span><span>${fecha}</span>
+          <span class="fecha-label">Fecha fin:</span><span>${fin}</span>
         </div>
 
       </div>
