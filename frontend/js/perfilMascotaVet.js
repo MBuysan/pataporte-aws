@@ -32,9 +32,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=vet`;
   };
 
-  btnCert.onclick = () => {
-    alert("La generación de certificados estará disponible en la próxima versión.");
+  btnCert.onclick = async () => {
+
+    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
+
+    btnCert.disabled = true;
+    btnCert.textContent = "Generando...";
+
+    try {
+      const res = await api.post(`/pataporte/${idMascota}`);
+
+      alert(
+        `Pataporte generado correctamente.\n\n` +
+        `El certificado PDF fue enviado al correo del tutor.\n\n`
+      );
+
+    } catch (err) {
+
+      alert(`Error al generar el Pataporte: ${err.message}`);
+
+    } finally {
+
+      btnCert.disabled = false;
+      btnCert.textContent = "Generar Certificado";
+    }
   };
+
   const modalDetalleConsulta = document.getElementById("modal-detalle-consulta");
   const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
@@ -57,10 +80,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-    if (mascotaActual.especie === "otro") {
+  if (mascotaActual.especie === "otro") {
 
-      btnVacunas.style.display = "none";
-      btnCert.style.display = "none";
+    btnVacunas.style.display = "none";
+    btnCert.style.display = "none";
 
   }
 
@@ -79,11 +102,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function renderTratamientos(data) {
 
+    const mensajeSinTratamientos = document.getElementById("mensaje-sin-tratamientos");
+
     if (data.length === 0) {
-      seccionTrats.innerHTML =
-        `<p class="sin-datos">Esta mascota no tiene tratamientos activos.</p>`;
+      mensajeSinTratamientos.textContent =
+        "Esta mascota no tiene tratamientos activos.";
+      seccionTrats.innerHTML = "";
       return;
     }
+
+    mensajeSinTratamientos.textContent = "";
 
     seccionTrats.innerHTML = data.map(t => {
 
@@ -104,39 +132,68 @@ document.addEventListener("DOMContentLoaded", async () => {
         : "Sin fecha de fin";
 
       return `
-      <div class="card">
+<div class="card">
 
-        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">
+  <div class="tratamiento-layout">
 
-          <div style="flex:1;">
+    <div class="tratamiento-info">
 
-            <div class="card-titulo">${t.nombre}</div>
+      <div class="card-titulo">
+        ${t.nombre}
+      </div>
 
-            ${t.descripcion
+      ${t.descripcion
           ? `<div class="card-desc">${t.descripcion}</div>`
           : ""}
 
-            ${t.frecuencia
-          ? `<div class="card-freq">🕐 ${t.frecuencia}</div>`
+      ${t.frecuencia
+          ? `<div class="card-freq">${t.frecuencia}</div>`
           : ""}
 
-            <div class="card-meta">
-              Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}
-            </div>
+    </div>
 
-          </div>
+    <div class="tratamiento-fechas">
 
-          <button
-            class="sec btn-editar-trat"
-            data-id="${t.id_tratamiento}"
-          >
-            Editar
-          </button>
-
-        </div>
-
+      <div>
+        Fecha inicio&nbsp;&nbsp;${inicio}
       </div>
-    `;
+
+      <div>
+        Fecha fin&nbsp;&nbsp;${fin}
+      </div>
+
+    </div>
+
+    <button
+  class="btn-editar-trat"
+  data-id="${t.id_tratamiento}"
+  title="Editar tratamiento"
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M16.862 3.487a2.1 2.1 0 0 1 2.97 2.97L9.5 16.79 5 18l1.21-4.5L16.862 3.487Z"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M14.5 5.85 18.15 9.5"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+  </svg>
+</button>
+
+  </div>
+
+</div>
+`;
 
     }).join("");
 
@@ -424,10 +481,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const hayVacunasActivas = vacunasEsquema.some(v => v.dosis_aplicadas < v.dosis_requeridas);
 
     vacunasDiv.innerHTML = `
-      <hr style="margin:14px 0;">
       <h4 style="margin-bottom:10px;">Vacunas</h4>
-      <button type="button" id="btn-add-vacuna" class="sec" style="margin-right:6px;">+ Agregar vacuna</button>
-      ${hayVacunasActivas ? `<button type="button" id="btn-add-dosis" class="sec">+ Registrar dosis</button>` : ""}
+      <button type="button" id="btn-add-vacuna" class="sec">Agregar vacuna</button>
+      ${hayVacunasActivas ? `<button type="button" id="btn-add-dosis" class="sec">Registrar dosis</button>` : ""}
       <div id="lista-vacunas-nuevas" style="margin-top:10px;"></div>
       <div id="lista-dosis" style="margin-top:4px;"></div>
     `;
@@ -446,7 +502,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const titulo = document.createElement("p");
       titulo.textContent = "Seleccioná las vacunas a agregar:";
-      titulo.style.cssText = "font-size:12px;color:#888;margin-bottom:6px;";
+      titulo.className = "vacunas-subtitulo";
       contenedor.appendChild(titulo);
 
       disponibles.forEach(v => {
@@ -454,8 +510,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.type = "button";
         btn.textContent = v.nombre;
         btn.dataset.id = v.id_vacuna;
-        btn.style.cssText = "padding:6px 10px;margin:3px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;font-size:13px;";
-
+        btn.className = "chip-vacuna";
         if (vacunasPendientes.has(v.id_vacuna)) {
           btn.style.background = "#c8f7c5";
           btn.style.borderColor = "#7bc67b";
@@ -506,7 +561,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const contenedor = document.getElementById("lista-dosis");
       contenedor.innerHTML = "";
 
-    
+
       const vacunasActivas = vacunasEsquema.filter(v => v.dosis_aplicadas < v.dosis_requeridas);
 
       // vacunas nuevas seleccionadas en esta misma consulta
@@ -529,8 +584,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const titulo = document.createElement("p");
       titulo.textContent = "Seleccioná las dosis a registrar hoy:";
-      titulo.style.cssText = "font-size:12px;color:#888;margin-bottom:6px;";
-      contenedor.appendChild(titulo);
+      titulo.className = "vacunas-subtitulo"; contenedor.appendChild(titulo);
 
       todas.forEach(v => {
         const clave = v.esNueva ? `nueva:${v.id_vacuna}` : v.id_esquema_vacuna;
@@ -538,22 +592,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         const esUltimaDosis = v.dosis_aplicadas + 1 >= v.dosis_requeridas;
 
         const wrapper = document.createElement("div");
-        wrapper.style.cssText = "display:flex;align-items:center;gap:8px;margin:4px 0;flex-wrap:wrap;";
-
+        wrapper.className = "fila-dosis";
         const btn = document.createElement("button");
         btn.type = "button";
         btn.textContent = v.esNueva
           ? `${v.nombre} (primera dosis)`
           : `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
-        btn.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;font-size:13px;";
-
+        btn.className = "chip-dosis";
         const inputFecha = document.createElement("input");
         inputFecha.type = "date";
-        inputFecha.style.cssText = "display:none;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;";
-
+        inputFecha.style.cssText =
+          "display:none;width:110px;height:30px;padding:0 8px;border:1px solid #0b1215;font-size:13px;box-sizing:border-box;";
         const labelFecha = document.createElement("span");
-        labelFecha.textContent = esUltimaDosis ? "" : "Próxima dosis:";
-        labelFecha.style.cssText = "display:none;font-size:12px;color:#888;";
+        labelFecha.innerHTML = esUltimaDosis ? "" : `Fecha próxima dosis <span class="required">*</span>`;
+        labelFecha.className = "label-fecha-dosis";
+        labelFecha.style.display = "none";
 
         // restaurar estado si ya estaba seleccionada
         const selExistente = dosisPendientes.find(d => d._clave === clave);
@@ -588,8 +641,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             btn.style.background = "#ffd699";
             btn.style.borderColor = "#f0a500";
             if (!esUltimaDosis) {
-            inputFecha.style.display = "block";
-            labelFecha.style.display = "inline";
+              inputFecha.style.display = "block";
+              labelFecha.style.display = "inline";
             }
           }
         };
@@ -600,8 +653,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         wrapper.appendChild(btn);
-        wrapper.appendChild(labelFecha);
         wrapper.appendChild(inputFecha);
+        wrapper.appendChild(labelFecha);
         contenedor.appendChild(wrapper);
       });
     };
@@ -611,9 +664,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   formConsulta.onsubmit = async (e) => {
     e.preventDefault();
 
-    const vetId = localStorage.getItem("veterinaria_id");
+    const vetId = localStorage.getItem("veterinario_id");
     if (!vetId || vetId === "null" || vetId === "undefined") {
-      alert("Veterinaria no válida en sesión.");
+      alert("Veterinario no válido en sesión.");
       return;
     }
 
@@ -752,32 +805,56 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (e.tipo === "consulta") {
       return `
-      <button class="fila" data-tipo="consulta" data-id="${e.id}" style="display:flex;align-items:center;gap:10px;width:100%;">
-        <span style="background:#e3f2fd;color:#1976d2;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;white-space:nowrap;">CONSULTA</span>
-        <span style="flex:1;text-align:left;"><b>${fecha}, ${hora}</b> — ${e.motivo}</span>
-        <span style="color:#ccc;font-size:18px;">›</span>
-      </button>`;
+    <button class="fila" data-tipo="consulta" data-id="${e.id}">
+      <span
+  class="etiqueta-consulta"
+  data-text="${e.motivo || "Consulta"}"
+></span>
+
+<span class="fila-fecha">
+  ${fecha}
+</span>
+
+<span>|</span>
+
+<span class="fila-desc">
+  ${e.diagnostico || "Sin diagnóstico"}
+</span>
+
+      <span class="flecha-historial">
+        ›
+      </span>
+    </button>
+  `;
     } else {
-      // tratamiento
       const fin = e.finalizacion
-        ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
+        ? new Date(e.finalizacion).toLocaleDateString("es-UY", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        })
         : "Sin fecha de fin";
-      const estado = e.finalizacion && new Date(e.finalizacion) < new Date()
-        ? "FINALIZADO"
-        : "ACTIVO";
-      const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
 
       return `
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="background:#fff3e0;color:${colorEstado};padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;">TRATAMIENTO · ${estado}</span>
-          <span style="font-size:12px;color:#aaa;">${fecha}</span>
+    <div class="card">
+      <div class="tratamiento-layout">
+
+        <div class="tratamiento-info">
+          <div class="card-titulo">${e.nombre}</div>
+
+          ${e.descripcion ? `<div class="card-desc">${e.descripcion}</div>` : ""}
+
+          ${e.frecuencia ? `<div class="card-freq">${e.frecuencia}</div>` : ""}
         </div>
-        <div class="card-titulo">${e.nombre}</div>
-        ${e.descripcion ? `<div class="card-desc">${e.descripcion}</div>` : ""}
-        ${e.frecuencia ? `<div class="card-freq">🕐 ${e.frecuencia}</div>` : ""}
-        <div class="card-meta">Finalización: ${fin}</div>
-      </div>`;
+
+        <div class="tratamiento-fechas">
+          <div>Fecha inicio&nbsp;&nbsp;${fecha}</div>
+          <div>Fecha fin&nbsp;&nbsp;${fin}</div>
+        </div>
+
+      </div>
+    </div>
+  `;
     }
   }
 

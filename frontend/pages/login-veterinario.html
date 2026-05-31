@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión Veterinaria - Pataporte</title>
+
+  <link rel="stylesheet" href="../css/login-veterinaria.css" />
+</head>
+
+<body>
+  <main class="login-page">
+    <section class="login-image"></section>
+
+    <section class="login-panel">
+      <div class="login-box">
+
+        <a href="../index.html" class="volver-link">
+          ← Volver
+        </a>
+        <h1>Iniciar sesión</h1>
+
+        <p class="register-text">
+          ¿Sos nuevo por acá?
+          <a href="registrar-organizacion.html">Registrate</a>
+        </p>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="identificador">Correo o matrícula</label>
+            <input type="text" id="identificador" name="identificador" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+
+          <a class="forgot-link" href="recuperar-password.html">
+            ¿Olvidaste tu contraseña?
+          </a>
+
+          <button type="submit">Acceder</button>
+
+          <p id="error"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/validacionesDocumentos.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/loginVeterinario.js"></script>
+</body>
+
+</html>

@@ -1,13 +1,32 @@
-from fastapi import APIRouter, Depends, Header, Query
+from http.client import HTTPException
+import os
+import jwt
+from jwt import PyJWTError
+from utils import password_utils
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from config.database import get_db
 from schemas.vacuna import DosisCreate, DosisResponse, EsquemaVacunacionResponse, EditarEsquemaVacuna
 from services import vacuna_service
-from config.database import TipoVacunas, Dosis, EsquemaVacunacion, EsquemaVacuna
+from config.database import Dosis, EsquemaVacunacion, EsquemaVacuna
 from typing import Optional
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+
 router = APIRouter()
+
+def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)) -> str:
+    """Extrae el id_veterinario del token JWT."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except PyJWTError:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    id_veterinario = payload.get("sub")
+    if not id_veterinario:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    return id_veterinario
 
 @router.get(
     "/{id_mascota}/carnet",
@@ -26,13 +45,6 @@ def obtener_carnet(
 
     return esquemas
 
-# TODO: reemplazar por dependencia real de autenticación JWT
-def _get_id_veterinaria(x_veterinaria_id: str = Header(...)) -> str:
-    """
-    Dependencia temporal: el id de la veterinaria se pasa en el header X-Veterinaria-Id.
-    En producción debe extraerse del token JWT.
-    """
-    return x_veterinaria_id
 
 @router.post(
     "/crear-carnet/{id_mascota}",
@@ -69,12 +81,12 @@ def agregar_vacuna_a_esquema(
 def agregar_dosis(
     data: DosisCreate,
     db: Session = Depends(get_db),
-    id_veterinaria: str = Depends(_get_id_veterinaria),
+    id_veterinario: str = Depends(get_current_vet),
 ):
     return vacuna_service.registrar_dosis(
         db=db,
         data=data,
-        id_veterinaria=id_veterinaria
+        id_veterinario=id_veterinario
     )
 
 @router.get("/tipos")
@@ -111,7 +123,7 @@ def editar_esquema_vacuna(
     id_esquema_vacuna: str,
     data: EditarEsquemaVacuna,
     db: Session = Depends(get_db),
-    id_veterinaria: str = Depends(_get_id_veterinaria),
+    id_veterinario: str = Depends(get_current_vet),
 ):
 
     return vacuna_service.editar_esquema_vacuna(
@@ -119,5 +131,5 @@ def editar_esquema_vacuna(
         id_esquema_vacuna=id_esquema_vacuna,
         agregar_dosis=data.agregar_dosis,
         eliminar_dosis=data.eliminar_dosis,
-        id_veterinaria=id_veterinaria
+        id_veterinario=id_veterinario
     )

@@ -62,41 +62,74 @@ document.addEventListener("DOMContentLoaded", async () => {
             : null;
 
           const hoy = new Date();
+
           const enSieteDias = new Date();
           enSieteDias.setDate(hoy.getDate() + 7);
 
           const proximaAVencer =
             proxima && proxima >= hoy && proxima <= enSieteDias;
 
-          card.style.border = proximaAVencer
-            ? "2px solid #f57c00"
-            : "1px solid #ddd";
+          const dosisAplicadas =
+            vacuna.dosis_aplicadas !== undefined
+              ? vacuna.dosis_aplicadas
+              : (vacuna.dosis ? vacuna.dosis.length : 0);
 
-          card.style.padding = "16px";
-          card.style.marginTop = "12px";
-          card.style.borderRadius = "8px";
-          card.style.backgroundColor = "white";
-          card.style.boxShadow = "0 1px 4px rgba(0,0,0,0.06)";
+          const dosisRequeridas =
+            vacuna.dosis_requeridas !== undefined
+              ? vacuna.dosis_requeridas
+              : 0;
 
-          if (proximaAVencer) {
-            card.style.backgroundColor = "#fff3e0";
-          }
+          const esCompletada =
+            dosisAplicadas >= dosisRequeridas ||
+            vacuna.estado === "completado";
 
-          const dosisAplicadas = vacuna.dosis_aplicadas !== undefined ? vacuna.dosis_aplicadas : (vacuna.dosis ? vacuna.dosis.length : 0);
-          const dosisRequeridas = vacuna.dosis_requeridas !== undefined ? vacuna.dosis_requeridas : 0;
-          const esCompletada = dosisAplicadas >= dosisRequeridas || vacuna.estado === "completado";
+          card.className = esCompletada
+            ? "vacuna-card finalizada"
+            : "vacuna-card";
 
           card.innerHTML = `
-            <h3 style="color:#222; margin-bottom:8px;">Vacuna ${vacuna.nombre}</h3>
-            <p style="font-size:14px; margin: 4px 0;"><strong>Fecha de inicio:</strong> ${vacuna.fecha_inicio ? formatearFecha(vacuna.fecha_inicio) : "—"}</p>
-            <p style="font-size:14px; margin: 4px 0;"><strong>Próxima dosis:</strong> ${vacuna.fecha_proxima_dosis ? formatearFecha(vacuna.fecha_proxima_dosis) : "No requerida"}</p>
-            <p style="font-size:14px; margin: 4px 0;"><strong>Dosis aplicadas:</strong> ${dosisAplicadas}</p>
-            ${esCompletada 
-              ? `<p style="font-size:14px; margin: 4px 0; font-weight: bold; color: #000;">¡Vacuna finalizada!</p>`
-              : `<p style="font-size:14px; margin: 4px 0;"><strong>Dosis totales:</strong> ${dosisRequeridas}</p>`
+  ${esCompletada
+              ? `<span class="finalizada-texto">¡Vacuna finalizada!</span>`
+              : ""
             }
-            ${proximaAVencer ? "<p style='color:#e65100; font-weight:bold; margin-top:8px;'>⚠️ Próxima dosis en menos de 7 días</p>" : ""}
-          `;
+
+  <h3 class="vacuna-titulo">
+    ${vacuna.nombre}
+  </h3>
+
+  <p class="vacuna-meta">
+    <strong>Fecha inicio:</strong>
+    ${vacuna.fecha_inicio
+              ? formatearFecha(vacuna.fecha_inicio)
+              : "—"
+            }
+  </p>
+
+  <p class="vacuna-meta">
+    <strong>Fecha próxima dosis:</strong>
+    ${vacuna.fecha_proxima_dosis
+              ? formatearFecha(vacuna.fecha_proxima_dosis)
+              : "No requerida"
+            }
+  </p>
+
+  <p class="vacuna-meta">
+    <strong>Dosis aplicadas:</strong>
+    ${dosisAplicadas}
+  </p>
+
+  <p class="vacuna-meta">
+    <strong>Dosis totales:</strong>
+    ${dosisRequeridas}
+  </p>
+
+  ${proximaAVencer
+              ? `<p class="alerta">
+          ⚠ Próxima dosis en menos de 7 días
+        </p>`
+              : ""
+            }
+`;
 
           resultado.appendChild(card);
         });
@@ -114,8 +147,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function formatearFecha(fechaStr) {
-  return new Date(fechaStr).toLocaleDateString("es-UY", {
-    day: "numeric", month: "short", year: "numeric"
-  });
+    return new Date(fechaStr).toLocaleDateString("es-UY", {
+      day: "numeric", month: "short", year: "numeric"
+    });
   }
 });
