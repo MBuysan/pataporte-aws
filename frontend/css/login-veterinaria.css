@@ -31,7 +31,7 @@ body {
 }
 
 .login-image {
-  background-image: url("../assets/img_iniciar_sesion.png");
+  background-image: url("../../assets/img_iniciar_sesion.png");
   background-size: cover;
   background-position: center;
   min-height: 100vh;
