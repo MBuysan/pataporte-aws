@@ -35,6 +35,8 @@ function inicializarPantallaLogin() {
                 password,
             });
 
+            console.log("LOGIN RESPONSE:", response);
+            
             // Guardar token y datos en localStorage
             localStorage.setItem("access_token", response.access_token);
             if (response.user) {
