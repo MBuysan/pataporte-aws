@@ -1,5 +1,4 @@
-from schemas.vacuna import DosisResponse, DosisCreate
-from schemas.tratamiento import TratamientoResponse, TratamientoUpdate, TratamientoCreate
+from schemas.vacuna import DosisEnConsulta, DosisDetalleConsultaResponse
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
@@ -11,13 +10,9 @@ class ConsultaCreate(BaseModel):
     motivo:               str
     diagnostico:          Optional[str]  = None
     
-    crear_tratamiento: bool = False
-    editar_tratamiento: bool = False
-    agregar_dosis: bool = False
+    nuevas_vacunas:       List[str] = []
+    dosis:                List[DosisEnConsulta] = []
     
-    nuevo_tratamiento: Optional[TratamientoCreate] = None
-    tratamiento_actualizado: Optional[TratamientoUpdate] = None
-    nueva_dosis: Optional[DosisCreate] = None
 
     
     class Config:
@@ -26,14 +21,8 @@ class ConsultaCreate(BaseModel):
                 "id_mascota":       "uuid-mascota",
                 "motivo":           "Control anual",
                 "diagnostico":      "Animal sano",
-                "agregar_dosis":    False,
-                "editar_tratamiento": True,
-                "id_tratamiento":   "uuid-tratamiento",
-                "datos_tratamiento": {
-                    "nombre":       "Vitaminas diarias",
-                    "descripcion":  "Una pastilla por día",
-                    "finalizacion": None,
-                },
+                "nuevas_vacunas":   [],
+                "dosis":            [],
             }
         }
 
@@ -47,8 +36,7 @@ class ConsultaResponse(BaseModel):
     fecha_hora: datetime
     motivo: str
     diagnostico: Optional[str]
-    tratamientos: List[TratamientoResponse] = []
-    dosis:        List[DosisResponse] = []
+    dosis:        List[DosisDetalleConsultaResponse] = []
     
     class Config:
         from_attributes = True

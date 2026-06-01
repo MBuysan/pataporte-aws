@@ -16,6 +16,7 @@ function inicializarPantallaLogin() {
         event.preventDefault();
 
         const identificador = identificadorInput.value.trim();
+        const esEmail = identificador.includes("@");
         const password = passwordInput.value.trim();
 
         errorMessage.textContent = "";
@@ -24,26 +25,27 @@ function inicializarPantallaLogin() {
             errorMessage.textContent = "Por favor, completa todos los campos.";
             return;
         }
-
         try {
-            const response = await api.post("/auth/login/veterinaria", {
+            const response = await api.post("/auth/login/veterinario", {
                 identificador,
                 password,
             });
 
+            console.log("LOGIN RESPONSE:", response);
+            
             // Guardar token y datos en localStorage
             localStorage.setItem("access_token", response.access_token);
             if (response.user) {
                 localStorage.setItem("user", JSON.stringify(response.user));
-                localStorage.setItem("rol", "veterinaria");
-                const vetId = response.user?.id_veterinaria;
+                localStorage.setItem("rol", "veterinario");
+                const vetId = response.user?.id_veterinario;
 
                 if (!vetId) {
                     console.error("LOGIN RESPONSE:", response);
-                    throw new Error("No se recibió id_veterinaria");
+                    throw new Error("No se recibió id_veterinario");
                 }
 
-                localStorage.setItem("veterinaria_id", vetId);
+                localStorage.setItem("veterinario_id", vetId);
             }
 
             // Redirigir al dashboard

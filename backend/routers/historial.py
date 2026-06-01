@@ -5,25 +5,32 @@ from jwt import PyJWTError
 import os
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
-from schemas.historial import HistorialResponse
 from services import historial_service, consulta_service
 
 from utils import password_utils
 
-router = APIRouter()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+    except PyJWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="No autorizado"
+        )
+    if payload.get("rol") != "veterinario":
+        raise HTTPException(status_code=401, detail="No autorizado")
 
     id_veterinario = payload.get("sub")
-
     if not id_veterinario:
         raise HTTPException(status_code=401, detail="Token inválido")
 
     return id_veterinario
 
+router = APIRouter(    dependencies=[Depends(get_current_vet)])
 
 @router.post(
     "/consultas",
@@ -56,5 +63,12 @@ def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = De
 )
 def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db)):
     return historial_service.ver_historial_consultas(db, id_mascota)
+
+@router.get(
+    "/{id_mascota}/unificado",
+    summary="Ver historial unificado (consultas, tratamientos y vacunas)"
+)
+def ver_historial_unificado(id_mascota: str, db: Session = Depends(get_db)):
+    return {"eventos": historial_service.obtener_historial_unificado(db, id_mascota)}
 
 

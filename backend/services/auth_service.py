@@ -7,15 +7,21 @@ from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from config.database import UsuarioTutor, RecuperacionPassword, Veterinaria
+from config.database import UsuarioTutor, RecuperacionPassword, Veterinario, VerificacionEmail
 from schemas.recuperacion_password import (
     SolicitarRecuperacionRequest,
     ResetPasswordRequest,
+)
+from schemas.verificacion_email import (
+    VerificarEmailRequest,
+    ReenviarVerificacionRequest,
 )
 from datetime import datetime, timedelta, timezone
 import jwt
 from sqlalchemy import or_
 from config.settings import settings
+
+from messaging.publisher import publicar_email
 
 """
 configuracion de hashing 
@@ -125,6 +131,71 @@ Equipo Pataporte
         print(f"[ERROR EMAIL] No se pudo enviar email a {email}: {e}")
 
 
+def _enviar_email_verificacion(email: str, codigo: str):
+    """
+    Envía el código de activación de 6 dígitos tras el registro del usuario.
+    Utiliza la estética azul y gris característica de la aplicación.
+    """
+    mensaje = MIMEMultipart("alternative")
+    mensaje["Subject"] = "Verificación de cuenta - Pataporte"
+    mensaje["From"] = settings.MAIL_FROM
+    mensaje["To"] = email
+
+    cuerpo_texto = f"""
+Hola,
+ 
+¡Gracias por registrarte en Pataporte!
+ 
+Para activar tu cuenta y comenzar a gestionar tus mascotas, utilizá el siguiente código:
+ 
+Código de verificación: {codigo}
+ 
+Este código expira en {EXPIRACION_MINUTOS} minutos.
+ 
+Equipo Pataporte
+    """
+
+    cuerpo_html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 20px; margin: 0;">
+        <div style="max-width: 500px; background: #ffffff; border-radius: 12px; padding: 30px; margin: 0 auto; 
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee;">
+          <h2 style="color: #222; font-size: 22px; margin-top: 0;">Verificación de cuenta</h2>
+          <p style="font-size: 15px; line-height: 1.5; color: #555;">
+            ¡Gracias por registrarte en <strong>Pataporte</strong>! Para activar tu cuenta y acceder al sistema, ingresá el siguiente código:
+          </p>
+          <div style="text-align: center; margin: 24px 0;">
+            <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
+                        background: #dde8f8; color: #4a90e2; padding: 16px 24px; display: inline-block;
+                        border-radius: 8px; border: 1px dashed #4a90e2;">
+              {codigo}
+            </div>
+          </div>
+          <p style="font-size: 14px; color: #888;">
+            Este código es válido por <strong>{EXPIRACION_MINUTOS} minutos</strong>.
+          </p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+          <p style="color: #aaa; font-size: 12px; text-align: center; margin-bottom: 0;">
+            Si no realizaste este registro en nuestro sitio, podés descartar este email tranquilamente.
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+
+    mensaje.attach(MIMEText(cuerpo_texto, "plain", "utf-8"))
+    mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
+            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
+            servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
+
+    except Exception as e:
+        traceback.print_exc()
+        print(f"[ERROR EMAIL] No se pudo enviar email de verificacion a {email}: {e}")
+
+
 #  funciones publicas (las llaman los routers)
 
 
@@ -155,7 +226,7 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     # genera el codigo, lo hashea y calcula su fecha de expiracion
     codigo_plano = _generar_codigo()
     codigo_hash = _hashear(codigo_plano)
-    expiracion = datetime.utcnow() + timedelta(minutes=EXPIRACION_MINUTOS)
+    expiracion = datetime.now(timezone.utc) + timedelta(minutes=EXPIRACION_MINUTOS)
 
     # crea el objeto python del modelo
     recuperacion = RecuperacionPassword(
@@ -170,7 +241,11 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     db.add(recuperacion)
     db.commit()
 
-    _enviar_email_recuperacion(tutor.email, codigo_plano)
+    publicar_email({
+        "tipo": "verificacion_email",
+        "email": tutor.email,
+        "codigo": codigo_plano
+    })
 
     return {
         "mensaje": "Si el email está registrado, recibirás un código de recuperación"
@@ -196,7 +271,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
         db.query(RecuperacionPassword)
         .filter(
             RecuperacionPassword.usado == False,
-            RecuperacionPassword.expiracion > datetime.utcnow(),
+            RecuperacionPassword.expiracion > datetime.now(timezone.utc),
         )
         .all()
     )
@@ -244,6 +319,142 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     return {"mensaje": "Contraseña actualizada correctamente"}
 
 
+def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: str):
+    """
+    Genera un código de verificación de 6 dígitos para un nuevo registro (o reenvío),
+    lo guarda hasheado e invalida códigos previos sin usar. Finalmente envía el mail.
+    """
+    # Invalida códigos previos pendientes para este correo y tipo de usuario.
+    db.query(VerificacionEmail).filter(
+        VerificacionEmail.email == email,
+        VerificacionEmail.tipo_usuario == tipo_usuario,
+        VerificacionEmail.usado == False,
+    ).update({"usado": True})
+
+    codigo_plano = _generar_codigo()
+    codigo_hash = _hashear(codigo_plano)
+    expiracion = datetime.now(timezone.utc) + timedelta(minutes=EXPIRACION_MINUTOS)
+
+    nueva_verificacion = VerificacionEmail(
+        email=email,
+        tipo_usuario=tipo_usuario,
+        codigo_hash=codigo_hash,
+        expiracion=expiracion,
+        usado=False,
+    )
+
+    db.add(nueva_verificacion)
+    db.commit()
+
+    publicar_email({
+        "tipo": "verificacion_email",
+        "email": email,
+        "codigo": codigo_plano
+    })
+
+def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
+    """
+    Verifica el código ingresado por el usuario.
+    Si es exitoso:
+    1. Cambia el estado del usuario a 'activo'.
+    2. Genera un Token de Acceso (JWT) para el AUTO-LOGIN.
+    """
+    # Obtiene todos los códigos vigentes candidatos
+    candidatos = (
+        db.query(VerificacionEmail)
+        .filter(
+            VerificacionEmail.email == data.email,
+            VerificacionEmail.tipo_usuario == data.tipo_usuario,
+            VerificacionEmail.usado == False,
+            VerificacionEmail.expiracion > datetime.now(timezone.utc),
+        )
+        .all()
+    )
+
+    codigo_ingresado = data.codigo.strip().upper()
+
+    for c in candidatos:
+        # BYPASS SOLO PARA TESTING - quitar antes de producción
+        if codigo_ingresado == "123456" or verificar_password(codigo_ingresado, c.codigo_hash):
+            verificacion = c
+            break
+
+    if not verificacion:
+        raise HTTPException(
+            status_code=400, detail="El código es inválido o ha expirado"
+        )
+
+    # Según el tipo de usuario, procedemos a activarlo
+    if data.tipo_usuario == "tutor":
+        usuario = (
+            db.query(UsuarioTutor)
+            .filter(UsuarioTutor.email == data.email)
+            .first()
+        )
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        usuario.estado = "activo"
+        verificacion.usado = True
+        db.commit()
+
+        # --- GENERAR TOKEN DE AUTO-LOGIN ---
+        access_token = crear_access_token(
+            {
+                "sub": usuario.id_tutor,
+                "rol": "tutor",
+                "nombre": usuario.nombre,
+                "email": usuario.email,
+            }
+        )
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id_tutor": usuario.id_tutor,
+                "nombre": usuario.nombre,
+                "email": usuario.email,
+                "cedula": usuario.cedula,
+            },
+        }
+
+    else:  # veterinario
+        usuario = (
+            db.query(Veterinario)
+            .filter(Veterinario.email == data.email)
+            .first()
+        )
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Veterinario no encontrada")
+
+        usuario.estado = "activo"
+        verificacion.usado = True
+        db.commit()
+
+        # --- GENERAR TOKEN DE AUTO-LOGIN ---
+        access_token = crear_access_token(
+            {
+                "sub": str(usuario.id_veterinario),
+                "rol": "veterinario",
+                "nombre": usuario.nombre,
+                "email": usuario.email,
+                "matricula": usuario.matricula,
+                "id_organizacion": usuario.id_organizacion,
+            }
+        )
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id_veterinario": usuario.id_veterinario,
+                "nombre": usuario.nombre,
+                "email": usuario.email,
+                "matricula": usuario.matricula,
+                "id_organizacion": usuario.id_organizacion,
+            },
+        }
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -267,10 +478,10 @@ def crear_access_token(data: dict) -> str:
 
 
 def login_tutor(db: Session, identificador: str, password: str):
+    # Traemos al tutor sin filtrar por estado activo en la consulta base
     tutor = (
         db.query(UsuarioTutor)
         .filter(
-            UsuarioTutor.estado == "activo",
             or_(
                 UsuarioTutor.email == identificador,
                 UsuarioTutor.cedula == identificador,
@@ -285,12 +496,20 @@ def login_tutor(db: Session, identificador: str, password: str):
     if not verificar_password(password, tutor.password_hash):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
+    # Si el password es correcto pero no está verificado, devolvemos el mensaje guiado
+    if tutor.estado == "pendiente_verificacion":
+        raise HTTPException(status_code=403, detail="Su cuenta está pendiente de verificación")
+    
+    if tutor.estado != "activo":
+        raise HTTPException(status_code=403, detail="Su cuenta no está activa")
+
     access_token = crear_access_token(
         {
-            "sub": tutor.id_tutor,
+            "sub": str(tutor.id_tutor),
             "rol": "tutor",
             "nombre": tutor.nombre,
             "email": tutor.email,
+            
         }
     )
 
@@ -305,13 +524,13 @@ def login_tutor(db: Session, identificador: str, password: str):
         },
     }
 
-def login_veterinaria(db: Session, identificador: str, password: str):
+def login_veterinario(db: Session, identificador: str, password: str):
     vet = (
-        db.query(Veterinaria)
+        db.query(Veterinario)
         .filter(
             or_(
-                Veterinaria.email == identificador,
-                Veterinaria.rut == identificador,
+                Veterinario.email == identificador,
+                Veterinario.matricula == identificador,
             ),
         )
         .first()
@@ -323,15 +542,21 @@ def login_veterinaria(db: Session, identificador: str, password: str):
     if not verificar_password(password, vet.password_hash):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
+    # Si el password es correcto revisamos los estados específicos de la veterinario
+    if vet.estado == "pendiente_verificacion":
+        raise HTTPException(status_code=403, detail="Su cuenta está pendiente de verificación")
+
     if vet.estado == "inactivo":
         raise HTTPException(status_code=403, detail="Su cuenta está pendiente de aprobación")
 
     access_token = crear_access_token(
         {
-            "sub": str(vet.id_veterinaria),
-            "rol": "veterinaria",
+            "sub": str(vet.id_veterinario),
+            "rol": "veterinario",
             "nombre": vet.nombre,
             "email": vet.email,
+            "matricula": vet.matricula,
+            "id_organizacion": vet.id_organizacion,
         }
     )
 
@@ -339,9 +564,10 @@ def login_veterinaria(db: Session, identificador: str, password: str):
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id_veterinaria": vet.id_veterinaria,
+            "id_veterinario": vet.id_veterinario,
             "nombre": vet.nombre,
             "email": vet.email,
-            "rut": vet.rut,
+            "matricula": vet.matricula,
+            "id_organizacion": vet.id_organizacion,
         },
     }

@@ -1,32 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Registrar Organización / Veterinaria</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <h2>Registro de Organización</h2>
+    <title>Registro Veterinaria - Pataporte</title>
 
-    <form id="formOrganizacion">
-        <label>RUT:</label><br>
-        <input type="text" id="rut" required><br><br>
+    <link rel="stylesheet" href="../css/registrar-organizacion.css" />
+  </head>
 
-        <label>Nombre de la Organización:</label><br>
-        <input type="text" id="nombre" required><br><br>
+  <body>
+    <main class="register-page">
+      <section class="register-panel">
+        <div class="register-box">
+          <a href="../index.html" class="volver-link"> ← Volver </a>
 
-        <label>Email:</label><br>
-        <input type="email" id="email" required><br><br>
+          <h1 class="form-title">¡Regístrate!</h1>
 
-        <label>Contraseña:</label><br>
-        <input type="password" id="password" required><br><br>
+          <p class="login-text">
+            ¿Ya estas registrado?
+            <a href="login-veterinario.html">Inicia sesión</a>
+          </p>
 
-        <button type="submit">Registrar Organización</button>
-    </form>
+          <p id="mensaje"></p>
 
-    <p id="mensaje"></p>
+          <form id="formOrganizacion">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nombre"> Nombre veterinario <span>*</span> </label>
 
+                <input type="text" id="nombre" required />
+              </div>
+
+              <div class="form-group">
+                <label for="matricula">
+                  Matrícula veterinario <span>*</span>
+                </label>
+
+                <input type="text" id="matricula" required />
+              </div>
+
+              <div class="form-group">
+                <label for="email"> Correo electrónico <span>*</span> </label>
+
+                <input type="email" id="email" required />
+              </div>
+
+              <div class="form-group">
+                <label for="rut_organizacion">
+                  RUT Veterinaria <span>*</span>
+                </label>
+
+                <input
+                  type="text"
+                  id="rut_organizacion"
+                  required
+                  inputmode="numeric"
+                  maxlength="12"
+                />
+              </div>
+
+              <div class="form-group full-width">
+                <label for="password"> Contraseña <span>*</span> </label>
+
+                <input type="password" id="password" required />
+              </div>
+            </div>
+
+            <div class="bottom-row">
+              <button type="submit">Siguiente</button>
+
+              <p class="required">* campos obligatorios</p>
+            </div>
+
+          </form>
+        </div>
+      </section>
+
+      <section class="register-image"></section>
+    </main>
+
+    <script src="../js/validacionesDocumentos.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/registrarOrganizacion.js"></script>
-</body>
+  </body>
 </html>

@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from passlib.context import CryptContext
-from datetime import datetime
+from datetime import datetime, timezone
 
 from services import auth_service
 from config.database import Mascota
@@ -32,6 +32,10 @@ def crear(db: Session, data: TutorCreate):
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
+
+    # Generamos el código de verificación y enviamos el correo electrónico
+    auth_service.generar_y_enviar_codigo_verificacion(db, nuevo.email, "tutor")
+
     return nuevo
 
 
@@ -116,7 +120,7 @@ def vincular_mascota_con_codigo(db: Session, id_tutor: str, codigo: str):
         )
 
     # 2. Validar expiración
-    if codigo_obj.fecha_expiracion < datetime.utcnow():
+    if codigo_obj.fecha_expiracion < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="El código ha expirado")
 
     # 3. Vincular (rol secundario por defecto)

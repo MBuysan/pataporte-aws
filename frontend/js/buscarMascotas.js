@@ -3,12 +3,27 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const form        = document.getElementById("form-busqueda");
-  const inputCedula = document.getElementById("input-cedula");
-  const btnBuscar   = document.getElementById("btn-buscar");
-  const mensajeEl   = document.getElementById("mensaje-buscar");
-  const resultadoEl = document.getElementById("resultado");
+  const rol = localStorage.getItem("rol");
+  const token = localStorage.getItem("access_token");
+  if (!token || rol !== "veterinario") {
+    window.location.href = "login-veterinario.html";
+    return;
+  }
 
+  const form = document.getElementById("form-busqueda");
+  const inputCedula = document.getElementById("input-cedula");
+  const btnBuscar = document.getElementById("btn-buscar");
+  const mensajeEl = document.getElementById("mensaje-buscar");
+  const resultadoEl = document.getElementById("resultado");
+  const btnLogout = document.getElementById("btn-logout");
+
+  btnLogout.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    localStorage.removeItem("access_token");
+
+    window.location.href = "login-veterinario.html";
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -74,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mascota.edad != null
         ? `${mascota.edad} ${mascota.edad === 1 ? "año" : "años"}`
         : null,
-    ].filter(Boolean).join(" · ");
+    ].filter(Boolean).join(" | ");
 
     const foto = mascota.foto_url
       ? `<img src="${mascota.foto_url}" alt="${mascota.nombre}" class="foto-mascota" />`

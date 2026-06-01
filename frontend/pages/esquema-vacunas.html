@@ -1,26 +1,30 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Esquema de vacunas</title>
-  </head>
-  <body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="../css/esquema-vacunas.css" />
+  <title>Esquema de vacunas</title>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+  <a id="btnVolver" class="volver" href="#">← Volver al perfil mascota</a>
+
+  <div class="header">
     <h1>Esquema de vacunas</h1>
+  </div>
 
-    <a href="dashboard_veterinaria.html">Volver</a>
+  <p id="mensaje"></p>
 
-    <section>
-      <label for="idMascota">ID de mascota</label>
-      <input id="idMascota" type="text" />
+  <section id="resultado"></section>
 
-      <button id="btnBuscar" type="button">Buscar</button>
-    </section>
+</div>
 
-    <p id="mensaje"></p>
+<script src="../js/api.js"></script>
+<script src="../js/esquemaVacunas.js"></script>
 
-    <section id="resultado"></section>
-
-    <script src="../js/api.js"></script>
-    <script src="../js/esquemaVacunas.js"></script>
-  </body>
+</body>
 </html>

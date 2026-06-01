@@ -7,7 +7,6 @@ from typing import List
 class EstadoEsquemaEnum(str, Enum):
     activo = "activo"
     completado = "completado"
-    atrasado = "atrasado"
 
 
 class EstadoCertificadoEnum(str, Enum):
@@ -36,20 +35,34 @@ class DosisCreate(BaseModel):
 
     id_esquema_vacuna: str
     fecha_aplicacion: date
-
+    fecha_proxima_dosis: Optional[date] = None
     id_consulta: Optional[str] = None
+    
+class DosisEnConsulta(BaseModel):
+    id_esquema_vacuna:   Optional[str] = None  # vacuna ya en el esquema
+    id_vacuna_nueva:     Optional[str] = None  # vacuna recien agregada en esta misma consulta
+    fecha_aplicacion:    date
+    fecha_proxima_dosis: Optional[date] = None
 
 
 # ── Dosis (usa CertificadoResponse) ───────────────────────
 class DosisResponse(BaseModel):
     id_dosis: str
     id_esquema_vacuna: str
-    id_veterinaria: str
+    id_veterinario: str
     numero_dosis: int
     fecha_aplicacion: date
     id_consulta: Optional[str]
     certificado: Optional[CertificadoResponse] = None
     
+
+    class Config:
+        from_attributes = True
+        
+class DosisDetalleConsultaResponse(BaseModel):
+    nombre_vacuna: str
+    numero_dosis: int
+    fecha_aplicacion: date
 
     class Config:
         from_attributes = True
@@ -60,6 +73,7 @@ class VacunaResponse(BaseModel):
     id_esquema_vacuna: str
     id_vacuna: str
     nombre: str
+    especie_objetivo: str
     estado: EstadoEsquemaEnum
     fecha_inicio: date
     fecha_proxima_dosis: Optional[date]

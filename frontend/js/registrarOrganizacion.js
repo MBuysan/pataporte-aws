@@ -4,31 +4,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        
-        mensajeP.textContent = "Registrando...";
-        mensajeP.style.color = "blue";
 
-        const rut = document.getElementById("rut").value.trim();
+        const rut = document.getElementById("rut_organizacion").value.trim();
         const nombre = document.getElementById("nombre").value.trim();
+        const matricula = document.getElementById("matricula").value.trim();
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
 
+        if (!rut || !nombre || !email || !password) {
+            mensajeP.textContent = "Por favor complete todos los campos obligatorios.";
+            mensajeP.style.color = "red";
+            return;
+        }
+
+        if (!validarRutUruguayo(rut)) {
+            mensajeP.textContent = "El RUT ingresado no es válido.";
+            mensajeP.style.color = "red";
+            return;
+        }
+
+        mensajeP.textContent = "Registrando...";
+        mensajeP.style.color = "blue";
+
         try {
-            const data = await api.post("/veterinarios/", {
-                rut: rut,
-                nombre: nombre,
-                email: email,
-                password: password
+            await api.post("/veterinarios/", {
+                rut_organizacion: limpiarDocumento(rut),
+                nombre,
+                matricula,
+                email,
+                password
             });
 
-            mensajeP.textContent = "Organización registrada exitosamente!";
+            mensajeP.textContent = "¡Registro exitoso! Te enviamos un código por email. Redirigiendo a verificación...";
             mensajeP.style.color = "green";
-            
-            // Opcional: limpiar formulario
             form.reset();
-            
-            // Opcional: redirigir al login
-            // window.location.href = "login.html";
+            setTimeout(() => {
+                window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinario`;
+            }, 1500);
 
         } catch (error) {
             mensajeP.textContent = error.message || "Error al registrar organización";
