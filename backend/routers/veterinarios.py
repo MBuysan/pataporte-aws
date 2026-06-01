@@ -1,22 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from config.database import get_db, Veterinaria
+from config.database import get_db, Veterinario
 from schemas.mascota import ResultadoBusquedaTutor
+from schemas.veterinario import VeterinarioCreate, VeterinarioResponse
 from services import veterinario_service
 
 router = APIRouter()
 
-from schemas.veterinaria import VeterinariaCreate, VeterinariaResponse
 
 @router.post(
     "/",
-    response_model=VeterinariaResponse,
+    response_model=VeterinarioResponse,
     status_code=201,
-    summary="Registrar una organización/veterinaria",
+    summary="Registrar un veterinario y su organización",
 )
-def registrar_veterinaria(data: VeterinariaCreate, db: Session = Depends(get_db)):
-    return veterinario_service.registrar_veterinaria(db, data)
+def registrar_veterinario(data: VeterinarioCreate, db: Session = Depends(get_db)):
+    return veterinario_service.registrar_veterinario(db, data)
 
 
 
@@ -31,14 +31,14 @@ def buscar_por_cedula(cedula: str, db: Session = Depends(get_db)):
 
 @router.get("/", summary="Listar veterinarios")
 def listar_veterinarios(db: Session = Depends(get_db)):
-    return db.query(Veterinaria).filter(Veterinaria.estado == "activo").all()
+    return db.query(Veterinario).filter(Veterinario.estado == "activo").all()
 
 
-@router.get("/{id_veterinario}", summary="Obtener veterinario")
+@router.get("/{id_veterinario}", summary="Obtener veterinario por id")
 def obtener_veterinario(id_veterinario: str, db: Session = Depends(get_db)):
     vet = (
-        db.query(Veterinaria)
-        .filter(Veterinaria.id_veterinaria == id_veterinario)
+        db.query(Veterinario)
+        .filter(Veterinario.id_veterinario == id_veterinario)
         .first()
     )
     if not vet:

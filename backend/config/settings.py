@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     MAIL_PASSWORD: str
     MAIL_FROM: str
 
+    RABBITMQ_HOST: str = "rabbitmq"
+    RABBITMQ_PORT: int = 5672
+
     class Config:
         env_file = ".env"
 

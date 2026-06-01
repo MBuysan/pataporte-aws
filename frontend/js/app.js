@@ -29,6 +29,7 @@ function inicializarPantallaLogin() {
 
     const identificador = identificadorInput.value.trim();
     const password = passwordInput.value.trim();
+    const esEmail = identificador.includes("@");
 
     errorMessage.textContent = "";
 
@@ -37,9 +38,14 @@ function inicializarPantallaLogin() {
       return;
     }
 
+    if (!esEmail && !validarCedulaUruguaya(identificador)) {
+      errorMessage.textContent = "La cédula ingresada no es válida.";
+      return;
+    }
+
     try {
       const response = await api.post("/auth/login", {
-        identificador,
+        identificador: esEmail ? identificador : limpiarDocumento(identificador),
         password,
       });
 

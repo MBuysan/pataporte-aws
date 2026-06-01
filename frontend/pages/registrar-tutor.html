@@ -1,42 +1,190 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Registrar Tutor</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registrar Tutor - Pataporte</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/registrar-tutor.css" />
+  </head>
+  <body>
+    <div class="split-container">
+      <!-- Panel Izquierdo (Formulario de Registro) -->
+      <div class="form-panel">
+        <div class="form-content">
+          <!-- Cabecera -->
+          <div class="form-header">
+            <h1 class="form-title">¡Regístrate!</h1>
+            <p class="form-subtitle">
+              ¿Ya sos miembro?
+              <a href="login.html" class="form-link-action">Inicia sesión</a>
+            </p>
+          </div>
 
-    <h2>Registro de Tutor</h2>
+          <!-- Banner de Alerta / Mensajes (Alineado con registrarTutor.js) -->
+          <p id="mensaje"></p>
 
-    <form id="formTutor">
-        <label>Nombre:</label><br>
-        <input type="text" id="nombre" required><br><br>
+          <!-- Formulario -->
+          <form id="formTutor">
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="nombre" class="input-label">Nombre *</label>
+                <div class="input-wrapper">
+                  <input
+                    type="text"
+                    id="nombre"
+                    class="input-field"
+                    placeholder="Tu nombre completo"
+                    required
+                  />
+                </div>
+              </div>
 
-        <label>Cédula:</label><br>
-        <input type="text" id="cedula" required><br><br>
+              <div class="input-group">
+                <label for="cedula" class="input-label">Cédula *</label>
+                <div class="input-wrapper">
+                  <input
+                    type="text"
+                    id="cedula"
+                    class="input-field"
+                    inputmode="numeric"
+                    maxlength="9"
+                    placeholder="Ej: 12345678"
+                    required
+                  />
+                </div>
+              </div>
 
-        <label>Email:</label><br>
-        <input type="email" id="email" required><br><br>
+              <div class="input-group">
+                <label for="email" class="input-label"
+                  >Correo electrónico *</label
+                >
+                <div class="input-wrapper">
+                  <input
+                    type="email"
+                    id="email"
+                    class="input-field"
+                    placeholder="ejemplo@correo.com"
+                    required
+                  />
+                </div>
+              </div>
 
-        <label>Contraseña:</label><br>
-        <input type="password" id="password" required><br><br>
+              <div class="input-group">
+                <label for="telefono" class="input-label"
+                  >Teléfono (opcional)</label
+                >
+                <div class="input-wrapper">
+                  <input
+                    type="text"
+                    id="telefono"
+                    class="input-field"
+                    placeholder="Ej: 099123456"
+                  />
+                </div>
+              </div>
 
-        <label>Teléfono:</label><br>
-        <input type="text" id="telefono"><br><br>
+              <div class="input-group full-width">
+                <label for="password" class="input-label">Contraseña *</label>
+                <div class="input-wrapper">
+                  <input
+                    type="password"
+                    id="password"
+                    class="input-field"
+                    placeholder="Creá tu contraseña"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="togglePassword"
+                    class="password-toggle"
+                    aria-label="Mostrar contraseña"
+                  >
+                    <svg
+                      id="eyeIcon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
 
-        <button type="submit">Registrar</button>
-    </form>
+            <div class="form-footer-legend">*campos obligatorios</div>
 
-    <p id="mensaje"></p>
+            <button type="submit" class="btn-submit">Registrar</button>
+          </form>
 
-    <div style="margin-top: 15px;">
-        <p>¿Ya tenés cuenta? <a href="login.html">Inicia sesión acá</a></p>
+          <!-- Botón Volver al inicio -->
+          <div class="back-link-wrapper">
+            <a href="../index.html" class="back-link">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Volver al inicio
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Derecho (Imagen de fondo optimizada) -->
+      <div class="visual-panel"></div>
     </div>
 
-    <div style="margin-top: 15px;">
-        <p><a href="../index.html">← Volver al inicio</a></p>
-    </div>
-
+    <!-- Scripts funcionales del proyecto -->
+    <script src="../js/validacionesDocumentos.js"></script>
     <script src="../js/registrarTutor.js"></script>
-</body>
+
+    <!-- Script de interactividad premium (Ver/Ocultar Contraseña) -->
+    <script>
+      document
+        .getElementById("togglePassword")
+        .addEventListener("click", function () {
+          const passwordInput = document.getElementById("password");
+          const eyeIcon = document.getElementById("eyeIcon");
+
+          if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            // Icono Ojo tachado (Ocultar)
+            eyeIcon.innerHTML = `
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          `;
+            this.setAttribute("aria-label", "Ocultar contraseña");
+          } else {
+            passwordInput.type = "password";
+            // Icono Ojo estándar (Mostrar)
+            eyeIcon.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          `;
+            this.setAttribute("aria-label", "Mostrar contraseña");
+          }
+        });
+    </script>
+  </body>
 </html>

@@ -1,14 +1,22 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
+  const rol = localStorage.getItem("rol");
+  const token = localStorage.getItem("access_token");
+  if (!token || rol !== "veterinario") {
+    window.location.href = "login-veterinario.html";
+    return;
+  }
+
   let idConsultaActual = null;
   let vacunasCache = [];
   let carnetCache = [];
   let vacunasPendientes = new Set();
-  let dosisPendientes   = [];
-  let historialCargado  = false;
+  let dosisPendientes = [];
+  let historialCargado = false;
   let modoEdicion = false;
   let tratamientoEditando = null;
   let valoresOriginales = null;
+  let especieMascota = null;
 
   const idMascota = new URLSearchParams(location.search).get("id");
 
@@ -31,26 +39,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = `esquema-vacunas.html?id=${encodeURIComponent(idMascota)}&from=vet`;
   };
 
-  btnCert.onclick = () => {
-    alert("La generación de certificados estará disponible en la próxima versión.");
+  btnCert.onclick = async () => {
+
+    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
+
+    btnCert.disabled = true;
+    btnCert.textContent = "Generando...";
+
+    try {
+      const res = await api.post(`/pataporte/${idMascota}`);
+
+      alert(
+        `Pataporte generado correctamente.\n\n` +
+        `El certificado PDF fue enviado al correo del tutor.\n\n`
+      );
+
+    } catch (err) {
+
+      alert(`Error al generar el Pataporte: ${err.message}`);
+
+    } finally {
+
+      btnCert.disabled = false;
+      btnCert.textContent = "Generar Certificado";
+    }
   };
+
   const modalDetalleConsulta = document.getElementById("modal-detalle-consulta");
   const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
 
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
+
+  let mascotaActual = null;
+
   try {
-    const m = await api.get(`/mascotas/${idMascota}`);
-    nombreEl.textContent = m.nombre;
-    detalleEl.textContent = `${m.especie}${m.raza ? " · " + m.raza : ""}`;
-    if (m.foto_url) {
-      fotoEl.outerHTML = `<img src="${m.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
+    mascotaActual = await api.get(`/mascotas/${idMascota}`);
+    nombreEl.textContent = mascotaActual.nombre;
+    detalleEl.textContent = `${mascotaActual.especie}${mascotaActual.raza ? " · " + mascotaActual.raza : ""}`;
+    if (mascotaActual.foto_url) {
+      fotoEl.outerHTML = `<img src="${mascotaActual.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
     } else {
-      fotoEl.textContent = m.nombre.charAt(0).toUpperCase();
+      fotoEl.textContent = mascotaActual.nombre.charAt(0).toUpperCase();
     }
   } catch (e) {
     console.error("Error cargando mascota", e);
     return;
+  }
+
+  if (mascotaActual.especie === "otro") {
+
+    btnVacunas.style.display = "none";
+    btnCert.style.display = "none";
+
   }
 
   // ───────── TRATAMIENTOS — carga automática al abrir el perfil ──────────────
@@ -68,158 +109,185 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function renderTratamientos(data) {
 
-  if (data.length === 0) {
-    seccionTrats.innerHTML =
-      `<p class="sin-datos">Esta mascota no tiene tratamientos activos.</p>`;
-    return;
-  }
+    const mensajeSinTratamientos = document.getElementById("mensaje-sin-tratamientos");
 
-  seccionTrats.innerHTML = data.map(t => {
+    if (data.length === 0) {
+      mensajeSinTratamientos.textContent =
+        "Esta mascota no tiene tratamientos activos.";
+      seccionTrats.innerHTML = "";
+      return;
+    }
 
-    const inicio = t.inicio
-      ? new Date(t.inicio).toLocaleDateString("es-UY", {
+    mensajeSinTratamientos.textContent = "";
+
+    seccionTrats.innerHTML = data.map(t => {
+
+      const inicio = t.inicio
+        ? new Date(t.inicio).toLocaleDateString("es-UY", {
           day: "numeric",
           month: "short",
           year: "numeric"
         })
-      : "—";
+        : "—";
 
-    const fin = t.finalizacion
-      ? new Date(t.finalizacion).toLocaleDateString("es-UY", {
+      const fin = t.finalizacion
+        ? new Date(t.finalizacion).toLocaleDateString("es-UY", {
           day: "numeric",
           month: "short",
           year: "numeric"
         })
-      : "Sin fecha de fin";
+        : "Sin fecha de fin";
 
-    return `
-      <div class="card">
+      return `
+<div class="card">
 
-        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">
+  <div class="tratamiento-layout">
 
-          <div style="flex:1;">
+    <div class="tratamiento-info">
 
-            <div class="card-titulo">${t.nombre}</div>
-
-            ${t.descripcion
-              ? `<div class="card-desc">${t.descripcion}</div>`
-              : ""}
-
-            ${t.frecuencia
-              ? `<div class="card-freq">🕐 ${t.frecuencia}</div>`
-              : ""}
-
-            <div class="card-meta">
-              Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}
-            </div>
-
-          </div>
-
-          <button
-            class="sec btn-editar-trat"
-            data-id="${t.id_tratamiento}"
-          >
-            Editar
-          </button>
-
-        </div>
-
+      <div class="card-titulo">
+        ${t.nombre}
       </div>
-    `;
 
-  }).join("");
+      ${t.descripcion
+          ? `<div class="card-desc">${t.descripcion}</div>`
+          : ""}
 
-  // listeners despues de renderizar
+      ${t.frecuencia
+          ? `<div class="card-freq">${t.frecuencia}</div>`
+          : ""}
 
-  document.querySelectorAll(".btn-editar-trat").forEach(btn => {
+    </div>
 
-    btn.onclick = () => {
+    <div class="tratamiento-fechas">
+      <span class="fecha-label">Fecha inicio:</span><span>${inicio}</span>
+      <span class="fecha-label">Fecha fin:</span><span>${fin}</span>
+    </div>
 
-      const tratamiento = data.find(
-        t => t.id_tratamiento === btn.dataset.id
-      );
+    <button
+  class="btn-editar-trat"
+  data-id="${t.id_tratamiento}"
+  title="Editar tratamiento"
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M16.862 3.487a2.1 2.1 0 0 1 2.97 2.97L9.5 16.79 5 18l1.21-4.5L16.862 3.487Z"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M14.5 5.85 18.15 9.5"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+  </svg>
+</button>
 
-      abrirModalEdicion(tratamiento);
-    };
-  });
-}
+  </div>
+
+</div>
+`;
+
+    }).join("");
+
+    // listeners despues de renderizar
+
+    document.querySelectorAll(".btn-editar-trat").forEach(btn => {
+
+      btn.onclick = () => {
+
+        const tratamiento = data.find(
+          t => t.id_tratamiento === btn.dataset.id
+        );
+
+        abrirModalEdicion(tratamiento);
+      };
+    });
+  }
 
   function convertirUTCALocalInput(fechaUTC) {
 
-  const fecha = new Date(fechaUTC);
+    const fecha = new Date(fechaUTC);
 
-  const year = fecha.getFullYear();
-  const month = String(fecha.getMonth() + 1).padStart(2, "0");
-  const day = String(fecha.getDate()).padStart(2, "0");
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, "0");
+    const day = String(fecha.getDate()).padStart(2, "0");
 
-  const hours = String(fecha.getHours()).padStart(2, "0");
-  const minutes = String(fecha.getMinutes()).padStart(2, "0");
+    const hours = String(fecha.getHours()).padStart(2, "0");
+    const minutes = String(fecha.getMinutes()).padStart(2, "0");
 
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   function abrirModalEdicion(tratamiento) {
 
-  modoEdicion = true;
-  tratamientoEditando = tratamiento;
+    modoEdicion = true;
+    tratamientoEditando = tratamiento;
 
-  document.querySelector("#modal-tratamiento h3").textContent =
-    "Editar tratamiento";
+    document.querySelector("#modal-tratamiento h3").textContent =
+      "Editar tratamiento";
 
-  document.getElementById("btn-guardar-trat").textContent =
-    "Guardar cambios";
+    document.getElementById("btn-guardar-trat").textContent =
+      "Guardar cambios";
 
-  document.getElementById("trat-nombre").value =
-    tratamiento.nombre || "";
+    document.getElementById("trat-nombre").value =
+      tratamiento.nombre || "";
 
-  document.getElementById("trat-descripcion").value =
-    tratamiento.descripcion || "";
+    document.getElementById("trat-descripcion").value =
+      tratamiento.descripcion || "";
 
-  document.getElementById("trat-frecuencia").value =
-    tratamiento.frecuencia || "";
+    document.getElementById("trat-frecuencia").value =
+      tratamiento.frecuencia || "";
 
-  document.getElementById("trat-inicio").value =
-    tratamiento.inicio
-      ? convertirUTCALocalInput(tratamiento.inicio)
-      : "";
+    document.getElementById("trat-inicio").value =
+      tratamiento.inicio
+        ? convertirUTCALocalInput(tratamiento.inicio)
+        : "";
 
-  document.getElementById("trat-finalizacion").value =
-    tratamiento.finalizacion
-      ? convertirUTCALocalInput(tratamiento.finalizacion)
-      : "";
+    document.getElementById("trat-finalizacion").value =
+      tratamiento.finalizacion
+        ? convertirUTCALocalInput(tratamiento.finalizacion)
+        : "";
 
-  valoresOriginales = obtenerValoresFormulario();
+    valoresOriginales = obtenerValoresFormulario();
 
-  document.getElementById("trat-error").textContent = "";
+    document.getElementById("trat-error").textContent = "";
 
-  modalTratamiento.classList.add("activo");
+    modalTratamiento.classList.add("activo");
   }
 
-    function obtenerValoresFormulario() {
+  function obtenerValoresFormulario() {
 
-  return {
-    nombre: document.getElementById("trat-nombre").value.trim(),
+    return {
+      nombre: document.getElementById("trat-nombre").value.trim(),
 
-    descripcion:
-      document.getElementById("trat-descripcion").value.trim(),
+      descripcion:
+        document.getElementById("trat-descripcion").value.trim(),
 
-    frecuencia:
-      document.getElementById("trat-frecuencia").value.trim(),
+      frecuencia:
+        document.getElementById("trat-frecuencia").value.trim(),
 
-    inicio:
-      document.getElementById("trat-inicio").value,
+      inicio:
+        document.getElementById("trat-inicio").value,
 
-    finalizacion:
-      document.getElementById("trat-finalizacion").value
-  };
+      finalizacion:
+        document.getElementById("trat-finalizacion").value
+    };
   }
 
   function huboCambios() {
 
-  const actuales = obtenerValoresFormulario();
+    const actuales = obtenerValoresFormulario();
 
-  return JSON.stringify(actuales)
-    !== JSON.stringify(valoresOriginales);
+    return JSON.stringify(actuales)
+      !== JSON.stringify(valoresOriginales);
   }
 
   // ───────── MODAL TRATAMIENTO ───────────────────────────────────────────────
@@ -268,24 +336,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     errorEl.textContent = "";
 
-    const nombre =
-      document.getElementById("trat-nombre").value.trim();
+    const nombre = document.getElementById("trat-nombre").value.trim();
+    const descripcion = document.getElementById("trat-descripcion").value.trim();
+    const frecuencia = document.getElementById("trat-frecuencia").value.trim();
+    const inicio = document.getElementById("trat-inicio").value;
+    const finalizacion = document.getElementById("trat-finalizacion").value;
 
     if (!nombre) {
-
-      errorEl.textContent =
-        "El nombre del tratamiento es obligatorio.";
-
+      errorEl.textContent = "El nombre del tratamiento es obligatorio.";
       document.getElementById("trat-nombre").focus();
-
       return;
     }
 
-    const inicio =
-      document.getElementById("trat-inicio").value;
+    if (!descripcion) {
+      errorEl.textContent = "La descripción del tratamiento es obligatoria.";
+      document.getElementById("trat-descripcion").focus();
+      return;
+    }
 
-    const finalizacion =
-      document.getElementById("trat-finalizacion").value;
+    if (!frecuencia) {
+      errorEl.textContent = "La frecuencia del tratamiento es obligatoria.";
+      document.getElementById("trat-frecuencia").focus();
+      return;
+    }
+
+    if (!inicio) {
+      errorEl.textContent = "La fecha de inicio es obligatoria.";
+      document.getElementById("trat-inicio").focus();
+      return;
+    }
 
     // validacion frontend fechas
 
@@ -313,35 +392,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const inicioValue =
-      document.getElementById("trat-inicio").value;
-
-    const finalizacionValue =
-      document.getElementById("trat-finalizacion").value;
-
     const payload = {
-
       nombre,
-
-      descripcion:
-        document.getElementById("trat-descripcion")
-          .value
-          .trim() || null,
-
-      frecuencia:
-        document.getElementById("trat-frecuencia")
-          .value
-          .trim() || null,
-
-      inicio:
-        inicioValue
-          ? new Date(inicioValue).toISOString()
-          : null,
-
-      finalizacion:
-        finalizacionValue
-          ? new Date(finalizacionValue).toISOString()
-          : null,
+      descripcion,
+      frecuencia,
+      inicio: inicio ? new Date(inicio).toISOString() : null,
+      finalizacion: finalizacion ? new Date(finalizacion).toISOString() : null,
     };
 
     try {
@@ -376,7 +432,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       errorEl.textContent =
         err.message || "Error al guardar el tratamiento.";
     }
-};
+  };
 
   // ───────── MODAL CONSULTA ──────────────────────────────────────────────────
   document.getElementById("btn-consulta").onclick = async () => {
@@ -386,12 +442,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     carnetCache = [];
     vacunasCache = [];
 
+    // limpia formulario
+    formConsulta.reset();
+    vacunasDiv.innerHTML = "";
+
     modalConsulta.classList.add("activo");
 
-    vacunasCache = await api.get("/vacunas/tipos");
-    const response = await api.get(`/vacunas/${idMascota}/carnet`);
-    carnetCache = Array.isArray(response) ? response : [];
-    renderVacunas();
+    if (mascotaActual.especie !== "otro") {
+      vacunasCache = await api.get(`/vacunas/tipos?especie=${mascotaActual.especie}`);
+      const response = await api.get(`/vacunas/${idMascota}/carnet`);
+      carnetCache = Array.isArray(response) ? response : [];
+      renderVacunas();
+    }
   };
 
   document.getElementById("cerrar-modal-consulta").onclick = () =>
@@ -415,50 +477,185 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── RENDER VACUNAS ──────────────────────────────────────────────────
   function renderVacunas() {
     const esquema = carnetCache?.[0];
+    const vacunasEsquema = esquema?.vacunas || [];
+    const hayVacunasActivas = vacunasEsquema.some(v => v.dosis_aplicadas < v.dosis_requeridas);
+
     vacunasDiv.innerHTML = `
-      <hr style="margin:14px 0;">
-      <h4 style="margin-bottom:8px;">Vacunas</h4>
-      <button type="button" id="btn-add-vacuna" class="sec" style="margin-right:6px;">Agregar vacuna</button>
-      <button type="button" id="btn-add-dosis"  class="sec">Agregar dosis</button>
-      <div id="lista" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;"></div>
+      <h4 style="margin-bottom:10px;">Vacunas</h4>
+      <button type="button" id="btn-add-vacuna" class="sec">Agregar vacuna</button>
+      ${hayVacunasActivas ? `<button type="button" id="btn-add-dosis" class="sec">Registrar dosis</button>` : ""}
+      <div id="lista-vacunas-nuevas" style="margin-top:10px;"></div>
+      <div id="lista-dosis" style="margin-top:4px;"></div>
     `;
-    const lista = document.getElementById("lista");
 
     document.getElementById("btn-add-vacuna").onclick = () => {
-      lista.innerHTML = "";
-      const yaTiene = new Set((esquema?.vacunas || []).map(v => v.id_vacuna));
+      const contenedor = document.getElementById("lista-vacunas-nuevas");
+      contenedor.innerHTML = "";
+
+      const yaTiene = new Set(vacunasEsquema.map(v => v.id_vacuna));
       const disponibles = vacunasCache.filter(v => !yaTiene.has(v.id_vacuna));
+
+      if (disponibles.length === 0) {
+        contenedor.innerHTML = `<p style="color:#888;font-size:13px;">Esta mascota ya tiene todas las vacunas disponibles.</p>`;
+        return;
+      }
+
+      const titulo = document.createElement("p");
+      titulo.textContent = "Seleccioná las vacunas a agregar:";
+      titulo.className = "vacunas-subtitulo";
+      contenedor.appendChild(titulo);
+
       disponibles.forEach(v => {
         const btn = document.createElement("button");
-        btn.type = "button"; btn.textContent = v.nombre; btn.dataset.id = v.id_vacuna;
-        btn.style.cssText = "padding:6px 10px;margin:4px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;";
-        if (vacunasPendientes.has(v.id_vacuna)) btn.style.background = "#c8f7c5";
+        btn.type = "button";
+        btn.textContent = v.nombre;
+        btn.dataset.id = v.id_vacuna;
+        btn.className = "chip-vacuna";
+        if (vacunasPendientes.has(v.id_vacuna)) {
+          btn.style.background = "#c8f7c5";
+          btn.style.borderColor = "#7bc67b";
+        }
+
         btn.onclick = () => {
-          if (vacunasPendientes.has(v.id_vacuna)) { vacunasPendientes.delete(v.id_vacuna); btn.style.background = "white"; }
-          else { vacunasPendientes.add(v.id_vacuna); btn.style.background = "#c8f7c5"; }
+          if (vacunasPendientes.has(v.id_vacuna)) {
+            vacunasPendientes.delete(v.id_vacuna);
+            btn.style.background = "white";
+            btn.style.borderColor = "#ccc";
+            // si tenía dosis pendiente asociada, quitarla también
+            const idx = dosisPendientes.findIndex(d => d.id_vacuna_nueva === v.id_vacuna);
+            if (idx >= 0) dosisPendientes.splice(idx, 1);
+          } else {
+            vacunasPendientes.add(v.id_vacuna);
+            btn.style.background = "#c8f7c5";
+            btn.style.borderColor = "#7bc67b";
+
+            // mostrar "registrar dosis" si todavía no está visible
+            if (!document.getElementById("btn-add-dosis")) {
+              const btnDosis = document.createElement("button");
+              btnDosis.type = "button";
+              btnDosis.id = "btn-add-dosis";
+              btnDosis.className = "sec";
+              btnDosis.textContent = "+ Registrar dosis";
+              btnDosis.style.marginLeft = "6px";
+              document.getElementById("btn-add-vacuna").insertAdjacentElement("afterend", btnDosis);
+              _bindBtnAddDosis(vacunasEsquema);
+            }
+          }
         };
-        lista.appendChild(btn);
+
+        contenedor.appendChild(btn);
       });
     };
 
-    document.getElementById("btn-add-dosis").onclick = () => {
-      lista.innerHTML = "";
-      const vacunasActivas = carnetCache?.[0]?.vacunas || [];
-      vacunasActivas.forEach(v => {
+    // ── Bind inicial del botón dosis (si ya había vacunas activas) ───────────
+    if (hayVacunasActivas) {
+      _bindBtnAddDosis(vacunasEsquema);
+    }
+  }
+
+  function _bindBtnAddDosis(vacunasEsquema) {
+    const btnDosis = document.getElementById("btn-add-dosis");
+    if (!btnDosis) return;
+
+    btnDosis.onclick = () => {
+      const contenedor = document.getElementById("lista-dosis");
+      contenedor.innerHTML = "";
+
+
+      const vacunasActivas = vacunasEsquema.filter(v => v.dosis_aplicadas < v.dosis_requeridas);
+
+      // vacunas nuevas seleccionadas en esta misma consulta
+      const vacunasNuevas = vacunasCache
+        .filter(v => vacunasPendientes.has(v.id_vacuna))
+        .map(v => ({
+          ...v,
+          id_esquema_vacuna: null,
+          dosis_aplicadas: 0,
+          dosis_requeridas: v.cantidad_dosis_requeridas,
+          esNueva: true,
+        }));
+
+      const todas = [...vacunasActivas, ...vacunasNuevas];
+
+      if (todas.length === 0) {
+        contenedor.innerHTML = `<p style="color:#888;font-size:13px;">No hay vacunas activas para registrar dosis.</p>`;
+        return;
+      }
+
+      const titulo = document.createElement("p");
+      titulo.textContent = "Seleccioná las dosis a registrar hoy:";
+      titulo.className = "vacunas-subtitulo"; contenedor.appendChild(titulo);
+
+      todas.forEach(v => {
+        const clave = v.esNueva ? `nueva:${v.id_vacuna}` : v.id_esquema_vacuna;
+
+        const esUltimaDosis = v.dosis_aplicadas + 1 >= v.dosis_requeridas;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "fila-dosis";
         const btn = document.createElement("button");
-        btn.type = "button"; btn.textContent = v.nombre; btn.dataset.id = v.id_esquema_vacuna;
-        btn.style.cssText = "padding:6px 10px;margin:4px;cursor:pointer;border-radius:6px;border:1px solid #ccc;background:white;";
-        const sel = dosisPendientes.find(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
-        if (sel) btn.style.background = "#ffd699";
+        btn.type = "button";
+        btn.textContent = v.esNueva
+          ? `${v.nombre} (primera dosis)`
+          : `${v.nombre} (${v.dosis_aplicadas}/${v.dosis_requeridas})`;
+        btn.className = "chip-dosis";
+        const inputFecha = document.createElement("input");
+        inputFecha.type = "date";
+        inputFecha.style.cssText =
+          "display:none;width:110px;height:30px;padding:0 8px;border:1px solid #0b1215;font-size:13px;box-sizing:border-box;";
+        const labelFecha = document.createElement("span");
+        labelFecha.innerHTML = esUltimaDosis ? "" : `Fecha próxima dosis <span class="required">*</span>`;
+        labelFecha.className = "label-fecha-dosis";
+        labelFecha.style.display = "none";
+
+        // restaurar estado si ya estaba seleccionada
+        const selExistente = dosisPendientes.find(d => d._clave === clave);
+        if (selExistente) {
+          btn.style.background = "#ffd699";
+          btn.style.borderColor = "#f0a500";
+
+          if (!esUltimaDosis) {
+            inputFecha.style.display = "block";
+            labelFecha.style.display = "inline";
+          }
+          if (selExistente.fecha_proxima_dosis) inputFecha.value = selExistente.fecha_proxima_dosis;
+        }
+
         btn.onclick = () => {
-          const idx = dosisPendientes.findIndex(d => d.id_esquema_vacuna === v.id_esquema_vacuna);
-          if (idx >= 0) { dosisPendientes.splice(idx, 1); btn.style.background = "white"; }
-          else {
-            dosisPendientes.push({ id_esquema_vacuna: v.id_esquema_vacuna, fecha_aplicacion: new Date().toISOString().split("T")[0], id_consulta: null });
+          const idx = dosisPendientes.findIndex(d => d._clave === clave);
+          if (idx >= 0) {
+            dosisPendientes.splice(idx, 1);
+            btn.style.background = "white";
+            btn.style.borderColor = "#ccc";
+            inputFecha.style.display = "none";
+            labelFecha.style.display = "none";
+            inputFecha.value = "";
+          } else {
+            dosisPendientes.push({
+              _clave: clave,
+              id_esquema_vacuna: v.esNueva ? null : v.id_esquema_vacuna,
+              id_vacuna_nueva: v.esNueva ? v.id_vacuna : null,
+              fecha_aplicacion: new Date().toISOString().split("T")[0],
+              fecha_proxima_dosis: null,
+            });
             btn.style.background = "#ffd699";
+            btn.style.borderColor = "#f0a500";
+            if (!esUltimaDosis) {
+              inputFecha.style.display = "block";
+              labelFecha.style.display = "inline";
+            }
           }
         };
-        lista.appendChild(btn);
+
+        inputFecha.onchange = () => {
+          const idx = dosisPendientes.findIndex(d => d._clave === clave);
+          if (idx >= 0) dosisPendientes[idx].fecha_proxima_dosis = inputFecha.value || null;
+        };
+
+        wrapper.appendChild(btn);
+        wrapper.appendChild(inputFecha);
+        wrapper.appendChild(labelFecha);
+        contenedor.appendChild(wrapper);
       });
     };
   }
@@ -466,41 +663,68 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ───────── GUARDAR CONSULTA ────────────────────────────────────────────────
   formConsulta.onsubmit = async (e) => {
     e.preventDefault();
+
+    const vetId = localStorage.getItem("veterinario_id");
+    if (!vetId || vetId === "null" || vetId === "undefined") {
+      alert("Veterinario no válido en sesión.");
+      return;
+    }
+
+    const consultaErrorEl = document.getElementById("consulta-error");
+    if (consultaErrorEl) consultaErrorEl.textContent = "";
+
+    const listaVacunasNuevas = document.getElementById("lista-vacunas-nuevas");
+    if (listaVacunasNuevas && listaVacunasNuevas.children.length > 0) {
+      if (vacunasPendientes.size === 0) {
+        if (consultaErrorEl) {
+          consultaErrorEl.textContent = "Debe seleccionar al menos una vacuna de la lista.";
+        }
+        return;
+      }
+    }
+
+    const listaDosis = document.getElementById("lista-dosis");
+    if (listaDosis && listaDosis.children.length > 0) {
+      if (dosisPendientes.length === 0) {
+        if (consultaErrorEl) {
+          consultaErrorEl.textContent = "Debe seleccionar al menos una dosis a registrar.";
+        }
+        return;
+      }
+    }
+
     try {
-      const res = await api.post("/historial/consultas", {
+      const payload = {
         id_mascota: idMascota,
         motivo: document.getElementById("motivo").value,
-        diagnostico: document.getElementById("diag").value
-      });
-      idConsultaActual = res?.id_consulta;
-      if (!idConsultaActual) throw new Error("No se generó idConsultaActual");
+        diagnostico: document.getElementById("diag").value || null,
+        nuevas_vacunas: [...vacunasPendientes],
+        dosis: dosisPendientes.map(d => ({
+          ...(d.id_vacuna_nueva
+            ? { id_vacuna_nueva: d.id_vacuna_nueva }
+            : { id_esquema_vacuna: d.id_esquema_vacuna }
+          ),
+          fecha_aplicacion: d.fecha_aplicacion,
+          fecha_proxima_dosis: d.fecha_proxima_dosis || null,
+        })),
+      };
 
-      const esquemaId = carnetCache?.[0]?.id_esquema;
-      for (let idVacuna of vacunasPendientes) {
-        await api.post(`/vacunas/${esquemaId}/vacunas/${idVacuna}`);
-      }
-      for (let dosisObj of dosisPendientes) {
-        const vetId = localStorage.getItem("veterinaria_id");
-        if (!vetId || vetId === "null" || vetId === "undefined") throw new Error("Veterinaria no válida en sesión");
-        await api.post("/vacunas/dosis", {
-          id_esquema_vacuna: dosisObj.id_esquema_vacuna,
-          fecha_aplicacion: dosisObj.fecha_aplicacion,
-          id_consulta: idConsultaActual
-        }, { headers: { "x-veterinaria-id": vetId } });
-      }
+      await api.post("/historial/consultas", payload);
 
       modalConsulta.classList.remove("activo");
-      vacunasPendientes.clear();
-      dosisPendientes = []; vacunasCache = []; carnetCache = [];
+      vacunasPendientes = new Set();
+      dosisPendientes = [];
+      vacunasCache = [];
+      carnetCache = [];
 
-      // si el historial estaba abierto, refrescarlo
       if (panelHistorial.style.display === "block") {
         historialCargado = false;
         await cargarHistorial();
       }
+
     } catch (err) {
       console.error("Error guardando consulta", err);
-      alert("Error guardando consulta. Revisá la consola.");
+      alert(err.message || "Error guardando consulta.");
     }
   };
 
@@ -513,7 +737,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   async function cargarHistorial() {
-      panelHistorial.innerHTML =
+    panelHistorial.innerHTML =
       `<p class="cargando">Cargando...</p>`;
 
     try {
@@ -581,32 +805,56 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (e.tipo === "consulta") {
       return `
-      <button class="fila" data-tipo="consulta" data-id="${e.id}" style="display:flex;align-items:center;gap:10px;width:100%;">
-        <span style="background:#e3f2fd;color:#1976d2;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;white-space:nowrap;">CONSULTA</span>
-        <span style="flex:1;text-align:left;"><b>${fecha}, ${hora}</b> — ${e.motivo}</span>
-        <span style="color:#ccc;font-size:18px;">›</span>
-      </button>`;
+    <button class="fila" data-tipo="consulta" data-id="${e.id}">
+      <span
+  class="etiqueta-consulta"
+  data-text="${e.motivo || "Consulta"}"
+></span>
+
+<span class="fila-fecha">
+  ${fecha}
+</span>
+
+<span>|</span>
+
+<span class="fila-desc">
+  ${e.diagnostico || "Sin diagnóstico"}
+</span>
+
+      <span class="flecha-historial">
+        ›
+      </span>
+    </button>
+  `;
     } else {
-      // tratamiento
       const fin = e.finalizacion
-        ? new Date(e.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
+        ? new Date(e.finalizacion).toLocaleDateString("es-UY", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        })
         : "Sin fecha de fin";
-      const estado = e.finalizacion && new Date(e.finalizacion) < new Date()
-        ? "FINALIZADO"
-        : "ACTIVO";
-      const colorEstado = estado === "FINALIZADO" ? "#bbb" : "#f57c00";
 
       return `
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="background:#fff3e0;color:${colorEstado};padding:4px 8px;border-radius:6px;font-size:10px;font-weight:bold;">TRATAMIENTO · ${estado}</span>
-          <span style="font-size:12px;color:#aaa;">${fecha}</span>
+    <div class="card">
+      <div class="tratamiento-layout">
+
+        <div class="tratamiento-info">
+          <div class="card-titulo">${e.nombre}</div>
+
+          ${e.descripcion ? `<div class="card-desc">${e.descripcion}</div>` : ""}
+
+          ${e.frecuencia ? `<div class="card-freq">${e.frecuencia}</div>` : ""}
         </div>
-        <div class="card-titulo">${e.nombre}</div>
-        ${e.descripcion ? `<div class="card-desc">${e.descripcion}</div>` : ""}
-        ${e.frecuencia ? `<div class="card-freq">🕐 ${e.frecuencia}</div>` : ""}
-        <div class="card-meta">Finalización: ${fin}</div>
-      </div>`;
+
+        <div class="tratamiento-fechas">
+          <span class="fecha-label">Fecha inicio:</span><span>${fecha}</span>
+          <span class="fecha-label">Fecha fin:</span><span>${fin}</span>
+        </div>
+
+      </div>
+    </div>
+  `;
     }
   }
 

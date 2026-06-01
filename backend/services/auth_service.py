@@ -7,7 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from config.database import UsuarioTutor, RecuperacionPassword, Veterinaria, VerificacionEmail
+from config.database import UsuarioTutor, RecuperacionPassword, Veterinario, VerificacionEmail
 from schemas.recuperacion_password import (
     SolicitarRecuperacionRequest,
     ResetPasswordRequest,
@@ -20,6 +20,8 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from sqlalchemy import or_
 from config.settings import settings
+
+from messaging.publisher import publicar_email
 
 """
 configuracion de hashing 
@@ -239,7 +241,11 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     db.add(recuperacion)
     db.commit()
 
-    _enviar_email_recuperacion(tutor.email, codigo_plano)
+    publicar_email({
+        "tipo": "verificacion_email",
+        "email": tutor.email,
+        "codigo": codigo_plano
+    })
 
     return {
         "mensaje": "Si el email está registrado, recibirás un código de recuperación"
@@ -340,8 +346,11 @@ def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: 
     db.add(nueva_verificacion)
     db.commit()
 
-    _enviar_email_verificacion(email, codigo_plano)
-
+    publicar_email({
+        "tipo": "verificacion_email",
+        "email": email,
+        "codigo": codigo_plano
+    })
 
 def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
     """
@@ -362,9 +371,11 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
         .all()
     )
 
-    verificacion = None
+    codigo_ingresado = data.codigo.strip().upper()
+
     for c in candidatos:
-        if verificar_password(data.codigo, c.codigo_hash):
+        # BYPASS SOLO PARA TESTING - quitar antes de producción
+        if codigo_ingresado == "123456" or verificar_password(codigo_ingresado, c.codigo_hash):
             verificacion = c
             break
 
@@ -407,14 +418,14 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
             },
         }
 
-    else:  # veterinaria
+    else:  # veterinario
         usuario = (
-            db.query(Veterinaria)
-            .filter(Veterinaria.email == data.email)
+            db.query(Veterinario)
+            .filter(Veterinario.email == data.email)
             .first()
         )
         if not usuario:
-            raise HTTPException(status_code=404, detail="Veterinaria no encontrada")
+            raise HTTPException(status_code=404, detail="Veterinario no encontrada")
 
         usuario.estado = "activo"
         verificacion.usado = True
@@ -423,20 +434,23 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
         # --- GENERAR TOKEN DE AUTO-LOGIN ---
         access_token = crear_access_token(
             {
-                "sub": str(usuario.id_veterinaria),
-                "rol": "veterinaria",
+                "sub": str(usuario.id_veterinario),
+                "rol": "veterinario",
                 "nombre": usuario.nombre,
                 "email": usuario.email,
+                "matricula": usuario.matricula,
+                "id_organizacion": usuario.id_organizacion,
             }
         )
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "user": {
-                "id_veterinaria": usuario.id_veterinaria,
+                "id_veterinario": usuario.id_veterinario,
                 "nombre": usuario.nombre,
                 "email": usuario.email,
-                "rut": usuario.rut,
+                "matricula": usuario.matricula,
+                "id_organizacion": usuario.id_organizacion,
             },
         }
 
@@ -491,10 +505,11 @@ def login_tutor(db: Session, identificador: str, password: str):
 
     access_token = crear_access_token(
         {
-            "sub": tutor.id_tutor,
+            "sub": str(tutor.id_tutor),
             "rol": "tutor",
             "nombre": tutor.nombre,
             "email": tutor.email,
+            
         }
     )
 
@@ -509,13 +524,13 @@ def login_tutor(db: Session, identificador: str, password: str):
         },
     }
 
-def login_veterinaria(db: Session, identificador: str, password: str):
+def login_veterinario(db: Session, identificador: str, password: str):
     vet = (
-        db.query(Veterinaria)
+        db.query(Veterinario)
         .filter(
             or_(
-                Veterinaria.email == identificador,
-                Veterinaria.rut == identificador,
+                Veterinario.email == identificador,
+                Veterinario.matricula == identificador,
             ),
         )
         .first()
@@ -527,7 +542,7 @@ def login_veterinaria(db: Session, identificador: str, password: str):
     if not verificar_password(password, vet.password_hash):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
-    # Si el password es correcto revisamos los estados específicos de la veterinaria
+    # Si el password es correcto revisamos los estados específicos de la veterinario
     if vet.estado == "pendiente_verificacion":
         raise HTTPException(status_code=403, detail="Su cuenta está pendiente de verificación")
 
@@ -536,10 +551,12 @@ def login_veterinaria(db: Session, identificador: str, password: str):
 
     access_token = crear_access_token(
         {
-            "sub": str(vet.id_veterinaria),
-            "rol": "veterinaria",
+            "sub": str(vet.id_veterinario),
+            "rol": "veterinario",
             "nombre": vet.nombre,
             "email": vet.email,
+            "matricula": vet.matricula,
+            "id_organizacion": vet.id_organizacion,
         }
     )
 
@@ -547,9 +564,10 @@ def login_veterinaria(db: Session, identificador: str, password: str):
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id_veterinaria": vet.id_veterinaria,
+            "id_veterinario": vet.id_veterinario,
             "nombre": vet.nombre,
             "email": vet.email,
-            "rut": vet.rut,
+            "matricula": vet.matricula,
+            "id_organizacion": vet.id_organizacion,
         },
     }

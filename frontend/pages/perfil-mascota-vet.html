@@ -1,188 +1,203 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Perfil mascota — Veterinario</title>
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 30px 16px; }
-    .contenedor { max-width: 650px; margin: auto; }
-
-    /* ── Header ── */
-    .header {
-      background: white; padding: 20px; border-radius: 12px;
-      display: flex; gap: 15px; align-items: center;
-      margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    .foto {
-      width: 60px; height: 60px; border-radius: 50%;
-      background: #dde8f8; color: #4a90e2;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; font-weight: bold; flex-shrink: 0;
-    }
-
-    /* ── Acciones ── */
-    .acciones { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    button { border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
-    .primary { background: #4a90e2; color: white; }
-    .primary:hover { background: #357abd; }
-    .sec { background: #eee; color: #444; }
-    .sec:hover { background: #e0e0e0; }
-
-    /* ── Sección tratamientos (siempre visible) ── */
-    .seccion-titulo {
-      font-size: 12px; font-weight: bold; color: #aaa;
-      text-transform: uppercase; letter-spacing: 0.6px;
-      margin-bottom: 8px;
-    }
-
-    .card {
-      background: white; padding: 14px 16px;
-      border-radius: 10px; margin-bottom: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    }
-    .card-titulo { font-size: 15px; font-weight: bold; color: #222; }
-    .card-desc   { font-size: 13px; color: #555; margin-top: 4px; }
-    .card-freq   { font-size: 13px; color: #4a90e2; margin-top: 3px; }
-    .card-meta   { font-size: 12px; color: #aaa; margin-top: 6px; }
-
-    /* ── Panel historial (toggle) ── */
-    .panel { display: none; margin-top: 16px; }
-    .fila {
-      background: white; padding: 12px 16px;
-      border-radius: 10px; margin-bottom: 8px;
-      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      transition: box-shadow 0.15s;
-    }
-    .fila:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
-
-    .sin-datos  { color: #bbb; font-size: 14px; text-align: center; padding: 20px 0; }
-    .cargando   { color: #bbb; font-size: 14px; text-align: center; padding: 20px 0; }
-    .error-panel { color: #c0392b; font-size: 14px; padding: 8px 0; }
-
-    /* ── Modales ── */
-    .modal-bg {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.5);
-      align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-bg.activo { display: flex; }
-    .modal {
-      background: white; padding: 24px;
-      border-radius: 12px; width: 420px; max-height: 90vh;
-      overflow-y: auto; position: relative;
-    }
-    .modal h3 { margin-bottom: 16px; font-size: 17px; }
-    .modal label {
-      font-size: 13px; color: #555; display: block;
-      margin-bottom: 3px; margin-top: 12px;
-    }
-    .modal label:first-of-type { margin-top: 0; }
-    .modal input, .modal textarea {
-      width: 100%; padding: 8px 10px;
-      border: 1px solid #ddd; border-radius: 7px; font-size: 14px;
-    }
-    .modal input:focus, .modal textarea:focus {
-      outline: none; border-color: #4a90e2;
-    }
-    .modal textarea { resize: vertical; min-height: 60px; }
-    .modal-error { color: #c0392b; font-size: 13px; margin-top: 10px; min-height: 18px; }
-    .modal-cerrar {
-      position: absolute; top: 12px; right: 14px;
-      background: none; border: none; font-size: 20px; cursor: pointer; color: #bbb;
-    }
-    .modal-cerrar:hover { color: #555; }
-  </style>
+  <link rel="stylesheet" href="../css/perfil-mascota-vet.css" />
 </head>
 
 <body>
-<div class="contenedor">
 
-  <div style="margin-bottom: 16px;">
-    <a href="buscar-mascotas.html" style="color: #4a90e2; text-decoration: none; font-size: 14px; font-weight: bold;">← Volver al Buscador</a>
-  </div>
+  <div class="contenedor">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="foto" id="foto">?</div>
-    <div>
-      <h3 id="nombre">Cargando...</h3>
-      <small id="detalle" style="color:#888;"></small>
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+      <a href="buscar-mascotas.html" class="volver-link">
+        ← Volver al buscador
+      </a>
+
     </div>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+      <div class="header-info">
+
+        <div class="foto" id="foto">?</div>
+
+        <div>
+
+          <h3 id="nombre">Cargando...</h3>
+
+          <small id="detalle">
+            Especie | Raza | Edad
+          </small>
+
+        </div>
+
+      </div>
+
+      <button class="primary" id="btn-certificado">
+        Obtener certificado
+      </button>
+
+    </div>
+
+    <!-- TRATAMIENTOS -->
+
+    <div class="tratamientos-header">
+      <p class="seccion-titulo">Tratamientos activos</p>
+      <p id="mensaje-sin-tratamientos" class="sin-datos-inline"></p>
+    </div>
+
+    <div id="seccion-tratamientos"></div>
+
+    <!-- ACCIONES -->
+
+    <div class="acciones">
+
+      <button class="primary" id="btn-consulta">
+        + Consulta
+      </button>
+
+      <button class="primary" id="btn-nuevo-tratamiento">
+        + Tratamiento
+      </button>
+
+      <button class="sec" id="btn-vacunas">
+        Ver vacunas
+      </button>
+
+      <button class="sec" id="btn-historial">
+        Ver historial
+      </button>
+
+    </div>
+
+    <!-- PANEL HISTORIAL -->
+
+    <div id="historial" class="panel"></div>
+
   </div>
 
-  <!-- ACCIONES -->
-  <div class="acciones">
-    <button class="primary" id="btn-consulta">+ Consulta</button>
-    <button class="primary" id="btn-nuevo-tratamiento">+ Tratamiento</button>
-    <button class="sec"     id="btn-historial">Historial completo</button>
-    <button class="sec"     id="btn-vacunas" style="background:#eef4fe; color:#4a90e2;">Ver Vacunas</button>
-    <button class="sec"     id="btn-certificado" style="background:#fdf6e2; color:#d97706;">Generar Certificado</button>
+  <!-- MODAL CONSULTA -->
+
+  <div class="modal-bg" id="modal-consulta">
+
+    <div class="modal">
+
+      <button class="modal-cerrar" id="cerrar-modal-consulta">
+        ✕
+      </button>
+
+      <h3>Nueva consulta</h3>
+
+      <form id="form-consulta">
+
+        <label>
+          Motivo <span class="required">*</span>
+        </label>
+
+        <input id="motivo" required />
+
+        <label>
+          Diagnóstico <span class="required">*</span>
+        </label>
+
+        <textarea id="diag"></textarea>
+
+        <div id="vacunas"></div>
+
+        <p class="modal-error" id="consulta-error"></p>
+
+        <button type="submit" class="primary" style="margin-top:16px;width:100%;">
+          Guardar consulta
+        </button>
+
+      </form>
+
+    </div>
+
   </div>
 
-  <!-- TRATAMIENTOS ACTIVOS — carga automática al abrir el perfil -->
-  <p class="seccion-titulo">Tratamientos activos</p>
-  <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
+  <!-- MODAL TRATAMIENTO -->
 
-  <!-- PANEL HISTORIAL — se abre al pulsar el botón -->
-  <div id="historial" class="panel"></div>
+  <div class="modal-bg" id="modal-tratamiento">
 
-</div>
+    <div class="modal">
 
-<!-- MODAL CONSULTA -->
-<div class="modal-bg" id="modal-consulta">
-  <div class="modal">
-    <button class="modal-cerrar" id="cerrar-modal-consulta">✕</button>
-    <h3>Nueva consulta</h3>
-    <form id="form-consulta">
-      <label>Motivo</label>
-      <input id="motivo" required />
-      <label>Diagnóstico</label>
-      <textarea id="diag"></textarea>
-      <div id="vacunas"></div>
-      <button type="submit" class="primary" style="margin-top:16px;width:100%;">Guardar consulta</button>
-    </form>
+      <button class="modal-cerrar" id="cerrar-modal-tratamiento">
+        ✕
+      </button>
+
+      <h3>Nuevo tratamiento</h3>
+
+      <label>Nombre </label>
+
+      <input type="text" id="trat-nombre" placeholder="Ej: Amoxicilina" />
+
+      <label>Descripción </label>
+
+      <textarea id="trat-descripcion" placeholder="Ej: Antibiótico para infección urinaria"></textarea>
+
+      <label>Frecuencia </label>
+
+      <input type="text" id="trat-frecuencia" placeholder="Ej: 1 comprimido de 250 mg cada 12 hs" />
+
+      <div class="fechas-tratamiento">
+
+        <div>
+          <label>Fecha de inicio</label>
+          <input type="date" id="trat-inicio" />
+        </div>
+
+        <div>
+          <label class="label-opcional">
+            Fecha de finalización
+          </label>
+          <input type="date" id="trat-finalizacion" />
+        </div>
+
+      </div>
+
+      <p class="modal-error" id="trat-error"></p>
+
+      <button type="button" class="primary" id="btn-guardar-trat" style="margin-top:16px;width:100%;">
+        Guardar tratamiento
+      </button>
+
+    </div>
+
   </div>
-</div>
 
-<!-- MODAL TRATAMIENTO -->
-<div class="modal-bg" id="modal-tratamiento">
-  <div class="modal">
-    <button class="modal-cerrar" id="cerrar-modal-tratamiento">✕</button>
-    <h3>Nuevo tratamiento</h3>
+  <!-- MODAL DETALLE CONSULTA -->
 
-    <label>Nombre *</label>
-    <input type="text" id="trat-nombre" placeholder="Ej: Amoxicilina" />
+  <div class="modal-bg" id="modal-detalle-consulta">
 
-    <label>Descripción</label>
-    <textarea id="trat-descripcion" placeholder="Ej: Antibiótico para infección urinaria"></textarea>
+    <div class="modal">
 
-    <label>Frecuencia</label>
-    <input type="text" id="trat-frecuencia" placeholder="Ej: 1 comprimido de 250 mg cada 12 hs" />
+      <button class="modal-cerrar" id="cerrar-modal-detalle-consulta">
+        ✕
+      </button>
 
-    <label>Fecha de inicio</label>
-    <input type="datetime-local" id="trat-inicio" />
+      <h3>Detalle de consulta</h3>
 
-    <label>Fecha de finalización (opcional)</label>
-    <input type="datetime-local" id="trat-finalizacion" />
+      <div id="contenido-detalle-consulta"></div>
 
-    <p class="modal-error" id="trat-error"></p>
-    <button type="button" class="primary" id="btn-guardar-trat" style="margin-top:16px;width:100%;">Guardar tratamiento</button>
+    </div>
+
   </div>
-</div>
 
-<!-- MODAL DETALLE CONSULTA -->
-<div class="modal-bg" id="modal-detalle-consulta">
-  <div class="modal">
-    <button class="modal-cerrar" id="cerrar-modal-detalle-consulta">✕</button>
-    <h3>Detalle de consulta</h3>
-    <div id="contenido-detalle-consulta"></div>
-  </div>
-</div>
+  <script src="../js/api.js"></script>
+  <script src="../js/perfilMascotaVet.js"></script>
 
-<script src="../js/api.js"></script>
-<script src="../js/perfilMascotaVet.js"></script>
 </body>
+
 </html>

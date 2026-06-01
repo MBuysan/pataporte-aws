@@ -1,4 +1,9 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"  
   backend:
     build: ./backend
     ports:
@@ -13,6 +18,34 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+
+    container_name: pataporte-worker
+
+    command: python -m messaging.consumer
+
+    working_dir: /app
+
+    volumes:
+      - ./backend:/app
+
+    env_file:
+      - ./.env
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: "/app"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
     restart: unless-stopped
 
   frontend:
@@ -34,7 +67,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       retries: 5
     restart: unless-stopped
