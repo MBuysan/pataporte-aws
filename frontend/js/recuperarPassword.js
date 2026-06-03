@@ -6,10 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // obtiene referencias a los elementos del HTML por su id.
   // se guardan en variables para no buscarlo en el DOM cada vez que se necesitan.
-  const form = document.getElementById("form-recuperar");
-  const inputEmail = document.getElementById("input-email");
-  const btnEnviar = document.getElementById("btn-enviar");
-  const mensajeEl = document.getElementById("mensaje-recuperar");
+  const form        = document.getElementById("form-recuperar");
+  const inputEmail  = document.getElementById("input-email");
+  const btnEnviar   = document.getElementById("btn-enviar");
+  const mensajeEl   = document.getElementById("mensaje-recuperar");
 
   // addEventListener("submit") escucha cuando el usuario envía el formulario
   form.addEventListener("submit", async (e) => {
@@ -57,12 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       // api.js lanza un Error con el mensaje que devolvió la API.
       // error.message contiene el texto del campo "detail" del JSON de error.
-      mostrarMensaje(
-        mensajeEl,
-        "Servidor no disponible, reintente nuevamente en unos minutos.",
-        "error"
-      );
-
+      mostrarMensaje(mensajeEl, error.message, "error");
 
     } finally {
       // finally se ejecuta siempre, haya o no error.
