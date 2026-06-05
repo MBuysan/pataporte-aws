@@ -69,14 +69,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
 
+  function calcularEdad(fechaNacimiento) {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+
+    return edad;
+  }
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
 
   let mascotaActual = null;
 
   try {
     mascotaActual = await api.get(`/mascotas/${idMascota}`);
+
     nombreEl.textContent = mascotaActual.nombre;
-    detalleEl.textContent = `${mascotaActual.especie}${mascotaActual.raza ? " · " + mascotaActual.raza : ""}`;
+    const edad = mascotaActual.fecha_de_nacimiento
+      ? calcularEdad(mascotaActual.fecha_de_nacimiento)
+      : null;
+
+    const detalle = [
+      mascotaActual.especie,
+      mascotaActual.raza || null,
+      edad != null ? `${edad} ${edad === 1 ? "año" : "años"}` : null,
+    ].filter(Boolean).join(" | ");
+
+    detalleEl.textContent = detalle;
     if (mascotaActual.foto_url) {
       fotoEl.outerHTML = `<img src="${mascotaActual.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
     } else {
@@ -213,17 +237,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function convertirUTCALocalInput(fechaUTC) {
-
     const fecha = new Date(fechaUTC);
 
     const year = fecha.getFullYear();
     const month = String(fecha.getMonth() + 1).padStart(2, "0");
     const day = String(fecha.getDate()).padStart(2, "0");
 
-    const hours = String(fecha.getHours()).padStart(2, "0");
-    const minutes = String(fecha.getMinutes()).padStart(2, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${year}-${month}-${day}`;
   }
 
   function abrirModalEdicion(tratamiento) {
@@ -808,7 +828,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     <button class="fila" data-tipo="consulta" data-id="${e.id}">
       <span
   class="etiqueta-consulta"
-  data-text="${e.motivo || "Consulta"}"
+  data-text="Consulta"
 ></span>
 
 <span class="fila-fecha">
