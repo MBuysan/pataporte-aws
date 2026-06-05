@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("formOrganizacion");
     const mensajeP = document.getElementById("mensaje");
 
+    // Indicadores de requisitos de contraseña en tiempo real
+    document.getElementById("password").addEventListener("input", function () {
+        actualizarIndicadores(this.value);
+    });
+
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -23,6 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const errorPassword = validarPassword(password);
+        if (errorPassword) {
+            mensajeP.textContent = errorPassword;
+            mensajeP.style.color = "red";
+            return;
+        }
+
         mensajeP.textContent = "Registrando...";
         mensajeP.style.color = "blue";
 
@@ -38,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mensajeP.textContent = "¡Registro exitoso! Te enviamos un código por email. Redirigiendo a verificación...";
             mensajeP.style.color = "green";
             form.reset();
+            actualizarIndicadores("");
             setTimeout(() => {
                 window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinario`;
             }, 1500);
@@ -47,4 +60,53 @@ document.addEventListener("DOMContentLoaded", () => {
             mensajeP.style.color = "red";
         }
     });
+
+
+    /**
+     * Actualiza los indicadores visuales de requisitos en tiempo real.
+     * @param {string} password - valor actual del campo contraseña
+     */
+    function actualizarIndicadores(password) {
+        const requisitos = [
+            { id: "req-largo",     cumple: password.length >= 6 },
+            { id: "req-mayuscula", cumple: /[A-Z]/.test(password) },
+            { id: "req-minuscula", cumple: /[a-z]/.test(password) },
+            { id: "req-numero",    cumple: /\d/.test(password) },
+            { id: "req-especial",  cumple: /[!@#$%^&*?]/.test(password) },
+        ];
+
+        requisitos.forEach(({ id, cumple }) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (password.length === 0) {
+                el.classList.remove("cumplido", "pendiente");
+            } else if (cumple) {
+                el.classList.add("cumplido");
+                el.classList.remove("pendiente");
+            } else {
+                el.classList.add("pendiente");
+                el.classList.remove("cumplido");
+            }
+        });
+    }
+
+
+    /**
+     * Valida la contraseña contra los requisitos del sistema.
+     * @param {string} password
+     * @returns {string|null} mensaje de error, o null si es válida
+     */
+    function validarPassword(password) {
+        if (password.length < 6)
+            return "La contraseña debe tener al menos 6 caracteres.";
+        if (!/[A-Z]/.test(password))
+            return "La contraseña debe tener al menos una mayúscula.";
+        if (!/[a-z]/.test(password))
+            return "La contraseña debe tener al menos una minúscula.";
+        if (!/\d/.test(password))
+            return "La contraseña debe tener al menos un número.";
+        if (!/[!@#$%^&*?]/.test(password))
+            return "La contraseña debe tener al menos un carácter especial. (!@#$%^&*?)";
+        return null;
+    }
 });
