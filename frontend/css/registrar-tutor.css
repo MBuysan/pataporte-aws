@@ -5,6 +5,7 @@
   --color-background: #fbf9ef;
   --color-error: #c90a0a;
   --color-error-bg: #fdf2f2;
+  --color-success: #048a06;
   --color-text-main: #0b1215;
   --color-text-muted: #575f63;
   --color-border: #e2e2e1;
@@ -329,14 +330,14 @@ DISEÑO RESPONSIVO
   margin-top: -16px;
   margin-bottom: 8px;
   padding: 10px 14px;
-  background: #f8f8f8;
-  border-radius: 8px;
-  border: 1px solid #eee;
+  background: var(--color-background);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
 }
 
 #indicadores-password p {
   font-weight: 600;
-  color: #888;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
   font-size: 11px;
   text-transform: uppercase;
@@ -351,7 +352,7 @@ DISEÑO RESPONSIVO
 }
 
 #indicadores-password li {
-  color: #bbb;
+  color: var(--color-border);
   font-size: 12px;
 }
 
@@ -360,7 +361,7 @@ DISEÑO RESPONSIVO
 }
 
 #indicadores-password li.cumplido {
-  color: #2d6a4f;
+  color: var(--color-success);
 }
 
 #indicadores-password li.cumplido::before {
@@ -368,7 +369,7 @@ DISEÑO RESPONSIVO
 }
 
 #indicadores-password li.pendiente {
-  color: #c0392b;
+  color: var(--color-error);
 }
 
 #indicadores-password li.pendiente::before {
