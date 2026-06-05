@@ -74,60 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  /**
-   * actualiza los indicadores visuales de requisitos de contraseña en tiempo real.
-   * cada requisito tiene su propio elemento en el HTML que se marca como cumplido o no.
-   * @param {string} password - el valor actual del campo contraseña
-   */
-  function actualizarIndicadores(password) {
-    // cada requisito: [id del elemento HTML, función que evalúa si se cumple]
-    const requisitos = [
-      { id: "req-largo",    cumple: password.length >= 6 },
-      { id: "req-mayuscula", cumple: /[A-Z]/.test(password) },   // test() devuelve true si la regex matchea
-      { id: "req-minuscula", cumple: /[a-z]/.test(password) },
-      { id: "req-numero",   cumple: /\d/.test(password) },
-      { id: "req-especial", cumple: /[!@#$%^&*?]/.test(password) },
-    ];
-
-    requisitos.forEach(({ id, cumple }) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      // agrega o quita la clase "cumplido" según si el requisito se cumple.
-      // el CSS se encarga del estilo visual (verde/rojo, tachado, etc.)
-      if (cumple) {
-        el.classList.add("cumplido");
-        el.classList.remove("pendiente");
-      } else {
-        el.classList.add("pendiente");
-        el.classList.remove("cumplido");
-      }
-    });
-  }
-
-
-  /**
-   * valida una contraseña contra los requisitos del sistema.
-   * duplica la lógica del backend intencionalmente para dar feedback
-   * inmediato sin necesitar un request al servidor.
-   * @param {string} password
-   * @returns {string|null} mensaje de error, o null si es válida
-   */
-  function validarPassword(password) {
-    if (password.length < 6)
-      return "La contraseña debe tener al menos 6 caracteres.";
-    if (!/[A-Z]/.test(password))
-      return "La contraseña debe tener al menos una mayúscula.";
-    if (!/[a-z]/.test(password))
-      return "La contraseña debe tener al menos una minúscula.";
-    if (!/\d/.test(password))
-      return "La contraseña debe tener al menos un número.";
-    if (!/[!@#$%^&*?]/.test(password))
-      return "La contraseña debe tener al menos un carácter especial. (!@#$%^&*?)";
-    return null; 
-  }
-
 });
 
 

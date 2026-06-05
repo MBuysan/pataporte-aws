@@ -40,4 +40,4 @@ function validarRutUruguayo(rut) {
     const digito = (10 - (suma % 10)) % 10;
 
     return digito === parseInt(rut[11]);
-}
+} 
