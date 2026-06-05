@@ -4,9 +4,10 @@
   --azul: #04308a;
   --fondo: #fbf9ef;
   --texto: #0b1215;
-  --linea: #b8c1d1;
+  --linea: #e2e2e1;
   --rojo: #c90a0a;
   --rojo-bg: #fdf2f2;
+  --color-success: #048a06;
 }
 
 * {
@@ -35,7 +36,7 @@ body {
 
 .register-box {
   width: 100%;
-  max-width: 520px;
+  max-width: 620px;
   position: relative;
 }
 
@@ -85,7 +86,7 @@ body {
 
 .full-width {
   grid-column: span 2;
-  max-width: 240px;
+  max-width: 100%;
 }
 
 label {
@@ -199,6 +200,11 @@ button:hover {
 }
 
 @media (max-width: 700px) {
+  
+  #indicadores-password {
+    grid-column: span 1;
+  }
+
   .form-title {
     font-size: 44px;
   }
@@ -227,3 +233,59 @@ button:hover {
     min-height: 220px;
   }
 }
+
+
+/* ── Indicadores de requisitos de contraseña ─────────────────────────────── */
+#indicadores-password {
+  font-size: 12px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: var(--fondo);
+  border-radius: 4px;
+  grid-column: span 2;
+  border: 1px solid var(--linea);
+}
+
+#indicadores-password p {
+  font-weight: 600;
+  color: #575f63;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.45;
+}
+
+#indicadores-password ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+#indicadores-password li {
+  color: var(--linea);
+  font-size: 12px;
+}
+
+#indicadores-password li::before {
+  content: "○ ";
+}
+
+#indicadores-password li.cumplido {
+  color: var(--color-success);
+}
+
+#indicadores-password li.cumplido::before {
+  content: "✓ ";
+}
+
+#indicadores-password li.pendiente {
+  color: var(--rojo);
+}
+
+#indicadores-password li.pendiente::before {
+  content: "✗ ";
+}
+ 
