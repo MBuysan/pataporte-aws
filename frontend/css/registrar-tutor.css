@@ -321,3 +321,62 @@ DISEÑO RESPONSIVO
     text-align: center;
   }
 }
+
+/* ── Indicadores de requisitos de contraseña ────────────── */
+#indicadores-password {
+  grid-column: span 2;
+  font-size: 12px;
+  margin-top: -16px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+#indicadores-password p {
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#indicadores-password ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+#indicadores-password li {
+  color: #bbb;
+  font-size: 12px;
+}
+
+#indicadores-password li::before {
+  content: "○ ";
+}
+
+#indicadores-password li.cumplido {
+  color: #2d6a4f;
+}
+
+#indicadores-password li.cumplido::before {
+  content: "✓ ";
+}
+
+#indicadores-password li.pendiente {
+  color: #c0392b;
+}
+
+#indicadores-password li.pendiente::before {
+  content: "✗ ";
+}
+
+@media (max-width: 768px) {
+  #indicadores-password {
+    grid-column: span 1;
+  }
+}
