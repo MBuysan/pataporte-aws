@@ -248,39 +248,26 @@ button {
 }
 
 .etiqueta-consulta {
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-    background: var(--texto);
+    background: #f1dfbd;
+    border: 1px solid var(--mostaza);
+
+    border-radius: 999px;
+
+    padding: 6px 14px;
+
+    font-size: 12px;
+    font-weight: 700;
     color: var(--azul);
 
-    padding: 2px;
-
-    display: inline-flex;
-
-    clip-path: polygon(12px 0%,
-            calc(100% - 12px) 0%,
-            100% 50%,
-            calc(100% - 12px) 100%,
-            12px 100%,
-            0% 50%);
+    white-space: nowrap;
 }
 
 .etiqueta-consulta::before {
     content: attr(data-text);
-
-    background: #f1dfbd;
-
-    padding: 6px 18px;
-
-    font-size: 14px;
-    font-weight: 800;
-
-    clip-path: polygon(10px 0%,
-            calc(100% - 10px) 0%,
-            100% 50%,
-            calc(100% - 10px) 100%,
-            10px 100%,
-            0% 50%);
 }
 
 .fila-fecha {
