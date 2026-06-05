@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("formOrganizacion");
     const mensajeP = document.getElementById("mensaje");
 
+    // Indicadores de requisitos de contraseña en tiempo real
+    document.getElementById("password").addEventListener("input", function () {
+        actualizarIndicadores(this.value);
+    });
+
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -23,6 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const errorPassword = validarPassword(password);
+        if (errorPassword) {
+            mensajeP.textContent = errorPassword;
+            mensajeP.style.color = "red";
+            return;
+        }
+
         mensajeP.textContent = "Registrando...";
         mensajeP.style.color = "blue";
 
@@ -38,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mensajeP.textContent = "¡Registro exitoso! Te enviamos un código por email. Redirigiendo a verificación...";
             mensajeP.style.color = "green";
             form.reset();
+            actualizarIndicadores("");
             setTimeout(() => {
                 window.location.href = `verificar-correo.html?email=${encodeURIComponent(email)}&tipo=veterinario`;
             }, 1500);
