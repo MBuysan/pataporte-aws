@@ -30,6 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!/^\d{1,4}$/.test(matricula)) {
             mensajeP.textContent = "La matrícula debe ser un número de hasta 4 dígitos.";
+            mensajeP.style.color = "red";
+            return;
+        }
+        
         const errorPassword = validarPassword(password);
         if (errorPassword) {
             mensajeP.textContent = errorPassword;
