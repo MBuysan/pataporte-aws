@@ -40,7 +40,7 @@ Proyecto desarrollado para Ingeniería de Software II.
 
 ## Arquitectura
 
-![Arquitectura del sistema](assets/pataporte_architecture.jpg)
+![Arquitectura del sistema](/frontend/assets/pataporte_architecture.jpg)
 
 ---
 

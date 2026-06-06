@@ -175,7 +175,7 @@ button:hover {
 }
 
 .register-image {
-  background-image: url("../../assets/img_registro.png");
+  background-image: url("assets/img_registro.png");
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -200,7 +200,6 @@ button:hover {
 }
 
 @media (max-width: 700px) {
-  
   #indicadores-password {
     grid-column: span 1;
   }
@@ -233,7 +232,6 @@ button:hover {
     min-height: 220px;
   }
 }
-
 
 /* ── Indicadores de requisitos de contraseña ─────────────────────────────── */
 #indicadores-password {
@@ -288,4 +286,3 @@ button:hover {
 #indicadores-password li.pendiente::before {
   content: "✗ ";
 }
- 
