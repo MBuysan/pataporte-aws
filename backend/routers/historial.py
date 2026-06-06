@@ -30,13 +30,14 @@ def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
 
     return id_veterinario
 
-router = APIRouter(    dependencies=[Depends(get_current_vet)])
+router = APIRouter( )
 
 @router.post(
     "/consultas",
     response_model=ConsultaResponse,
     status_code=201,
     summary="Agregar consulta al historial de una mascota",
+    dependencies=[Depends(get_current_vet)],
 )
 def agregar_consulta(
     data: ConsultaCreate,
