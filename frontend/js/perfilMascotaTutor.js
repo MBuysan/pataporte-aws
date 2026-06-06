@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const nombreMascota = nombreEl.textContent;
     const textoEsperado = `eliminar perfil ${nombreMascota}`;
 
-    const confirmacion = prompt(
-      `Esta acción eliminará definitivamente el perfil de ${nombreMascota}.\n\nAntes de eliminarlo, se enviará un respaldo clínico por correo.\n\nPara confirmar, escribí exactamente:\n${textoEsperado}`
+    const confirmacion = window.prompt(
+      `Esta acción eliminará definitivamente el perfil de ${nombreMascota}.\n\nEscribí exactamente:\n${textoEsperado}`
     );
 
     if (confirmacion !== textoEsperado) {
@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       seccionTrat.innerHTML = `<p class="error-seccion">${e.message}</p>`;
     }
   }
-
+ 
 
   // ── Historial clínico — toggle con lazy load ──────────────────────────────
 
@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       eventos.sort(
         (a, b) =>
-          new Date(b.fecha) - new Date(a.fecha)
+          new Date(b.fecha || 0) - new Date(a.fecha || 0)
       );
 
       seccionHist.innerHTML = `
