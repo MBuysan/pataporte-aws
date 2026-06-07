@@ -7,24 +7,72 @@
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
   background: #fbf9ef;
 }
 
 /* HERO SOLO IMAGEN */
 .hero {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #000; /* relleno si sobra espacio */
+  overflow: hidden;
 }
 
-.hero img {
+.hero-slide {
+  position: relative;
   width: 100%;
-  height: auto;
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100vh;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
+}
+
+.slide-2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+}
+
+.slide-1 {
+  animation: hero-fade-a 12s ease-in-out infinite;
+}
+
+.slide-2 {
+  animation: hero-fade-b 12s ease-in-out infinite;
+}
+
+@keyframes hero-fade-a {
+  /* 0-42% visible (~5s), 42-50% fade out (~1s), 50-92% oculto (~5s), 92-100% fade in (~1s) */
+  0%,
+  42% {
+    opacity: 1;
+  }
+  50%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-fade-b {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  50%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* ABOUT LAYOUT */
@@ -37,24 +85,27 @@ body {
 .left-side {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 /* MISION + VISION */
 
 .top-cards {
   background: #04308a;
-  padding: 22px 20px 30px;
+  padding: 30px;
   display: flex;
   justify-content: center;
-  gap: 80px;
+  gap: 30px;
 }
 
 .card {
-  width: 320px;
-  flex: none;
+  flex: 1 1 0;
   background: #fbf9ef;
   padding: 28px;
-  min-height: 260px;
+}
+
+h2 {
+  font-family: "Cal Sans", "Inter", sans-serif;
 }
 
 .card h2 {
@@ -148,9 +199,10 @@ body {
   width: 125px;
   height: 125px;
   border-radius: 50%;
-  background: #d8d8d8;
   border: 1px solid #b6b6b6;
   margin: 0 auto 16px;
+  object-fit: cover;
+  display: block;
 }
 
 .creador h3 {
@@ -267,35 +319,37 @@ footer a {
 
 /* RESPONSIVE */
 
-@media (max-width: 1100px) {
-  /* LAYOUT GENERAL */
+/* --- About pasa a 1 columna (1300px) --- */
+@media (max-width: 1300px) {
   .about {
     grid-template-columns: 1fr;
   }
 
-  /* MISION / VISION */
   .top-cards {
-    flex-direction: column;
-    gap: 25px;
-    align-items: center;
+    padding: 30px;
+    gap: 24px;
   }
 
   .card {
-    width: 100%;
-    max-width: 360px;
-    min-height: auto;
+    max-width: none;
   }
 
-  /* GENESIS */
   .genesis {
-    padding: 50px 30px;
+    padding: 50px 40px;
   }
 
   .genesis h2 {
     font-size: 2.6rem;
   }
 
-  /* CREADORES */
+  .creadores h2 {
+    font-size: 2.8rem;
+    margin-bottom: 50px;
+  }
+}
+
+/* --- Tablet ancho (1100px) --- */
+@media (max-width: 1100px) {
   .creadores-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 35px;
@@ -306,29 +360,49 @@ footer a {
   }
 }
 
+/* --- Tablet portrait (768px) --- */
+@media (max-width: 768px) {
+  .access-section {
+    grid-template-columns: 1fr;
+  }
+
+  .access-section h2 {
+    font-size: 1.8rem;
+  }
+
+  .genesis {
+    padding: 40px 25px;
+  }
+
+  .genesis h2 {
+    font-size: 2.2rem;
+  }
+
+  .genesis p {
+    font-size: 1rem;
+  }
+
+  .creadores h2 {
+    font-size: 2.2rem;
+    margin-bottom: 35px;
+  }
+}
+
+/* --- Móvil (600px) --- */
 @media (max-width: 600px) {
-  /* EVITA SCROLL HORIZONTAL */
   html,
   body {
     overflow-x: hidden;
     width: 100%;
   }
 
-  /* HERO */
-  .hero img {
-    width: 100%;
-    height: auto;
-  }
-
-  /* MISION / VISION */
   .top-cards {
+    flex-direction: column;
     padding: 20px;
-    gap: 20px;
+    gap: 16px;
   }
 
   .card {
-    width: 100%;
-    max-width: 320px;
     padding: 20px;
   }
 
@@ -336,11 +410,6 @@ footer a {
     font-size: 1.6rem;
   }
 
-  .card p {
-    font-size: 0.9rem;
-  }
-
-  /* GENESIS */
   .genesis {
     padding: 30px 18px;
   }
@@ -355,14 +424,13 @@ footer a {
     line-height: 1.5;
   }
 
-  /* CREADORES -> columna limpia */
   .creadores {
     padding: 30px 15px;
   }
 
   .creadores h2 {
-    font-size: 2.2rem;
-    margin-bottom: 40px;
+    font-size: 1.9rem;
+    margin-bottom: 30px;
   }
 
   .creadores-grid {
@@ -386,17 +454,15 @@ footer a {
     font-size: 1rem;
   }
 
-  /* ACCESS */
-  .access-section {
-    grid-template-columns: 1fr;
-  }
-
   .tutor,
   .vet {
     padding: 40px 20px;
   }
 
-  /* FOOTER */
+  .access-section h2 {
+    font-size: 1.5rem;
+  }
+
   footer {
     flex-direction: column;
     gap: 10px;
