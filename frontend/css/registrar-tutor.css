@@ -290,7 +290,7 @@ PANEL VISUAL (DERECHA) - IMAGEN + LOGO CORTADO
   position: relative;
   background-image:
     linear-gradient(rgba(4, 48, 138, 0.15), rgba(4, 48, 138, 0.25)),
-    url("assets/img_registro.png");
+    url("../assets/img_registro.png");
   background-size: cover;
   background-position: left center;
   /* Permite ver el logo recortado en el borde izquierdo */

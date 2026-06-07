@@ -46,7 +46,7 @@ body {
   position: relative;
   background-image:
     linear-gradient(rgba(4, 48, 138, 0.15), rgba(4, 48, 138, 0.25)),
-    url("assets/img_iniciar_sesion.png");
+    url("../assets/img_iniciar_sesion.png");
   background-size: cover;
   background-position: right center;
   /* Permite ver el logo recortado en el borde derecho */

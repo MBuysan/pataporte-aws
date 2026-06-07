@@ -1,9 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-@font-face {
-  font-family: "Cal Sans";
-  src: local("Cal Sans");
-}
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
   --azul: #04308a;
@@ -33,7 +28,7 @@ body {
 }
 
 .login-image {
-  background-image: url("assets/img_iniciar_sesion.png");
+  background-image: url("../assets/img_iniciar_sesion.png");
   background-size: cover;
   background-position: center;
   min-height: 100vh;
