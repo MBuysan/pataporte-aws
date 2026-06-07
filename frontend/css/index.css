@@ -8,7 +8,6 @@
 
 body {
   font-family: "Inter", sans-serif;
-  font-family: "Inter", sans-serif;
   background: #fbf9ef;
 }
 
@@ -25,9 +24,7 @@ body {
 }
 
 .hero-slide img {
-.hero-slide img {
   width: 100%;
-  height: 100vh;
   display: block;
 }
 
@@ -88,7 +85,6 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-width: 0;
 }
 
 /* MISION + VISION */
@@ -96,22 +92,15 @@ body {
 .top-cards {
   background: #04308a;
   padding: 30px;
-  padding: 30px;
   display: flex;
   justify-content: center;
-  gap: 30px;
   gap: 30px;
 }
 
 .card {
   flex: 1 1 0;
-  flex: 1 1 0;
   background: #fbf9ef;
   padding: 28px;
-}
-
-h2 {
-  font-family: "Cal Sans", "Inter", sans-serif;
 }
 
 h2 {
@@ -196,8 +185,6 @@ h2 {
   grid-column: 4/6;
 }
 
-/* MÁS CHICOS */
-
 .creador {
   width: 180px;
   text-align: center;
@@ -211,14 +198,13 @@ h2 {
   margin: 0 auto 16px;
   object-fit: cover;
   display: block;
-  object-fit: cover;
-  display: block;
 }
 
 .creador h3 {
   font-size: 1.15rem;
   font-weight: 600;
 }
+
 /* ACCESS */
 
 .access-section {
@@ -310,7 +296,6 @@ footer {
   background: #c9974b;
   color: white;
   padding: 18px 30px;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -331,8 +316,6 @@ footer a {
 
 /* --- About pasa a 1 columna (1300px) --- */
 @media (max-width: 1300px) {
-/* --- About pasa a 1 columna (1300px) --- */
-@media (max-width: 1300px) {
   .about {
     grid-template-columns: 1fr;
   }
@@ -340,17 +323,13 @@ footer a {
   .top-cards {
     padding: 30px;
     gap: 24px;
-    padding: 30px;
-    gap: 24px;
   }
 
   .card {
     max-width: none;
-    max-width: none;
   }
 
   .genesis {
-    padding: 50px 40px;
     padding: 50px 40px;
   }
 
@@ -358,14 +337,6 @@ footer a {
     font-size: 2.6rem;
   }
 
-  .creadores h2 {
-    font-size: 2.8rem;
-    margin-bottom: 50px;
-  }
-}
-
-/* --- Tablet ancho (1100px) --- */
-@media (max-width: 1100px) {
   .creadores h2 {
     font-size: 2.8rem;
     margin-bottom: 50px;
@@ -413,35 +384,6 @@ footer a {
 }
 
 /* --- Móvil (600px) --- */
-/* --- Tablet portrait (768px) --- */
-@media (max-width: 768px) {
-  .access-section {
-    grid-template-columns: 1fr;
-  }
-
-  .access-section h2 {
-    font-size: 1.8rem;
-  }
-
-  .genesis {
-    padding: 40px 25px;
-  }
-
-  .genesis h2 {
-    font-size: 2.2rem;
-  }
-
-  .genesis p {
-    font-size: 1rem;
-  }
-
-  .creadores h2 {
-    font-size: 2.2rem;
-    margin-bottom: 35px;
-  }
-}
-
-/* --- Móvil (600px) --- */
 @media (max-width: 600px) {
   html,
   body {
@@ -451,9 +393,7 @@ footer a {
 
   .top-cards {
     flex-direction: column;
-    flex-direction: column;
     padding: 20px;
-    gap: 16px;
     gap: 16px;
   }
 
@@ -486,8 +426,6 @@ footer a {
   .creadores h2 {
     font-size: 1.9rem;
     margin-bottom: 30px;
-    font-size: 1.9rem;
-    margin-bottom: 30px;
   }
 
   .creadores-grid {
@@ -514,10 +452,6 @@ footer a {
   .tutor,
   .vet {
     padding: 40px 20px;
-  }
-
-  .access-section h2 {
-    font-size: 1.5rem;
   }
 
   .access-section h2 {
