@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from config.settings import settings
-from schemas.mascota import MascotaCreate, MascotaUpdate
+from schemas.mascota import MascotaCreate
 from config.database import Mascota, CodigoAccesoMascota, UsuarioTutor, MascotaTutor
 
 from email.mime.application import MIMEApplication
