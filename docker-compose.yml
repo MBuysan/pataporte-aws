@@ -15,6 +15,7 @@ services:
       SECRET_KEY: ${SECRET_KEY}
     volumes:
       - ./backend:/app
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -54,6 +55,7 @@ services:
       - "80:80"
     volumes:
       - ./frontend:/usr/share/nginx/html
+      - uploads_data:/usr/share/nginx/html/uploads
     restart: unless-stopped
 
   db:
@@ -74,3 +76,4 @@ services:
 
 volumes:
   db_data:
+  uploads_data:

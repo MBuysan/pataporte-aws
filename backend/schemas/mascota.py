@@ -47,12 +47,6 @@ class MascotaCreate(BaseModel):
         }
 
 
-# ── Lo que se recibe al actualizar una mascota ─────────────
-# todos los campos son opcionales: solo se actualizan los que llegan
-class MascotaUpdate(BaseModel):
-    nombre: Optional[str] = None
-    raza: Optional[str] = None
-    foto_url: Optional[str] = None
 
 
 # ── Lo que se devuelve al consultar una mascota ────────────
