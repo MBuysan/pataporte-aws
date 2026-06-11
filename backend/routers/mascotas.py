@@ -1,18 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from typing import Optional
+import uuid, os, shutil
+import jwt
+from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
 from config.database import get_db
 from schemas.mascota import (
     MascotaCreate,
-    MascotaUpdate,
     MascotaResponse,
     CodigoAccesoResponse,
+    EspecieEnum,
+    SexoEnum
 )
 from services import mascota_service
 from utils import password_utils
-import jwt
-from jwt import PyJWTError
-import os
+
+UPLOAD_DIR = "uploads/mascotas"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 # todos las etiquetas get,post etc de mas abajo se registran sobre este objeto
@@ -71,17 +76,45 @@ def obtener_mascota(id_mascota: str, db: Session = Depends(get_db)):
 @router.post(
     "/", response_model=MascotaResponse, status_code=201, summary="Registrar mascota"
 )
-def registrar_mascota(data: MascotaCreate, db: Session = Depends(get_db)):
+async def registrar_mascota( #por como se reciben los datos, se debe usar async y Form para cada uno de los campos (cuestiones el protocolo multipart/form-data)
+    id_tutor: str = Form(...),
+    nombre: str = Form(...),
+    especie: str = Form(...),
+    raza: Optional[str] = Form(None),
+    fecha_de_nacimiento: Optional[str] = Form(None),
+    sexo: str = Form("desconocido"),
+    foto: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+):
+    foto_url = None
+
+    if foto and foto.filename:
+        extension = foto.filename.split(".")[-1].lower()
+        if extension not in ["jpg", "jpeg", "png", "webp"]:
+            raise HTTPException(status_code=400, detail="Formato de imagen no permitido")
+
+        nombre_archivo = f"{uuid.uuid4()}.{extension}"
+        ruta_guardado = f"{UPLOAD_DIR}/{nombre_archivo}"
+
+        with open(ruta_guardado, "wb") as buffer:
+            shutil.copyfileobj(foto.file, buffer)
+
+        # url pública que queda guardada en postgres
+        foto_url = f"/uploads/mascotas/{nombre_archivo}"
+
+
+    data = MascotaCreate(
+        id_tutor=id_tutor,
+        nombre=nombre,
+        especie=EspecieEnum(especie),
+        raza=raza or None,
+        fecha_de_nacimiento=fecha_de_nacimiento or None,
+        sexo=SexoEnum(sexo),
+        foto_url=foto_url,
+    )
+
     return mascota_service.crear(db, data)
 
-
-@router.patch(
-    "/{id_mascota}", response_model=MascotaResponse, summary="Actualizar mascota"
-)
-def actualizar_mascota(
-    id_mascota: str, data: MascotaUpdate, db: Session = Depends(get_db)
-):
-    return mascota_service.actualizar(db, id_mascota, data)
 
 
 @router.delete("/{id_mascota}", status_code=204, summary="Eliminar mascota")
