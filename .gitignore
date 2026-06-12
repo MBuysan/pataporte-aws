@@ -25,3 +25,4 @@ docker-compose.override.yml
 *.log
 logs/
 .claude/
+backend/uploads/
