@@ -54,3 +54,17 @@ def actualizar_tutor(id_tutor: str, data: TutorUpdate, db: Session = Depends(get
 )
 def mascotas_del_tutor(id_tutor: str, db: Session = Depends(get_db)):
     return tutor_service.obtener_mascotas(db, id_tutor)
+
+@router.delete(
+    "/{id_tutor}",
+    status_code=204,
+    summary="Eliminar tutor"
+)
+def eliminar_tutor(
+    id_tutor: str,
+    db: Session = Depends(get_db)
+):
+    tutor_service.eliminar_tutor(
+        db,
+        id_tutor
+    )
