@@ -62,8 +62,45 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.href = `perfil-mascota-tutor.html?id=${m.id_mascota}`;
       card.className = "fila-mascota";
 
-      // Formatear detalles: Especie y Raza
-      const detalle = [m.especie, m.raza].filter(Boolean).join(" · ");
+      // Calcular la edad a partir de la fecha de nacimiento
+      const calcularEdad = (fechaNacimientoStr) => {
+        if (!fechaNacimientoStr) return null;
+        const hoy = new Date();
+        const nacimiento = new Date(fechaNacimientoStr);
+        if (isNaN(nacimiento.getTime())) return null;
+
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+          edad--;
+        }
+
+        if (edad > 0) {
+          return edad === 1 ? "1 año" : `${edad} años`;
+        }
+
+        // Si es menor a un año, calcular en meses
+        let meses = (hoy.getFullYear() - nacimiento.getFullYear()) * 12 + hoy.getMonth() - nacimiento.getMonth();
+        if (hoy.getDate() < nacimiento.getDate()) {
+          meses--;
+        }
+        if (meses > 0) {
+          return meses === 1 ? "1 mes" : `${meses} meses`;
+        }
+
+        // Si es menor a un mes, calcular en días
+        const unDia = 24 * 60 * 60 * 1000;
+        const dias = Math.floor((hoy - nacimiento) / unDia);
+        if (dias > 0) {
+          return dias === 1 ? "1 día" : `${dias} días`;
+        }
+        return "0 días";
+      };
+
+      // Formatear detalles: Especie y Edad (Capitalizados y separados por barra vertical)
+      const formatString = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+      const edadStr = calcularEdad(m.fecha_de_nacimiento);
+      const detalle = [formatString(m.especie), edadStr].filter(Boolean).join(" | ");
 
       const fotoHtml = m.foto_url
         ? `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
