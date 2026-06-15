@@ -30,131 +30,11 @@ body {
   display: block;
 }
 
-.slide-2 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.slide-1 {
-  animation: hero-fade-a 12s ease-in-out infinite;
-}
-
-.slide-2 {
-  animation: hero-fade-b 12s ease-in-out infinite;
-}
-
-@keyframes hero-fade-a {
-  /* 0-42% visible (~5s), 42-50% fade out (~1s), 50-92% oculto (~5s), 92-100% fade in (~1s) */
-  0%,
-  42% {
-    opacity: 1;
-  }
-  50%,
-  92% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes hero-fade-b {
-  0%,
-  42% {
-    opacity: 0;
-  }
-  50%,
-  92% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* ABOUT LAYOUT */
-
-.about {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-}
-
-.left-side {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-/* MISION + VISION */
-
-.top-cards {
-  background: #04308a;
-  padding: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-}
-
-.card {
-  flex: 1 1 0;
-  background: #fbf9ef;
-  padding: 28px;
-}
-
-h2 {
-  font-family: "Cal Sans", "Inter", sans-serif;
-}
-
-.card h2 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.card p {
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-/* GENESIS */
-
-.genesis {
-  background: #c90a0a;
-  color: #fbf9ef;
-  padding: 50px 85px;
-}
-
-.genesis h2 {
-  font-size: 3.6rem;
-  margin-bottom: 20px;
-}
-
-.genesis p {
-  width: 100%;
-  max-width: none;
-  line-height: 1.6;
-  font-size: 1.2rem;
-}
-
-/* CREADORES */
-.creadores {
-  background: #fbf9ef;
-  padding: 40px 40px 70px;
-  flex: 1;
-}
-
-.creadores h2 {
-  text-align: center;
-  margin-bottom: 70px;
-  font-size: 4rem;
-  font-weight: 700;
+.hero-overlay {
+  display: none;
 }
 
 /* GRID */
-
 .creadores-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -163,52 +43,7 @@ h2 {
   align-items: center;
 }
 
-/* arriba */
-
-.creador:nth-child(1) {
-  grid-column: 1/3;
-}
-
-.creador:nth-child(2) {
-  grid-column: 3/5;
-}
-
-.creador:nth-child(3) {
-  grid-column: 5/7;
-}
-
-/* abajo centrados */
-
-.creador:nth-child(4) {
-  grid-column: 2/4;
-}
-
-.creador:nth-child(5) {
-  grid-column: 4/6;
-}
-
-.creador {
-  width: 180px;
-  text-align: center;
-}
-
-.avatar {
-  width: 125px;
-  height: 125px;
-  border-radius: 50%;
-  border: 1px solid #b6b6b6;
-  margin: 0 auto 16px;
-  object-fit: cover;
-  display: block;
-}
-
-.creador h3 {
-  font-size: 1.15rem;
-  font-weight: 600;
-}
-
 /* ACCESS */
-
 .access-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -228,6 +63,9 @@ h2 {
 }
 
 .access-section h2 {
+  font-size: 32px;
+  font-weight: 400;
+  font-family: "Cal Sans", sans-serif;
   margin-bottom: 15px;
 }
 
@@ -293,7 +131,6 @@ h2 {
 }
 
 /* FOOTER */
-
 footer {
   background: #c9974b;
   color: white;
@@ -316,37 +153,8 @@ footer a {
 
 /* RESPONSIVE */
 
-/* --- About pasa a 1 columna (1300px) --- */
-@media (max-width: 1300px) {
-  .about {
-    grid-template-columns: 1fr;
-  }
-
-  .top-cards {
-    padding: 30px;
-    gap: 24px;
-  }
-
-  .card {
-    max-width: none;
-  }
-
-  .genesis {
-    padding: 50px 40px;
-  }
-
-  .genesis h2 {
-    font-size: 2.6rem;
-  }
-
-  .creadores h2 {
-    font-size: 2.8rem;
-    margin-bottom: 50px;
-  }
-}
-
 /* --- Tablet ancho (1100px) --- */
-@media (max-width: 1100px) {
+@media (max-width: 1500px) {
   .creadores-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 35px;
@@ -383,6 +191,48 @@ footer a {
     font-size: 2.2rem;
     margin-bottom: 35px;
   }
+
+  .btn-light {
+    background: #99b6f1;
+    color: #0b1215;
+  }
+
+  .btn-light:hover {
+    background: #c90a0a;
+    color: #fbf9ef;
+  }
+
+  .btn-outline {
+    border: 2px solid #fbf9ef;
+    color: #fbf9ef;
+  }
+
+  .btn-outline:hover {
+    background: #fbf9ef;
+    border: 2px solid #fbf9ef;
+    color: #0b1215;
+  }
+
+  .btn-dark {
+    background: #0b1215;
+    color: #fbf9ef;
+  }
+
+  .btn-dark:hover {
+    background: #c90a0a;
+    color: #fbf9ef;
+  }
+
+  .btn-outline-dark {
+    border: 2px solid #0b1215;
+    color: #0b1215;
+  }
+
+  .btn-outline-dark:hover {
+    background: #fbf9ef;
+    border: 2px solid #fbf9ef;
+    color: #0b1215;
+  }
 }
 
 /* --- Móvil (600px) --- */
@@ -393,62 +243,44 @@ footer a {
     width: 100%;
   }
 
-  .top-cards {
-    flex-direction: column;
-    padding: 20px;
-    gap: 16px;
+  .hero {
+    max-height: 50vh;
   }
 
-  .card {
-    padding: 20px;
+  .hero-slide {
+    position: relative;
   }
 
-  .card h2 {
-    font-size: 1.6rem;
+  .hero-slide img {
+    height: 50vh;
+    object-fit: cover;
+    object-position: center center;
   }
 
-  .genesis {
-    padding: 30px 18px;
-  }
-
-  .genesis h2 {
-    font-size: 1.9rem;
-    margin-bottom: 15px;
-  }
-
-  .genesis p {
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  .creadores {
-    padding: 30px 15px;
-  }
-
-  .creadores h2 {
-    font-size: 1.9rem;
-    margin-bottom: 30px;
-  }
-
-  .creadores-grid {
+  .hero-overlay {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 22px;
+    justify-content: center;
+    gap: 12px;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
   }
 
-  .creador {
-    width: 100%;
-    max-width: 180px;
+  .hero-logo {
+    max-width: 150px;
+    max-height: 170px;
+    object-fit: contain;
   }
 
-  .avatar {
-    width: 90px;
-    height: 90px;
-  }
-
-  .creador h3 {
-    font-size: 1rem;
+  .hero-title {
+    color: #ffffff;
+    font-family: "Cal Sans", sans-serif;
+    font-size: 3.5rem;
+    font-weight: 400;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    letter-spacing: 1px;
   }
 
   .tutor,
@@ -458,6 +290,48 @@ footer a {
 
   .access-section h2 {
     font-size: 1.5rem;
+  }
+
+  .btn-light {
+    background: #99b6f1;
+    color: #0b1215;
+  }
+
+  .btn-light:hover {
+    background: #c90a0a;
+    color: #fbf9ef;
+  }
+
+  .btn-outline {
+    border: 2px solid #fbf9ef;
+    color: #fbf9ef;
+  }
+
+  .btn-outline:hover {
+    background: #fbf9ef;
+    border: 2px solid #fbf9ef;
+    color: #0b1215;
+  }
+
+  .btn-dark {
+    background: #0b1215;
+    color: #fbf9ef;
+  }
+
+  .btn-dark:hover {
+    background: #c90a0a;
+    color: #fbf9ef;
+  }
+
+  .btn-outline-dark {
+    border: 2px solid #0b1215;
+    color: #0b1215;
+  }
+
+  .btn-outline-dark:hover {
+    background: #fbf9ef;
+    border: 2px solid #fbf9ef;
+    color: #0b1215;
   }
 
   footer {

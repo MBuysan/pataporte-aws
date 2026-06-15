@@ -24,7 +24,7 @@ body {
 .login-page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 0.95fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 .login-image {
@@ -45,19 +45,20 @@ body {
 .login-box {
   width: 100%;
   max-width: 360px;
-
-  position: relative;
 }
 
 .volver-link {
-  position: absolute;
-  top: 15px;
-  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
   color: var(--azul);
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .volver-link:hover {
@@ -70,13 +71,25 @@ h1 {
   font-family: "Cal Sans", "Inter", sans-serif;
   font-size: 54px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 400;
   white-space: nowrap;
 }
 
 .register-text {
   margin: 0 0 28px;
   font-size: 14px;
+  color: #575f63;
+}
+
+.form-link-action {
+  color: #0b1215;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.form-link-action:hover {
+  color: var(--color-primary);
 }
 
 a {
@@ -110,25 +123,43 @@ input:focus {
 }
 
 .forgot-link {
-  display: inline-block;
+  display: block;
   margin: -4px 0 18px;
-  font-size: 12px;
+  font-size: 13px;
+  color: var(--gris);
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--azul);
 }
 
 button {
-  display: block;
-  width: 230px;
-  height: 42px;
+  display: inline-block;
+  width: auto;
   border: none;
   background: var(--azul);
   color: white;
-  font-weight: 800;
-  font-size: 20px;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: inherit;
   cursor: pointer;
+  border-radius: 4px;
+  padding: 12px 36px;
+  box-shadow: 0 2px 4px rgba(4, 48, 138, 0.1);
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
 }
 
 button:hover {
   opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(4, 48, 138, 0.2);
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 #error {
@@ -172,6 +203,12 @@ button:hover {
 
   h1 {
     font-size: 38px;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    text-align: center;
   }
 }
 
