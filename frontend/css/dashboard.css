@@ -1,0 +1,317 @@
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+  --color-primary: #04308a;
+  --color-primary-hover: #03256c;
+  --color-gold: #be8b38;
+  --color-gold-hover: #a3752c;
+  --color-background: #fbf9ef;
+  --color-text-main: #0b1215;
+  --color-text-muted: #575f63;
+  --color-border: #e2e2e1;
+  --color-border-focus: #04308a;
+  --color-error: #c90a0a;
+  --color-error-bg: #fdf2f2;
+  --color-success: #166534;
+  --color-success-bg: #f0fdf4;
+  
+  --color-card-bg: #ffffff;
+  --color-card-shadow: rgba(4, 48, 138, 0.05);
+  --color-card-shadow-hover: rgba(4, 48, 138, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 56px 20px 80px;
+}
+
+.contenedor {
+  width: 100%;
+  max-width: 760px;
+}
+
+.header-dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 16px;
+}
+
+#saludo-usuario {
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--color-text-main);
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.btn-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-card-bg);
+  color: var(--color-text-main);
+  border: 1.5px solid var(--color-text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px var(--color-card-shadow);
+  transition: background-color 0.2s, transform 0.15s, border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-user-avatar:hover {
+  background-color: #f7f6f0;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-user-avatar svg {
+  width: 24px;
+  height: 24px;
+}
+
+.subtitulo {
+  color: var(--color-text-main);
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+.seccion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.seccion-titulo {
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.btn-primario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  text-decoration: none;
+  border: 1.5px solid var(--color-text-main);
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 13.5px;
+  box-shadow: 0 4px 6px rgba(4, 48, 138, 0.1);
+  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.btn-primario:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: 0 6px 14px rgba(4, 48, 138, 0.2);
+}
+
+.btn-primario:active {
+  transform: scale(0.98);
+}
+
+.mensaje {
+  display: none;
+  padding: 12px 16px;
+  border-radius: 0;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.45;
+}
+
+.mensaje-error {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border-left: 4px solid var(--color-error);
+  display: block;
+}
+
+.cargando {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 40px 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.lista-mascotas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fila-mascota {
+  background-color: var(--color-card-bg);
+  border: 1.5px solid var(--color-text-main);
+  border-radius: 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.fila-mascota:hover {
+  background-color: #f7f6f0;
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+}
+
+.foto-mascota,
+.foto-placeholder {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-text-main);
+}
+
+.foto-mascota {
+  object-fit: cover;
+}
+
+.foto-placeholder {
+  background-color: var(--color-gold);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-mascota {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nombre-mascota {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  transition: color 0.2s;
+}
+
+.fila-mascota:hover .nombre-mascota {
+  color: var(--color-primary);
+}
+
+.detalle-mascota {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.flecha {
+  font-size: 24px;
+  color: var(--color-text-main);
+  font-weight: 800;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.fila-mascota:hover .flecha {
+  transform: translateX(4px);
+  color: var(--color-primary);
+}
+
+.sin-mascotas {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-text-main);
+  padding: 40px 24px;
+  border-radius: 0;
+  text-align: center;
+  box-shadow: 0 2px 4px var(--color-card-shadow);
+}
+
+.sin-mascotas p {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 32px 16px 60px;
+  }
+
+  #saludo-usuario {
+    font-size: 30px;
+  }
+
+  .header-dashboard {
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .btn-user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .btn-user-avatar svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .subtitulo {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .seccion-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .btn-primario {
+    width: 100%;
+    padding: 12px 20px;
+  }
+
+  .fila-mascota {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+
+  .foto-mascota,
+  .foto-placeholder {
+    width: 48px;
+    height: 48px;
+  }
+
+  .nombre-mascota {
+    font-size: 16px;
+  }
+
+  .detalle-mascota {
+    font-size: 13px;
+  }
+}

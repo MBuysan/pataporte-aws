@@ -73,6 +73,7 @@ body {
   max-width: 400px;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /* Cabecera del Formulario */
@@ -229,35 +230,22 @@ body {
   box-shadow: none;
 }
 
-/* Botón Volver al inicio */
-.back-link-wrapper {
-  margin-top: 36px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 24px;
-}
-
 .back-link {
+  position: absolute;
+  top: 15px;
+  right: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: var(--color-text-muted);
+  gap: 6px;
+  color: var(--color-primary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  transition: color 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .back-link:hover {
-  color: var(--color-primary);
-}
-
-.back-link svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.2s ease;
-}
-
-.back-link:hover svg {
+  opacity: 0.8;
   transform: translateX(-3px);
 }
 

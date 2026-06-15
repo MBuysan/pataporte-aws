@@ -41,20 +41,19 @@ body {
 }
 
 .volver-link {
-  display: inline-block;
-
-  margin-bottom: 70px;
-
+  position: absolute;
+  top: 15px;
+  right: 0;
   color: var(--azul);
-
   text-decoration: none;
-
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .volver-link:hover {
-  text-decoration: underline;
+  opacity: 0.8;
+  transform: translateX(-3px);
 }
 
 .form-title {
