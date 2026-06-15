@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnLogout = document.getElementById("btnLogout");
   const contenedorMascotas = document.getElementById("contenedor-mascotas");
   const mensajeEl = document.getElementById("mensaje-dashboard");
+  const btnEliminarCuenta = document.getElementById("btnEliminarCuenta");
 
   // 1. Verificar sesión
   const token = localStorage.getItem("access_token");
@@ -21,12 +22,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = "../index.html";
   });
 
-  // 3. Personalizar Saludo
+  // 3. Configurar Eliminar Cuenta
+  btnEliminarCuenta.addEventListener("click", async () => {
+    const confirmacion = window.prompt(
+      "Esta acción eliminará definitivamente tu cuenta y todas tus mascotas.\n\nEscribí exactamente:\neliminar mi cuenta"
+    );
+
+    if (confirmacion !== "eliminar mi cuenta") {
+      alert("Confirmación incorrecta.");
+      return;
+    }
+
+    alert(
+      "Pataporte está generando la documentación de respaldo de tus mascotas para enviarla por correo electrónico. Luego se eliminará definitivamente tu cuenta y toda la información asociada."
+    );
+
+    try {
+
+      await api.delete(
+        `/tutores/${tutorData.id_tutor}`
+      );
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("tutor");
+
+      alert(
+        "Cuenta eliminada correctamente."
+      );
+
+      window.location.href = "../index.html";
+
+    } catch (error) {
+
+      alert(
+        `No se pudo eliminar la cuenta: ${error.message}`
+      );
+    }
+  }
+  );
+
+  // 4. Personalizar Saludo
   if (tutorData.nombre) {
     saludoUsuario.textContent = `Hola, ${tutorData.nombre}`;
   }
 
-  // 4. Cargar Mascotas del Tutor
+  // 5. Cargar Mascotas del Tutor
   try {
     const idTutor = tutorData.id_tutor;
     // Consumir endpoint de la API que devuelve las mascotas de este tutor específico

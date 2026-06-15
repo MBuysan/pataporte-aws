@@ -1,190 +1,220 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel Tutor — Pataporte</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
 
-      body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        min-height: 100vh;
-        padding: 40px 16px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Tutor — Pataporte</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      .contenedor {
-        max-width: 540px;
-        margin: 0 auto;
-      }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 40px 16px;
+    }
 
-      .header-dashboard {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-      }
+    .contenedor {
+      max-width: 540px;
+      margin: 0 auto;
+    }
 
-      h2 { color: #222; }
+    .header-dashboard {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
 
-      .subtitulo {
-        color: #666;
-        font-size: 14px;
-        margin-bottom: 24px;
-      }
+    h2 {
+      color: #222;
+    }
 
-      .acciones-principales {
-        margin-bottom: 28px;
-      }
+    .subtitulo {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
 
-      .btn-primario {
-        display: inline-block;
-        padding: 12px 20px;
-        background: #4a90e2;
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 14px;
-        border: none;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .btn-primario:hover { background: #357abd; }
+    .acciones-principales {
+      margin-bottom: 28px;
+    }
 
-      .btn-logout {
-        background: none;
-        border: none;
-        color: #e53935;
-        font-weight: bold;
-        font-size: 13px;
-        cursor: pointer;
-        text-decoration: underline;
-      }
+    .btn-primario {
+      display: inline-block;
+      padding: 12px 20px;
+      background: #4a90e2;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-      /* ── Mensajes ───────────────────────────────────────── */
-      .mensaje {
-        display: none;
-        padding: 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        margin-bottom: 16px;
-      }
-      .mensaje-error { background: #fce8e8; color: #c0392b; }
-      .cargando { color: #999; text-align: center; padding: 20px; }
+    .btn-primario:hover {
+      background: #357abd;
+    }
 
-      /* ── Listado de Mascotas ────────────────────────────── */
-      .seccion-titulo {
-        font-size: 16px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 12px;
-      }
+    .btn-logout {
+      background: none;
+      border: none;
+      color: #e53935;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
 
-      .lista-mascotas {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
+    /* ── Mensajes ───────────────────────────────────────── */
+    .mensaje {
+      display: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
 
-      .fila-mascota {
-        background: white;
-        border-radius: 10px;
-        padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        text-decoration: none;
-        color: inherit;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        transition: box-shadow 0.15s, transform 0.1s;
-      }
+    .mensaje-error {
+      background: #fce8e8;
+      color: #c0392b;
+    }
 
-      .fila-mascota:hover {
-        box-shadow: 0 3px 12px rgba(0,0,0,0.12);
-        transform: translateY(-1px);
-      }
+    .cargando {
+      color: #999;
+      text-align: center;
+      padding: 20px;
+    }
 
-      .foto-mascota,
-      .foto-placeholder {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        flex-shrink: 0;
-      }
+    /* ── Listado de Mascotas ────────────────────────────── */
+    .seccion-titulo {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 12px;
+    }
 
-      .foto-mascota { object-fit: cover; }
+    .lista-mascotas {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-      .foto-placeholder {
-        background: #dde8f8;
-        color: #4a90e2;
-        font-size: 22px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    .fila-mascota {
+      background: white;
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+      transition: box-shadow 0.15s, transform 0.1s;
+    }
 
-      .info-mascota {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
+    .fila-mascota:hover {
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
 
-      .nombre-mascota {
-        font-size: 16px;
-        font-weight: bold;
-        color: #222;
-      }
+    .foto-mascota,
+    .foto-placeholder {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
 
-      .detalle-mascota {
-        font-size: 13px;
-        color: #888;
-      }
+    .foto-mascota {
+      object-fit: cover;
+    }
 
-      .flecha {
-        font-size: 20px;
-        color: #ccc;
-        flex-shrink: 0;
-      }
+    .foto-placeholder {
+      background: #dde8f8;
+      color: #4a90e2;
+      font-size: 22px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      .sin-mascotas {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-        color: #888;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="contenedor">
-      
-      <div class="header-dashboard">
-        <h2 id="saludo-usuario">Hola, Tutor</h2>
-        <button id="btnLogout" class="btn-logout">Cerrar sesión</button>
+    .info-mascota {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nombre-mascota {
+      font-size: 16px;
+      font-weight: bold;
+      color: #222;
+    }
+
+    .detalle-mascota {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .flecha {
+      font-size: 20px;
+      color: #ccc;
+      flex-shrink: 0;
+    }
+
+    .sin-mascotas {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="contenedor">
+
+    <div class="header-dashboard">
+      <h2 id="saludo-usuario">Hola, Tutor</h2>
+      <div style="display:flex; gap:12px;">
+        <button id="btnLogout" class="btn-logout">
+          Cerrar sesión
+        </button>
+        <button id="btnEliminarCuenta" class="btn-logout">
+          Eliminar cuenta
+        </button>
       </div>
-      <p class="subtitulo">Bienvenido a Pataporte. Gestioná tus mascotas desde acá.</p>
+    </div>
+    <p class="subtitulo">Bienvenido a Pataporte. Gestioná tus mascotas desde acá.</p>
 
-      <div class="acciones-principales">
-        <a href="crear-mascota.html" class="btn-primario">+ Registrar nueva mascota</a>
-      </div>
-
-      <div id="mensaje-dashboard" class="mensaje"></div>
-
-      <p class="seccion-titulo">Mis mascotas</p>
-      
-      <div id="contenedor-mascotas">
-        <p class="cargando">Cargando tus mascotas...</p>
-      </div>
-
+    <div class="acciones-principales">
+      <a href="crear-mascota.html" class="btn-primario">+ Registrar nueva mascota</a>
     </div>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/dashboard.js"></script>
-  </body>
+    <div id="mensaje-dashboard" class="mensaje"></div>
+
+    <p class="seccion-titulo">Mis mascotas</p>
+
+    <div id="contenedor-mascotas">
+      <p class="cargando">Cargando tus mascotas...</p>
+    </div>
+
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/dashboard.js"></script>
+</body>
+
 </html>
