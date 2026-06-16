@@ -315,3 +315,34 @@ body {
     font-size: 13px;
   }
 }
+.btn-logout {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.btn-logout:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.btn-logout-danger {
+  background: none;
+  border: none;
+  color: var(--color-error);
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-logout-danger:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
