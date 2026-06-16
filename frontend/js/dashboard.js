@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const contenedorMascotas = document.getElementById("contenedor-mascotas");
   const mensajeEl = document.getElementById("mensaje-dashboard");
   const btnEliminarCuenta = document.getElementById("btnEliminarCuenta");
+  const btnUserAvatar = document.getElementById("btnUserAvatar");
+  const menuCuenta = document.getElementById("menuCuenta");
 
   // 1. Verificar sesión
   const token = localStorage.getItem("access_token");
@@ -15,14 +17,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 2. Configurar Cerrar Sesión
+  // 2. Toggle menú de cuenta
+  btnUserAvatar.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  const visible = menuCuenta.style.display === "block";
+
+  if (visible) {
+    menuCuenta.style.display = "none";
+    return;
+  }
+
+  menuCuenta.style.display = "block";
+
+  const rect = btnUserAvatar.getBoundingClientRect();
+  const menuWidth = menuCuenta.offsetWidth;
+
+  menuCuenta.style.top =
+    (rect.bottom + window.scrollY + 8) + "px";
+
+  menuCuenta.style.left =
+    (rect.right + window.scrollX - menuWidth) + "px";
+  });
+ 
+  document.addEventListener("click", () => {
+    menuCuenta.style.display = "none";
+  });
+
+  // 3. Configurar Cerrar Sesión
   btnLogout.addEventListener("click", () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("tutor");
     window.location.href = "../index.html";
   });
 
-  // 3. Configurar Eliminar Cuenta
+  // 4. Configurar Eliminar Cuenta
   btnEliminarCuenta.addEventListener("click", async () => {
     const confirmacion = window.prompt(
       "Esta acción eliminará definitivamente tu cuenta y todas tus mascotas.\n\nEscribí exactamente:\neliminar mi cuenta"
@@ -61,12 +90,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   );
 
-  // 4. Personalizar Saludo
+  // 5. Personalizar Saludo
   if (tutorData.nombre) {
     saludoUsuario.textContent = `Hola, ${tutorData.nombre}`;
   }
 
-  // 5. Cargar Mascotas del Tutor
+  // 6. Cargar Mascotas del Tutor
   try {
     const idTutor = tutorData.id_tutor;
     // Consumir endpoint de la API que devuelve las mascotas de este tutor específico

@@ -58,6 +58,11 @@ body {
   word-break: break-word;
 }
 
+.avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .btn-user-avatar {
   width: 48px;
   height: 48px;
@@ -71,7 +76,6 @@ body {
   cursor: pointer;
   box-shadow: 0 2px 4px var(--color-card-shadow);
   transition: background-color 0.2s, transform 0.15s, border-color 0.2s, color 0.2s;
-  flex-shrink: 0;
 }
 
 .btn-user-avatar:hover {
@@ -210,6 +214,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .nombre-mascota {
@@ -314,4 +320,44 @@ body {
   .detalle-mascota {
     font-size: 13px;
   }
+}
+
+.menu-cuenta {
+  position: fixed;
+  width: 200px;
+  background-color: var(--color-card-bg);
+  border: 1.5px solid var(--color-text-main);
+  box-shadow: 0 8px 24px rgba(4, 48, 138, 0.12);
+  z-index: 100;
+}
+ 
+.menu-cuenta-item {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-main);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+ 
+.menu-cuenta-item:hover {
+  background-color: #f7f6f0;
+}
+ 
+.menu-cuenta-item + .menu-cuenta-item {
+  border-top: 1px solid var(--color-border);
+}
+ 
+.menu-cuenta-item--danger {
+  color: var(--color-error);
+}
+ 
+.menu-cuenta-item--danger:hover {
+  background-color: var(--color-error-bg);
 }
