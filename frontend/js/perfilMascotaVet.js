@@ -41,27 +41,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnCert.onclick = async () => {
 
-    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
-
     btnCert.disabled = true;
     btnCert.textContent = "Generando...";
 
     try {
-      const res = await api.post(`/pataporte/${idMascota}`);
-
-      alert(
-        `Pataporte generado correctamente.\n\n` +
-        `El certificado PDF fue enviado al correo del tutor.\n\n`
-      );
-
+      await api.post(`/pataporte/${idMascota}`);
+      btnCert.textContent = "✓ Enviado al tutor";
     } catch (err) {
-
-      alert(`Error al generar el Pataporte: ${err.message}`);
-
+      btnCert.textContent = "Error: " + err.message;
     } finally {
-
-      btnCert.disabled = false;
-      btnCert.textContent = "Generar Certificado";
+      setTimeout(() => {
+        btnCert.disabled = false;
+        btnCert.textContent = "Generar Certificado";
+      }, 3000);
     }
   };
 
@@ -838,7 +830,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 <span>|</span>
 
 <span class="fila-desc">
-  ${e.diagnostico || "Sin diagnóstico"}
+  ${e.motivo || "Sin motivo"}
 </span>
 
       <span class="flecha-historial">

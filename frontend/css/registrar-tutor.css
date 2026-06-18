@@ -73,7 +73,7 @@ PANEL FORMULARIO (IZQUIERDA)
     -apple-system,
     sans-serif;
   font-size: 54px;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.5px;
   color: var(--color-text-main);
   margin-bottom: 10px;
@@ -187,31 +187,26 @@ DISPOSICIÓN GRID (2 COLUMNAS EN DESKTOP)
 
 /* Botón Siguiente / Registrar (Primario) */
 .btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   align-self: flex-start;
   background-color: var(--color-primary);
   color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 36px;
-  font-size: 15px;
-  font-weight: 700;
+  text-decoration: none;
+  border: 1.5px solid var(--color-text-main);
+  border-radius: 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(4, 48, 138, 0.1);
-  transition:
-    background-color 0.2s ease,
-    transform 0.1s ease,
-    box-shadow 0.2s ease;
 }
 
 .btn-submit:hover {
-  background-color: var(--color-primary-hover);
-  box-shadow: 0 4px 12px rgba(4, 48, 138, 0.2);
-}
-
-.btn-submit:active {
-  transform: scale(0.98);
+  background-color: #c90a0a;
+  color: #ffffff;
 }
 
 .btn-submit:disabled {
@@ -244,7 +239,7 @@ DISPOSICIÓN GRID (2 COLUMNAS EN DESKTOP)
 #mensaje {
   display: none;
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
   margin-bottom: 24px;
   line-height: 1.45;

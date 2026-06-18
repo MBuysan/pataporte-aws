@@ -54,7 +54,7 @@ body {
 
 .encabezado h2 {
   font-family: "Cal Sans", "Inter", sans-serif;
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 400;
   line-height: 1;
   margin-bottom: 8px;
@@ -127,15 +127,24 @@ button {
 }
 
 #btn-verificar {
-  height: 40px;
-  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1.5px solid var(--texto);
+  border-radius: 0;
   background: var(--azul);
   color: white;
   width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 #btn-verificar:hover {
   background: var(--rojo);
+  border-color: var(--rojo);
 }
 
 #btn-verificar:disabled {
@@ -174,8 +183,8 @@ button {
 
 .estado-texto h3 {
   font-family: "Cal Sans", "Inter", sans-serif;
-  font-size: 18px;
-  font-weight: 400;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .estado-texto p {
@@ -305,7 +314,7 @@ button {
   }
 
   .encabezado h2 {
-    font-size: 34px;
+    font-size: 30px;
   }
 
   .fila-input {

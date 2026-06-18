@@ -8,10 +8,13 @@
   <title>Perfil mascota — Veterinario</title>
 
   <link rel="stylesheet" href="../css/perfil-mascota-vet.css" />
+  <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
+  <style>.logo-pataporte-corner{position:fixed;top:14px;left:16px;height:40px;width:auto;z-index:999;}@media(min-width:950px){.logo-pataporte-corner{height:60px;width:auto;margin:10px;}}@media(max-width:768px){.logo-pataporte-corner{display:none;}}</style>
 </head>
 
 <body>
 
+  <a href="../index.html"><img src="../assets/logo_pataporte_v2.png" alt="Pataporte" class="logo-pataporte-corner"></a>
   <div class="contenedor">
 
     <!-- TOPBAR -->
@@ -34,7 +37,7 @@
 
         <div>
 
-          <h3 id="nombre">Cargando...</h3>
+          <div class="nombre-mascota" id="nombre">Cargando...</div>
 
           <small id="detalle">
             Especie | Raza | Edad

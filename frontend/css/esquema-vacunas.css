@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
   --azul: #04308a;
@@ -47,16 +47,37 @@ body {
 }
 
 .header h1 {
-  font-size: 44px;
-  font-weight: 800;
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 54px;
+  font-weight: 400;
 }
 
 #mensaje {
-  margin-bottom: 18px;
-
-  color: #777;
-
+  display: none;
+  padding: 12px 16px;
+  border-radius: 6px;
   font-size: 14px;
+  margin-bottom: 18px;
+  line-height: 1.45;
+}
+
+#mensaje:not(:empty) {
+  display: block;
+  color: #777;
+}
+
+#mensaje[style*="color: red"],
+#mensaje[style*="color: rgb(255, 0, 0)"] {
+  background-color: #fdf2f2 !important;
+  color: #c90a0a !important;
+  border-left: 4px solid #c90a0a;
+}
+
+#mensaje[style*="color: green"],
+#mensaje[style*="color: rgb(0, 128, 0)"] {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border-left: 4px solid #166534;
 }
 
 #resultado {
@@ -80,8 +101,8 @@ body {
 }
 
 .vacuna-titulo {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 600;
 
   margin-bottom: 12px;
 }
@@ -121,7 +142,7 @@ body {
   }
 
   .header h1 {
-    font-size: 36px;
+    font-size: 38px;
   }
 
   .vacuna-titulo {

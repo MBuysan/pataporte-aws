@@ -135,37 +135,32 @@ input:focus {
 }
 
 button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
-  border: none;
+  border: 1.5px solid var(--texto);
   background: var(--azul);
   color: white;
-  font-weight: 700;
-  font-size: 15px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
   font-family: inherit;
   cursor: pointer;
-  border-radius: 4px;
-  padding: 12px 36px;
-  box-shadow: 0 2px 4px rgba(4, 48, 138, 0.1);
-  transition:
-    background-color 0.2s ease,
-    transform 0.1s ease,
-    box-shadow 0.2s ease;
+  border-radius: 0;
+  padding: 8px 16px;
 }
 
 button:hover {
-  opacity: 0.9;
-  box-shadow: 0 4px 12px rgba(4, 48, 138, 0.2);
-}
-
-button:active {
-  transform: scale(0.98);
+  background-color: #c90a0a;
+  color: #ffffff;
+  border-color: #c90a0a;
 }
 
 #error {
   display: none;
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
   margin-bottom: 24px;
   line-height: 1.45;

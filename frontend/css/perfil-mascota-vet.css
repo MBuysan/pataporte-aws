@@ -1,536 +1,561 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 :root {
-    --azul: #04308a;
-    --azul-claro: #99b6f1;
-    --fondo: #fbf9ef;
-    --texto: #0b1215;
-    --gris: #616161;
-    --gris-claro: #e2e2e1;
-    --mostaza: #C89B3C;
-    --rojo: #c90a0a;
+  --azul: #04308a;
+  --azul-claro: #99b6f1;
+  --fondo: #fbf9ef;
+  --texto: #0b1215;
+  --gris: #616161;
+  --gris-claro: #e2e2e1;
+  --mostaza: #c89b3c;
+  --rojo: #c90a0a;
 }
 
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background: var(--fondo);
-    color: var(--texto);
-    font-family: "Inter", sans-serif;
-    min-height: 100vh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
 }
 
 .contenedor {
-    width: min(100%, 860px);
-    margin: 0 auto;
-    padding: 54px 24px 70px;
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding: 54px 24px 70px;
 }
 
 /* HEADER SUPERIOR */
 
 .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
 }
 
 .volver-link {
-    color: var(--azul);
-    text-decoration: none;
-    font-size: 15px;
-    font-weight: 500;
+  color: var(--azul);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 /* HEADER MASCOTA */
 
 .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
 
-    padding: 18px 20px;
+  padding: 18px 20px;
 
-    background: #fffefa;
-    border: 1.5px solid var(--texto);
+  background: #fffefa;
+  border: 1.5px solid var(--texto);
 
-    margin-bottom: 14px;
+  margin-bottom: 14px;
 }
 
 .header-info {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .foto {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
 
-    background: var(--mostaza);
-    color: white;
+  background: var(--mostaza);
+  color: white;
 
-    border: 2px solid var(--texto);
+  border: 2px solid var(--texto);
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    font-size: 26px;
-    font-weight: 800;
+  font-size: 26px;
+  font-weight: 800;
 
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .foto img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
-#nombre {
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 2px;
+.nombre-mascota {
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--color-text-main);
+  margin-bottom: 6px;
+  line-height: 1.15;
 }
 
 #detalle {
-    color: var(--gris);
-    font-size: 14px;
+  color: var(--gris);
+  font-size: 14px;
 }
 
 #btn-certificado {
-    width: 170px;
-    height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 185px;
+  padding: 8px 16px;
 
-    border: none;
+  border: 1.5px solid var(--texto);
+  border-radius: 0;
 
-    background: var(--azul);
-    color: white;
+  background: var(--azul);
+  color: white;
 
-    font-size: 14px;
-    font-weight: 800;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
 
-    cursor: pointer;
+  cursor: pointer;
 }
 
 /* TRATAMIENTOS */
 
 .tratamientos-header {
-    display: flex;
-    align-items: center;
-    gap: 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
 
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .seccion-titulo {
-    font-size: 24px;
-    font-weight: 800;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .sin-datos-inline {
-    color: #888;
-    font-size: 14px;
-    font-style: italic;
+  color: #888;
+  font-size: 14px;
+  font-style: italic;
 }
 
 /* BOTONES */
 
 .acciones {
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
 
-    margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 button {
-    cursor: pointer;
-    border: none;
-    font-family: inherit;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
 }
 
 .primary {
-    min-width: 150px;
-    height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
 
-    background: var(--azul);
-    color: white;
+  background: var(--azul);
+  color: white;
 
-    font-size: 16px;
-    font-weight: 800;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
 
-    border: 1.5px solid var(--texto);
+  border: 1.5px solid var(--texto);
+  border-radius: 0;
+  cursor: pointer;
 }
 
 .sec {
-    min-width: 150px;
-    height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
 
-    background: var(--azul-claro);
-    color: var(--texto);
+  background: var(--azul-claro);
+  color: var(--texto);
 
-    font-size: 16px;
-    font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
 
-    border: 1.5px solid var(--texto);
+  border: 1.5px solid var(--texto);
+  border-radius: 0;
+  cursor: pointer;
 }
 
 .primary:hover,
 .sec:hover,
 #btn-certificado:hover {
-    opacity: 0.92;
+  background-color: #c90a0a;
+  color: #ffffff;
+  border-color: #c90a0a;
 }
 
 /* CARDS */
 
 .card {
-    background: #fffefa;
+  background: #fffefa;
 
-    border: 1.5px solid var(--texto);
+  border: 1.5px solid var(--texto);
 
-    padding: 16px;
+  padding: 16px;
 
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .card-titulo {
-    font-size: 16px;
-    font-weight: 800;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .card-desc {
-    margin-top: 5px;
-    color: #444;
-    font-size: 14px;
+  margin-top: 5px;
+  color: #444;
+  font-size: 14px;
 }
 
 .card-freq {
-    margin-top: 5px;
-    color: var(--azul);
-    font-size: 14px;
+  margin-top: 5px;
+  color: var(--azul);
+  font-size: 14px;
 }
 
 .card-meta {
-    margin-top: 8px;
-    color: #888;
-    font-size: 13px;
+  margin-top: 8px;
+  color: #888;
+  font-size: 13px;
 }
 
 /* HISTORIAL */
 
 .panel {
-    display: none;
-    margin-top: 28px;
+  display: none;
+  margin-top: 28px;
 }
 
 .fila {
-    width: 100%;
-    min-height: 68px;
-    background: #fffefa;
-    border: 1.5px solid var(--texto);
-    padding: 16px 20px;
-    margin-bottom: 14px;
-    cursor: pointer;
+  width: 100%;
+  min-height: 68px;
+  background: #fffefa;
+  border: 1.5px solid var(--texto);
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  cursor: pointer;
 
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
 }
 
 .etiqueta-consulta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-    background: #f1dfbd;
-    border: 1px solid var(--mostaza);
+  background: #f1dfbd;
+  border: 1px solid var(--mostaza);
 
-    border-radius: 999px;
+  border-radius: 999px;
 
-    padding: 6px 14px;
+  padding: 6px 14px;
 
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--azul);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--azul);
 
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .etiqueta-consulta::before {
-    content: attr(data-text);
+  content: attr(data-text);
 }
 
 .fila-fecha {
-    font-weight: 800;
-    color: var(--texto);
+  font-weight: 800;
+  color: var(--texto);
 }
 
 .fila-desc {
-    color: var(--gris);
+  color: var(--gris);
 }
 
 .flecha-historial {
-    margin-left: auto;
-    font-size: 34px;
-    color: var(--texto);
+  margin-left: auto;
+  font-size: 34px;
+  color: var(--texto);
 }
 
 .sin-datos,
 .cargando {
-    color: #888;
-    font-size: 14px;
-    padding: 16px 0;
+  color: #888;
+  font-size: 14px;
+  padding: 16px 0;
 }
 
 .error-panel {
-    color: var(--rojo);
-    padding: 12px 0;
+  background: #fdf2f2;
+  color: var(--rojo);
+  border-left: 4px solid var(--rojo);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.45;
+  margin-top: 8px;
 }
 
 /* MODALES */
 
 .modal-bg {
-    display: none;
+  display: none;
 
-    position: fixed;
-    inset: 0;
+  position: fixed;
+  inset: 0;
 
-    background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.45);
 
-    align-items: center;
-    justify-content: center;
+  align-items: center;
+  justify-content: center;
 
-    z-index: 1000;
+  z-index: 1000;
 }
 
 .modal-bg.activo {
-    display: flex;
+  display: flex;
 }
 
 .modal {
-    width: min(92vw, 760px);
-    max-height: 90vh;
+  width: min(92vw, 760px);
+  max-height: 90vh;
 
-    overflow-y: auto;
+  overflow-y: auto;
 
-    background: var(--fondo);
+  background: var(--fondo);
 
-    border: none;
+  border: none;
 
-    padding: 34px 44px 38px;
+  padding: 34px 44px 38px;
 
-    position: relative;
+  position: relative;
 }
 
 .modal h3 {
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
 
 .modal label {
-    display: block;
+  display: block;
 
-    margin-top: 14px;
-    margin-bottom: 6px;
+  margin-top: 14px;
+  margin-bottom: 6px;
 
-    font-size: 14px;
-    font-weight: 600;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .modal input,
 .modal textarea {
-    width: 100%;
+  width: 100%;
 
-    border: 1.5px solid var(--texto);
+  border: 1.5px solid var(--texto);
 
-    background: white;
+  background: white;
 
-    padding: 5px 8px;
+  padding: 5px 8px;
 
-    font-size: 13px;
+  font-size: 13px;
 
-    font-family: inherit;
+  font-family: inherit;
 }
 
 .modal textarea {
-    min-height: 62px;
-    resize: vertical;
+  min-height: 62px;
+  resize: vertical;
 }
 
 .modal input:focus,
 .modal textarea:focus {
-    outline: none;
-    border-color: var(--azul);
+  outline: none;
+  border-color: var(--azul);
 }
 
 .modal-error {
-    min-height: 18px;
+  min-height: 18px;
 
-    margin-top: 12px;
+  margin-top: 12px;
 
-    color: var(--rojo);
-    font-size: 13px;
+  color: var(--rojo);
+  font-size: 13px;
 }
 
 .modal-cerrar {
-    position: absolute;
-    top: 12px;
-    right: 14px;
+  position: absolute;
+  top: 12px;
+  right: 14px;
 
-    background: transparent;
-    border: none;
+  background: transparent;
+  border: none;
 
-    font-size: 22px;
-    color: #666;
+  font-size: 22px;
+  color: #666;
 }
 
 /* RESPONSIVE */
 
 @media (max-width: 760px) {
+  .contenedor {
+    padding: 36px 18px 60px;
+  }
 
-    .contenedor {
-        padding: 36px 18px 60px;
-    }
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 
-    .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  .header-info {
+    width: 100%;
+  }
 
-    .header-info {
-        width: 100%;
-    }
+  #btn-certificado {
+    width: 100%;
+  }
 
-    #btn-certificado {
-        width: 100%;
-    }
+  .acciones {
+    flex-direction: column;
+  }
 
-    .acciones {
-        flex-direction: column;
-    }
+  .primary,
+  .sec {
+    width: 100%;
+  }
 
-    .primary,
-    .sec {
-        width: 100%;
-    }
-
-    .tratamientos-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
+  .tratamientos-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 }
 
 .btn-editar-trat {
-    border: none;
-    background: transparent;
+  border: none;
+  background: transparent;
 
-    cursor: pointer;
+  cursor: pointer;
 
-    color: var(--texto);
+  color: var(--texto);
 
-    padding: 0;
+  padding: 0;
 
-    min-width: auto;
-    height: auto;
+  min-width: auto;
+  height: auto;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-editar-trat svg {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .btn-editar-trat:hover {
-    opacity: .7;
+  opacity: 0.7;
 }
 
 .tratamiento-layout {
-    display: flex;
-    align-items: center;
-    gap: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
 .tratamiento-info {
-    flex: 1;
+  flex: 1;
 }
 
 .tratamiento-fechas {
-    min-width: 190px;
-    color: var(--gris);
-    font-size: 13px;
-    display: grid;
-    grid-template-columns: max-content auto;
-    gap: 4px 8px;
-    align-content: start;
+  min-width: 190px;
+  color: var(--gris);
+  font-size: 13px;
+  display: grid;
+  grid-template-columns: max-content auto;
+  gap: 4px 8px;
+  align-content: start;
 }
 
 .fecha-label {
-    text-align: right;
-    white-space: nowrap;
+  text-align: right;
+  white-space: nowrap;
 }
 
 #modal-tratamiento .modal {
-    width: min(92vw, 760px);
+  width: min(92vw, 760px);
 }
 
 #modal-tratamiento .modal label {
-    font-size: 14px;
-    font-weight: 500;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 #modal-tratamiento .modal label::after {
-    content: " *";
-    color: var(--rojo);
-    font-weight: 800;
+  content: " *";
+  color: var(--rojo);
+  font-weight: 800;
 }
 
 #modal-tratamiento .label-opcional::after {
-    content: "" !important;
+  content: "" !important;
 }
 
 #modal-tratamiento .modal h3 {
-    font-size: 18px;
-    margin-bottom: 18px;
+  font-size: 18px;
+  margin-bottom: 18px;
 }
 
 #modal-tratamiento #trat-inicio,
 #modal-tratamiento #trat-finalizacion {
-    width: 160px;
+  width: 160px;
 }
 
 #modal-tratamiento .fechas-tratamiento {
-    display: flex;
-    gap: 36px;
-    align-items: flex-end;
+  display: flex;
+  gap: 36px;
+  align-items: flex-end;
 }
 
 #modal-tratamiento #btn-guardar-trat {
-    width: 150px !important;
-    height: 34px;
-    margin-left: auto;
-    display: block;
-    font-size: 12px;
+  width: 150px !important;
+  height: 34px;
+  margin-left: auto;
+  display: block;
+  font-size: 12px;
 }
 
 input[type="date"] {

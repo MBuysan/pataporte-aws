@@ -72,8 +72,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnCert.addEventListener("click", async () => {
 
-    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
-
     btnCert.disabled = true;
     btnCert.textContent = "Generando...";
 

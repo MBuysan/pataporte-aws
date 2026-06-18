@@ -1,39 +1,111 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel Tutor — Pataporte</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Tutor — Pataporte</title>
 
-  <link rel="stylesheet" href="../css/dashboard.css?v=4" />
-</head>
-<body>
-  <div class="contenedor">
-    
-    <div class="header-dashboard">
-      <h2 id="saludo-usuario">Hola, Tutor</h2>
-      <div style="display: flex; gap: 12px; align-items: center;">
-        <button id="btnLogout" class="btn-logout">Cerrar sesión</button>
-        <button id="btnEliminarCuenta" class="btn-logout-danger">Eliminar cuenta</button>
+    <link rel="stylesheet" href="../css/dashboard.css?v=4" />
+    <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
+    <style>
+      .logo-pataporte-corner {
+        position: fixed;
+        top: 14px;
+        left: 16px;
+        height: 40px;
+        width: auto;
+        z-index: 999;
+      }
+      @media (min-width: 950px) {
+        .logo-pataporte-corner {
+          height: 60px;
+          width: auto;
+          margin: 10px;
+        }
+      }
+      @media (max-width: 768px) {
+        .logo-pataporte-corner {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html"><img
+      src="../assets/logo_pataporte_v2.png"
+      alt="Pataporte"
+      class="logo-pataporte-corner"
+    /></a>
+    <div class="contenedor">
+      <div class="header-dashboard">
+        <h2 id="saludo-usuario">Hola, Tutor</h2>
+        <div class="user-menu-wrapper">
+          <button
+            class="btn-user-avatar"
+            id="btn-user-menu"
+            aria-expanded="false"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+          <div class="user-dropdown" id="user-dropdown">
+            <button id="btnLogout" class="dropdown-item">Cerrar sesión</button>
+            <button
+              id="btnEliminarCuenta"
+              class="dropdown-item dropdown-item-danger"
+              style="display: none"
+            >
+              Eliminar cuenta
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p class="subtitulo">
+        Bienvenido a Pataporte. Gestioná tus mascotas desde acá.
+      </p>
+
+      <div id="mensaje-dashboard" class="mensaje"></div>
+
+      <div class="seccion-header">
+        <h2 class="seccion-titulo">Mis mascotas</h2>
+        <a href="crear-mascota.html" class="btn-primario">Registrar mascota</a>
+      </div>
+
+      <div id="contenedor-mascotas">
+        <p class="cargando">Cargando tus mascotas...</p>
       </div>
     </div>
-    
-    <p class="subtitulo">Bienvenido a Pataporte. Gestioná tus mascotas desde acá.</p>
 
-    <div id="mensaje-dashboard" class="mensaje"></div>
-
-    <div class="seccion-header">
-      <p class="seccion-titulo">Mis mascotas</p>
-      <a href="crear-mascota.html" class="btn-primario">Registrar mascota</a>
-    </div>
-    
-    <div id="contenedor-mascotas">
-      <p class="cargando">Cargando tus mascotas...</p>
-    </div>
-
-  </div>
-
-  <script src="../js/api.js?v=2"></script>
-  <script src="../js/dashboard.js?v=5"></script>
-</body>
+    <script src="../js/api.js?v=2"></script>
+    <script src="../js/dashboard.js?v=5"></script>
+    <script>
+      const btnUserMenu = document.getElementById("btn-user-menu");
+      const userDropdown = document.getElementById("user-dropdown");
+      btnUserMenu.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const abierto = userDropdown.classList.toggle("activo");
+        btnUserMenu.setAttribute("aria-expanded", abierto);
+      });
+      document.addEventListener("click", function () {
+        userDropdown.classList.remove("activo");
+        btnUserMenu.setAttribute("aria-expanded", "false");
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          userDropdown.classList.remove("activo");
+          btnUserMenu.setAttribute("aria-expanded", "false");
+        }
+      });
+    </script>
+  </body>
 </html>
