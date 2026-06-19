@@ -62,11 +62,36 @@
               </div>
 
               <div class="form-group full-width">
-                <label for="password"> Contraseña <span>*</span> </label>
+                <label for="password">Contraseña <span>*</span></label>
 
-                <input type="password" id="password" required />
+                <div class="input-wrapper">
+                  <input
+                    type="password"
+                    id="password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    id="togglePassword"
+                    class="password-toggle"
+                    aria-label="Mostrar contraseña"
+                  >
+                    <svg
+                      id="eyeIcon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
 
             <!-- Indicadores de requisitos de contraseña -->
             <div id="indicadores-password">
@@ -81,7 +106,7 @@
             </div>
 
             <div class="bottom-row">
-              <button type="submit">Siguiente</button>
+              <button type="submit">Registrar</button>
 
               <p class="required">* campos obligatorios</p>
             </div>

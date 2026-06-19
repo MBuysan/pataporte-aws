@@ -155,3 +155,28 @@ body {
     margin-bottom: 10px;
   }
 }
+
+
+.logo-pataporte-corner {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  height: 40px;
+  width: auto;
+  z-index: 999;
+  cursor: pointer;
+}
+
+@media (min-width: 950px) {
+  .logo-pataporte-corner {
+    height: 60px;
+    width: auto;
+    margin: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-pataporte-corner {
+    display: none;
+  }
+}

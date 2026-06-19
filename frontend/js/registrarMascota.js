@@ -74,7 +74,7 @@ form.addEventListener("submit", async (e) => {
   try {
     const result = await api.postForm("/mascotas/", formData);
 
-    mensaje.innerText = `Mascota registrada. ID: ${result.id_mascota}`;
+    mensaje.innerText = `Mascota registrada!`;
     mensaje.style.color = "green";
 
     form.reset();

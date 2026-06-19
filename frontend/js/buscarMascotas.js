@@ -16,14 +16,38 @@ document.addEventListener("DOMContentLoaded", () => {
   const mensajeEl = document.getElementById("mensaje-buscar");
   const resultadoEl = document.getElementById("resultado");
   const btnLogout = document.getElementById("btn-logout");
+  const btnUserMenu = document.getElementById("btn-user-menu");
+  const userDropdown = document.getElementById("user-dropdown");
 
   btnLogout.addEventListener("click", (e) => {
     e.preventDefault();
 
     localStorage.removeItem("access_token");
-
-    window.location.href = "login-veterinario.html";
+    localStorage.removeItem("rol");
+    window.location.href = "../index.html";
   });
+
+  if (btnUserMenu && userDropdown) {
+  btnUserMenu.addEventListener("click", function (e) {
+    e.stopPropagation();
+
+    const abierto = userDropdown.classList.toggle("activo");
+    btnUserMenu.setAttribute("aria-expanded", abierto);
+  });
+
+  document.addEventListener("click", function () {
+    userDropdown.classList.remove("activo");
+    btnUserMenu.setAttribute("aria-expanded", "false");
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      userDropdown.classList.remove("activo");
+      btnUserMenu.setAttribute("aria-expanded", "false");
+    }
+  });
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 

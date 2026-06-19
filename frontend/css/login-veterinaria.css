@@ -101,6 +101,11 @@ a {
   margin-bottom: 26px;
 }
 
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 label {
   display: block;
   margin-bottom: 10px;
@@ -108,18 +113,53 @@ label {
   font-weight: 500;
 }
 
-input {
+.input-field {
   width: 100%;
   border: none;
   border-bottom: 2px solid #b9c1ca;
   background: transparent;
   padding: 8px 0;
   font-size: 16px;
+  font-family: inherit;
+  color: var(--texto);
   outline: none;
+  border-radius: 0;
+  transition: border-color 0.25s ease;
 }
 
-input:focus {
+.input-field:focus {
   border-bottom-color: var(--azul);
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: auto;
+  padding: 4px;
+
+  background: none;
+  border: none;
+  color: #575f63;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: none;
+  border: none;
+  color: var(--azul);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
 }
 
 .forgot-link {
