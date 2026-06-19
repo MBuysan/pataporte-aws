@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
   --azul: #04308a;
@@ -57,10 +57,17 @@ body {
 }
 
 .form-title {
-  margin: 0 0 24px;
+  font-family:
+    "Cal Sans",
+    "Inter",
+    -apple-system,
+    sans-serif;
   font-size: 54px;
   font-weight: 400;
-  line-height: 1;
+  letter-spacing: -0.5px;
+  color: var(--color-text-main);
+  margin-bottom: 10px;
+  line-height: 1.15;
 }
 
 .login-text {
@@ -83,6 +90,11 @@ body {
   flex-direction: column;
 }
 
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .full-width {
   grid-column: span 2;
   max-width: 100%;
@@ -100,6 +112,7 @@ label span {
 }
 
 input {
+  width: 100%;
   border: none;
   border-bottom: 2px solid var(--linea);
   background: transparent;
@@ -111,6 +124,39 @@ input {
 input:focus {
   border-bottom-color: var(--azul);
 }
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: auto;
+  padding: 4px;
+
+  background: none;
+  border: none;
+  color: #575f63;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: none;
+  border: none;
+  color: var(--azul);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+
 
 .bottom-row {
   margin-top: 30px;
@@ -143,8 +189,11 @@ button:hover {
 }
 
 .required {
+  font-size: 13px;
   color: var(--rojo);
-  font-size: 15px;
+  text-align: right;
+  margin-bottom: 32px;
+  font-weight: 500;
 }
 
 #mensaje {

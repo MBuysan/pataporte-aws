@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const detalle = [formatString(m.especie), edadStr].filter(Boolean).join(" | ");
 
       const fotoHtml = m.foto_url
-        ? `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
+        ? `<img src="${API_URL}${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
         : `<div class="foto-placeholder">${m.nombre.charAt(0).toUpperCase()}</div>`;
 
       card.innerHTML = `
@@ -169,5 +169,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       elemento.classList.add("mensaje-error");
     }
     elemento.style.display = "block";
+  }
+
+
+  const btnUserMenu = document.getElementById("btn-user-menu");
+  const userDropdown = document.getElementById("user-dropdown");
+
+  if (btnUserMenu && userDropdown) {
+    btnUserMenu.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const abierto = userDropdown.classList.toggle("activo");
+      btnUserMenu.setAttribute("aria-expanded", abierto);
+    });
+
+    document.addEventListener("click", function () {
+      userDropdown.classList.remove("activo");
+      btnUserMenu.setAttribute("aria-expanded", "false");
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        userDropdown.classList.remove("activo");
+        btnUserMenu.setAttribute("aria-expanded", "false");
+      }
+    });
   }
 });

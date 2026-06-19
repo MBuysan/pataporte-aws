@@ -7,31 +7,9 @@
 
     <link rel="stylesheet" href="../css/dashboard.css?v=4" />
     <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
-    <style>
-      .logo-pataporte-corner {
-        position: fixed;
-        top: 14px;
-        left: 16px;
-        height: 40px;
-        width: auto;
-        z-index: 999;
-      }
-      @media (min-width: 950px) {
-        .logo-pataporte-corner {
-          height: 60px;
-          width: auto;
-          margin: 10px;
-        }
-      }
-      @media (max-width: 768px) {
-        .logo-pataporte-corner {
-          display: none;
-        }
-      }
-    </style>
   </head>
   <body>
-    <a href="../index.html"><img
+    <a href="dashboard.html"><img
       src="../assets/logo_pataporte_v2.png"
       alt="Pataporte"
       class="logo-pataporte-corner"
@@ -88,24 +66,5 @@
 
     <script src="../js/api.js?v=2"></script>
     <script src="../js/dashboard.js?v=5"></script>
-    <script>
-      const btnUserMenu = document.getElementById("btn-user-menu");
-      const userDropdown = document.getElementById("user-dropdown");
-      btnUserMenu.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const abierto = userDropdown.classList.toggle("activo");
-        btnUserMenu.setAttribute("aria-expanded", abierto);
-      });
-      document.addEventListener("click", function () {
-        userDropdown.classList.remove("activo");
-        btnUserMenu.setAttribute("aria-expanded", "false");
-      });
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-          userDropdown.classList.remove("activo");
-          btnUserMenu.setAttribute("aria-expanded", "false");
-        }
-      });
-    </script>
   </body>
 </html>

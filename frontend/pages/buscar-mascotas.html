@@ -7,18 +7,40 @@
   <link rel="stylesheet" href="../css/buscar-mascotas.css" />
   <title>Buscar mascotas — Pataporte</title>
   <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
-  <style>.logo-pataporte-corner{position:fixed;top:14px;left:16px;height:40px;width:auto;z-index:999;}@media(min-width:950px){.logo-pataporte-corner{height:60px;width:auto;margin:10px;}}@media(max-width:768px){.logo-pataporte-corner{display:none;}}</style>
 </head>
 
 <body>
-  <a href="../index.html"><img src="../assets/logo_pataporte_v2.png" alt="Pataporte" class="logo-pataporte-corner"></a>
+  <a href="buscar-mascotas.html"><img src="../assets/logo_pataporte_v2.png" alt="Pataporte" class="logo-pataporte-corner"></a>
   <div class="contenedor">
-    <div class="topbar">
-      <a href="#" id="btn-logout" class="logout-link">
-        Cerrar sesión
-      </a>
-    </div>
+  <div class="header-dashboard">
     <h2>Buscar mascotas</h2>
+
+    <div class="user-menu-wrapper">
+      <button
+        class="btn-user-avatar"
+        id="btn-user-menu"
+        aria-expanded="false"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </button>
+
+      <div class="user-dropdown" id="user-dropdown">
+        <button id="btn-logout" class="dropdown-item">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </div>
     <p class="subtitulo">Ingrese la cédula del tutor para ver sus mascotas.</p>
 
     <form id="form-busqueda">
