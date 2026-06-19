@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ].filter(Boolean).join(" | ");
 
     const foto = mascota.foto_url
-      ? `<img src="${mascota.foto_url}" alt="${mascota.nombre}" class="foto-mascota" />`
+      ? `<img src="${API_URL}${mascota.foto_url}" alt="${mascota.nombre}" class="foto-mascota" />`
       : `<div class="foto-placeholder">${mascota.nombre.charAt(0).toUpperCase()}</div>`;
 
     return `

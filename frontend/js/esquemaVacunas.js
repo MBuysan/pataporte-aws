@@ -28,6 +28,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  const logoHome = document.getElementById("logo-home");
+  if (logoHome) {
+    logoHome.addEventListener("click", () => {
+      if (fromSource === "tutor") {
+        window.location.href = "dashboard.html";
+      } else if (fromSource === "vet") {
+        window.location.href = "buscar-mascotas.html";
+      } else {
+        window.location.href = "../index.html";
+      }
+    });
+  }
+
   // 3. Función de búsqueda principal
   const ejecutarBusqueda = async (idMascota) => {
     mensaje.textContent = "Cargando carnet...";
