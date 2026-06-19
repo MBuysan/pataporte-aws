@@ -1,59 +1,72 @@
 @import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
 
+
 :root {
-  --azul: #04308a;
-  --fondo: #fbf9ef;
-  --texto: #0b1215;
-  --linea: #e2e2e1;
-  --rojo: #c90a0a;
-  --rojo-bg: #fdf2f2;
+  --color-primary: #04308a;
+  --color-primary-hover: #03256c;
+  --color-gold: #be8b38;
+  --color-background: #fbf9ef;
+  --color-error: #c90a0a;
+  --color-error-bg: #fdf2f2;
   --color-success: #048a06;
+  --color-text-main: #0b1215;
+  --color-text-muted: #575f63;
+  --color-border: #e2e2e1;
+  --color-border-focus: #04308a;
 }
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  background: var(--fondo);
-  color: var(--texto);
-  font-family: "Inter", sans-serif;
-}
-
-.register-page {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-main);
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 0.95fr;
-}
-
-.register-panel {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 56px;
 }
 
-.register-box {
+.split-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* 
+PANEL FORMULARIO (IZQUIERDA)
+ */
+.form-panel {
+  width: 55%;
+  /* Ligeramente más ancho en registro para acomodar 2 columnas */
+  background-color: var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 48px;
+  overflow-y: auto;
+}
+
+.form-content {
   width: 100%;
   max-width: 620px;
+  /* Más ancho para el diseño de 2 columnas */
+  display: flex;
+  flex-direction: column;
   position: relative;
 }
 
-.volver-link {
-  position: absolute;
-  top: 15px;
-  right: 0;
-  color: var(--azul);
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.volver-link:hover {
-  opacity: 0.8;
-  transform: translateX(-3px);
+/* Cabecera del Formulario */
+.form-header {
+  margin-bottom: 36px;
 }
 
 .form-title {
@@ -70,24 +83,51 @@ body {
   line-height: 1.15;
 }
 
-.login-text {
-  margin: 8px 0 42px;
+.form-subtitle {
   font-size: 15px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
 }
 
-.login-text a {
-  color: var(--texto);
+.form-link-action {
+  color: var(--color-text-main);
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s ease;
 }
 
+.form-link-action:hover {
+  color: var(--color-primary);
+}
+
+/* 
+DISPOSICIÓN GRID (2 COLUMNAS EN DESKTOP)
+*/
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px 56px;
+  column-gap: 32px;
+  row-gap: 4px;
 }
 
-.form-group {
+/* Campos de Formulario (Inputs de Línea) */
+.input-group {
+  margin-bottom: 28px;
+  position: relative;
   display: flex;
   flex-direction: column;
+}
+
+/* Permitir que algún campo de ancho completo si fuera necesario */
+.input-group.full-width {
+  grid-column: span 2;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 4px;
 }
 
 .input-wrapper {
@@ -95,60 +135,43 @@ body {
   width: 100%;
 }
 
-.full-width {
-  grid-column: span 2;
-  max-width: 100%;
-}
-
-label {
-  margin-bottom: 12px;
-  font-size: 18px;
-  font-weight: 500;
-}
-
-label span {
-  color: var(--rojo);
-  margin-left: 6px;
-}
-
-input {
+.input-field {
   width: 100%;
   border: none;
-  border-bottom: 2px solid var(--linea);
+  border-bottom: 2px solid var(--color-border);
   background: transparent;
-  padding: 10px 0;
+  padding: 8px 0;
   font-size: 16px;
+  font-family: inherit;
+  color: var(--color-text-main);
   outline: none;
+  border-radius: 0;
+  transition: border-color 0.25s ease;
 }
 
-input:focus {
-  border-bottom-color: var(--azul);
+.input-field:focus {
+  border-bottom-color: var(--color-border-focus);
 }
 
+/* Botón de ver/ocultar contraseña */
 .password-toggle {
   position: absolute;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-
-  width: auto;
-  padding: 4px;
-
   background: none;
   border: none;
-  color: #575f63;
-
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .password-toggle:hover {
-  background: none;
-  border: none;
-  color: var(--azul);
+  color: var(--color-primary);
 }
 
 .password-toggle svg {
@@ -156,46 +179,66 @@ input:focus {
   height: 20px;
 }
 
-
-
-.bottom-row {
-  margin-top: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 230px;
-  border: 1.5px solid var(--texto);
-  background: var(--azul);
-  color: white;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  border-radius: 0;
-  padding: 8px 16px;
-}
-
-button:hover {
-  background-color: #c90a0a;
-  color: #ffffff;
-  border-color: #c90a0a;
-}
-
-.required {
+/* Leyenda de campos obligatorios en rojo */
+.form-footer-legend {
   font-size: 13px;
-  color: var(--rojo);
+  color: var(--color-error);
   text-align: right;
   margin-bottom: 32px;
   font-weight: 500;
 }
 
+/* Botón Siguiente / Registrar (Primario) */
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  align-self: flex-start;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  text-decoration: none;
+  border: 1.5px solid var(--color-text-main);
+  border-radius: 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-submit:hover {
+  background-color: #c90a0a;
+  color: #ffffff;
+}
+
+.btn-submit:disabled {
+  background-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.back-link {
+  position: absolute;
+  top: 15px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.back-link:hover {
+  opacity: 0.8;
+  transform: translateX(-3px);
+}
+
+/* Banner de Alerta / Mensajes (#mensaje dinámico con registrarOrganizacion.js) */
 #mensaje {
   display: none;
   padding: 12px 16px;
@@ -209,13 +252,15 @@ button:hover {
   display: block;
 }
 
+/* Estado de error (inyectado con color: red por registrarOrganizacion.js) */
 #mensaje[style*="color: red"],
 #mensaje[style*="color: rgb(255, 0, 0)"] {
-  background-color: var(--rojo-bg) !important;
-  color: var(--rojo) !important;
-  border-left: 4px solid var(--rojo);
+  background-color: var(--color-error-bg) !important;
+  color: var(--color-error) !important;
+  border-left: 4px solid var(--color-error);
 }
 
+/* Estado de éxito (inyectado con color: green por registrarOrganizacion.js) */
 #mensaje[style*="color: green"],
 #mensaje[style*="color: rgb(0, 128, 0)"] {
   background-color: #f0fdf4 !important;
@@ -223,6 +268,7 @@ button:hover {
   border-left: 4px solid #166534;
 }
 
+/* Estado informativo (inyectado con color: blue por registrarOrganizacion.js) */
 #mensaje[style*="color: blue"],
 #mensaje[style*="color: rgb(0, 0, 255)"] {
   background-color: #eff6ff !important;
@@ -230,85 +276,81 @@ button:hover {
   border-left: 4px solid #1d4ed8;
 }
 
-.register-image {
-  background-image: url("../assets/img_registro.png");
+/* 
+PANEL VISUAL (DERECHA) - IMAGEN + LOGO CORTADO
+*/
+.visual-panel {
+  width: 45%;
+  position: relative;
+  background-image:
+    linear-gradient(rgba(4, 48, 138, 0.15), rgba(4, 48, 138, 0.25)),
+    url("../assets/img_registro.png");
   background-size: cover;
-  background-position: center;
-  min-height: 100vh;
+  background-position: left center;
+  /* Permite ver el logo recortado en el borde izquierdo */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
-/* RESPONSIVE */
-
-@media (max-width: 1100px) {
-  .register-page {
-    grid-template-columns: 1fr;
+/* 
+DISEÑO RESPONSIVO
+*/
+@media (max-width: 991px) {
+  .visual-panel {
+    display: none;
+    /* Oculta la imagen en móviles/tablets */
   }
 
-  .register-image {
-    min-height: 300px;
-    order: -1;
+  .form-panel {
+    width: 100%;
+    padding: 60px 24px;
   }
 
-  .register-panel {
-    padding: 40px 24px 60px;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 700px) {
-  #indicadores-password {
-    grid-column: span 1;
+  .form-content {
+    max-width: 500px;
   }
 
   .form-title {
-    font-size: 44px;
+    font-size: 38px;
   }
 
   .form-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    /* Colapsa a 1 sola columna en pantallas medianas/chicas */
   }
 
-  .full-width {
-    grid-column: span 1;
-    max-width: 100%;
+  .form-footer-legend {
+    text-align: left;
+    margin-bottom: 24px;
   }
 
-  .bottom-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
-  }
-
-  button {
+  .btn-submit {
     width: 100%;
-  }
-
-  .register-image {
-    min-height: 220px;
+    /* Botón de ancho completo en móvil */
+    text-align: center;
   }
 }
 
-/* ── Indicadores de requisitos de contraseña ─────────────────────────────── */
+/* ── Indicadores de requisitos de contraseña ────────────── */
 #indicadores-password {
-  font-size: 12px;
-  margin-top: 8px;
-  margin-bottom: 12px;
-  padding: 10px 14px;
-  background: var(--fondo);
-  border-radius: 4px;
   grid-column: span 2;
-  border: 1px solid var(--linea);
+  font-size: 12px;
+  margin-top: -16px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: var(--color-background);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
 }
 
 #indicadores-password p {
   font-weight: 600;
-  color: #575f63;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  opacity: 0.45;
 }
 
 #indicadores-password ul {
@@ -319,7 +361,7 @@ button:hover {
 }
 
 #indicadores-password li {
-  color: var(--linea);
+  color: var(--color-border);
   font-size: 12px;
 }
 
@@ -336,9 +378,15 @@ button:hover {
 }
 
 #indicadores-password li.pendiente {
-  color: var(--rojo);
+  color: var(--color-error);
 }
 
 #indicadores-password li.pendiente::before {
   content: "✗ ";
+}
+
+@media (max-width: 768px) {
+  #indicadores-password {
+    grid-column: span 1;
+  }
 }
