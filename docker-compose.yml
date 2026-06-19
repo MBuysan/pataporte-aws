@@ -55,7 +55,6 @@ services:
       - "80:80"
     volumes:
       - ./frontend:/usr/share/nginx/html
-      - uploads_data:/usr/share/nginx/html/uploads
     restart: unless-stopped
 
   db:
