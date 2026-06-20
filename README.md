@@ -49,7 +49,6 @@ Proyecto desarrollado para Ingeniería de Software II.
 - Registro y autenticación de tutores y organizaciones veterinarias con verificación de correo
 - Recuperación de contraseña por correo
 - Gestión de mascotas: crear, ver y editar perfil (nombre, fecha de nacimiento, sexo, especie, raza, foto)
-- Compartir ficha de mascota mediante códigos de acceso temporales
 - Registro de consultas veterinarias con diagnóstico y notas de tratamiento
 - Seguimiento de tratamientos activos con fechas de inicio y fin
 - Esquema de vacunación con tipos predefinidos (Antirrábica, Moquillo, Parvovirus, Triple Felina)
@@ -87,6 +86,7 @@ pataporte/
 ### Requisitos previos
 
 - [Docker](https://docs.docker.com/get-docker/) y Docker Compose instalados
+- Crear archivo con las variables de entorno, asegurarse de que el nombre incluya el punto: ".env"
 
 ### Pasos
 
