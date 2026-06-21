@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar sesión - Pataporte</title>
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/login.css" />
+    <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
   </head>
   <body>
     <div class="split-container">
@@ -19,11 +23,15 @@
       <!-- Panel Derecho (Formulario de Login) -->
       <div class="form-panel">
         <div class="form-content">
+          <a href="../index.html" class="back-link">← Volver</a>
           <!-- Cabecera -->
           <div class="form-header">
             <h1 class="form-title">Iniciar sesión</h1>
             <p class="form-subtitle">
-              ¿Sos nuevo por acá? <a href="registrar-tutor.html" class="form-link-action">Regístrate</a>
+              ¿Sos nuevo por acá?
+              <a href="registrar-tutor.html" class="form-link-action"
+                >Regístrate</a
+              >
             </p>
           </div>
 
@@ -33,33 +41,50 @@
           <!-- Formulario -->
           <form id="loginForm">
             <div class="input-group">
-              <label for="identificador" class="input-label">Email o Cédula *</label>
+              <label for="identificador" class="input-label"
+                >Email o Cédula</label
+              >
               <div class="input-wrapper">
-                <input 
-                  type="text" 
-                  id="identificador" 
-                  name="identificador" 
-                  class="input-field" 
-                  placeholder="Ingresá tu email o cédula" 
-                  required 
+                <input
+                  type="text"
+                  id="identificador"
+                  name="identificador"
+                  class="input-field"
+                  placeholder="Ingresá tu email o cédula"
+                  required
                 />
               </div>
             </div>
 
             <div class="input-group">
-              <label for="password" class="input-label">Contraseña *</label>
+              <label for="password" class="input-label">Contraseña</label>
               <div class="input-wrapper">
-                <input 
-                  type="password" 
-                  id="password" 
-                  name="password" 
-                  class="input-field" 
-                  placeholder="Ingresá tu contraseña" 
-                  required 
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="input-field"
+                  placeholder="Ingresá tu contraseña"
+                  required
                 />
-                <button type="button" id="togglePassword" class="password-toggle" aria-label="Mostrar contraseña">
-                  <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <button
+                  type="button"
+                  id="togglePassword"
+                  class="password-toggle"
+                  aria-label="Mostrar contraseña"
+                >
+                  <svg
+                    id="eyeIcon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
                 </button>
@@ -67,22 +92,13 @@
             </div>
 
             <div class="forgot-password-wrapper">
-              <a href="recuperar-password.html" class="forgot-password-link">Olvidé mi contraseña</a>
+              <a href="recuperar-password.html" class="forgot-password-link"
+                >¿Olvidaste tu contraseña?</a
+              >
             </div>
 
             <button type="submit" class="btn-submit">Iniciar sesión</button>
           </form>
-
-          <!-- Botón Volver al inicio -->
-          <div class="back-link-wrapper">
-            <a href="../index.html" class="back-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-              Volver al inicio
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -92,30 +108,5 @@
     <script src="../js/api.js"></script>
     <script src="../js/app.js"></script>
 
-    <!-- Script de interactividad premium (Ver/Ocultar Contraseña) -->
-    <script>
-      document.getElementById('togglePassword').addEventListener('click', function () {
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        
-        if (passwordInput.type === 'password') {
-          passwordInput.type = 'text';
-          // Icono Ojo tachado (Ocultar)
-          eyeIcon.innerHTML = `
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-          `;
-          this.setAttribute('aria-label', 'Ocultar contraseña');
-        } else {
-          passwordInput.type = 'password';
-          // Icono Ojo estándar (Mostrar)
-          eyeIcon.innerHTML = `
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          `;
-          this.setAttribute('aria-label', 'Mostrar contraseña');
-        }
-      });
-    </script>
   </body>
 </html>

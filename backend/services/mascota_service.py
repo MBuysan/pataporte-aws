@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from config.settings import settings
-from schemas.mascota import MascotaCreate, MascotaUpdate
+from schemas.mascota import MascotaCreate
 from config.database import Mascota, CodigoAccesoMascota, UsuarioTutor, MascotaTutor
 
 from email.mime.application import MIMEApplication
@@ -152,13 +152,6 @@ def generar_codigo_acceso(db: Session, id_mascota: str):
 
     return nuevo_codigo
 
-
-def actualizar(db: Session, id_mascota: str, data: MascotaUpdate):
-    """
-    Actualiza solo los campos que llegaron (los None se ignoran).
-    No permite modificar especie ni fecha de registro.
-    """
-    pass
 
 
 def eliminar(db: Session, id_mascota: str, id_tutor: str):

@@ -1,0 +1,350 @@
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --azul:    #04308a;
+  --dorado:  #be8b38;
+  --fondo:   #fbf9ef;
+  --texto:   #0b1215;
+  --gris:    #616161;
+  --linea:   #99b6f1;
+  --rojo:    #c90a0a;
+  --gris-claro: #e2e2e1;
+  --verde:   #048a06;
+  --amarillo:#b7770d;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "Inter", sans-serif;
+}
+
+.contenedor {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 70px 24px;
+}
+
+/* ── Volver ── */
+.volver {
+  display: inline-block;
+  color: var(--azul);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 28px;
+  letter-spacing: 0.01em;
+}
+
+.volver:hover {
+  text-decoration: underline;
+}
+
+/* ── Encabezado ── */
+.encabezado {
+  margin-bottom: 28px;
+}
+
+.encabezado h2 {
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--texto);
+}
+
+.encabezado p {
+  font-size: 15px;
+  color: var(--gris);
+}
+
+/* ── Formulario ── */
+.form-verificar {
+  margin-bottom: 28px;
+}
+
+.campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fila-input {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+#input-hash {
+  height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid var(--texto);
+  background: white;
+  font-size: 14px;
+  font-family: monospace;
+  letter-spacing: 1.5px;
+  outline: none;
+  width: 100%;
+}
+
+#input-hash:focus {
+  border-color: var(--azul);
+}
+
+#input-hash::placeholder {
+  color: var(--gris-claro);
+  letter-spacing: 0.5px;
+  font-family: "Inter", sans-serif;
+}
+
+.error-form {
+  font-size: 13px;
+  color: var(--rojo);
+  margin-top: 6px;
+  min-height: 18px;
+}
+
+/* ── Botones ── */
+button {
+  border: none;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+#btn-verificar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1.5px solid var(--texto);
+  border-radius: 0;
+  background: var(--azul);
+  color: white;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+#btn-verificar:hover {
+  background: var(--rojo);
+  border-color: var(--rojo);
+}
+
+#btn-verificar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--azul);
+}
+
+/* ── Cargando ── */
+.cargando {
+  font-size: 14px;
+  color: var(--gris);
+  padding: 30px 0;
+  text-align: center;
+}
+
+/* ── Tarjeta resultado ── */
+.card-resultado {
+  background: white;
+  border: 1.5px solid var(--texto);
+  overflow: hidden;
+}
+
+/* ── Banner de estado ── */
+.estado-banner {
+  padding: 18px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-left: 5px solid transparent;
+}
+
+.estado-banner.vigente   { background: #f0fdf1; border-left-color: var(--verde); }
+.estado-banner.deprecado { background: #fffbeb; border-left-color: var(--amarillo); }
+.estado-banner.revocado  { background: #fff0f0; border-left-color: var(--rojo); }
+
+.estado-texto h3 {
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.estado-texto p {
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+.estado-banner.vigente   .estado-texto h3 { color: var(--verde); }
+.estado-banner.vigente   .estado-texto p  { color: var(--verde); }
+.estado-banner.deprecado .estado-texto h3 { color: var(--amarillo); }
+.estado-banner.deprecado .estado-texto p  { color: var(--amarillo); }
+.estado-banner.revocado  .estado-texto h3 { color: var(--rojo); }
+.estado-banner.revocado  .estado-texto p  { color: var(--rojo); }
+
+/* ── Cuerpo del resultado ── */
+.cuerpo {
+  padding: 22px 24px;
+}
+
+.seccion-titulo {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+  margin-top: 22px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--gris-claro);
+}
+
+.seccion-titulo:first-child {
+  margin-top: 0;
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dato .etiqueta {
+  font-size: 11px;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+
+.dato .valor {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+/* ── Vacunas ── */
+.vacuna-card {
+  border: 1px solid var(--gris-claro);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.vacuna-nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.vacuna-estado {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vacuna-estado.completo   { background: #f0fdf1; color: var(--verde); }
+.vacuna-estado.incompleto { background: #fffbeb; color: var(--amarillo); }
+
+.dosis-lista {
+  margin-top: 8px;
+}
+
+.dosis-item {
+  font-size: 12px;
+  color: var(--gris);
+  padding: 6px 0;
+  border-top: 1px solid var(--gris-claro);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dosis-item:first-child {
+  border-top: none;
+}
+
+.dosis-vet {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* ── Badge esquema general ── */
+.badge-general {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-general.completo   { background: #f0fdf1; color: var(--verde); }
+.badge-general.incompleto { background: #fffbeb; color: var(--amarillo); }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .contenedor {
+    padding: 40px 20px;
+  }
+
+  .encabezado h2 {
+    font-size: 30px;
+  }
+
+  .fila-input {
+    grid-template-columns: 1fr;
+  }
+
+  .grilla {
+    grid-template-columns: 1fr;
+  }
+}
+
+.logo-pataporte-corner {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  height: 40px;
+  width: auto;
+  z-index: 999;
+}
+
+@media (min-width: 950px) {
+  .logo-pataporte-corner {
+    height: 60px;
+    width: auto;
+    margin: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-pataporte-corner {
+    display: none;
+  }
+}

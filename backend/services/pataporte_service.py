@@ -2,7 +2,7 @@ import hashlib
 import io
 import json
 import smtplib
-
+from messaging.publisher import publicar_email
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -97,8 +97,13 @@ def generar_pataporte(db: Session, id_mascota: str, emitido_por_rol: str, emitid
     
     
     try: 
-        pdf = _generar_pdf(credencial, hash_verificacion)
-        _enviar_pdf_por_email(tutor.email, mascota.nombre, pdf)
+        publicar_email({
+            "tipo": "pdf_email",
+            "email": tutor.email,
+            "nombre_mascota": mascota.nombre,
+            "credencial": credencial,
+            "hash_verificacion": hash_verificacion
+        })
     except Exception as e:
         print(f"Error al generar/enviar PDF: {e}")
     

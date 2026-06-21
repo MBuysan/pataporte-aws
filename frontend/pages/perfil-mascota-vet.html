@@ -8,10 +8,12 @@
   <title>Perfil mascota — Veterinario</title>
 
   <link rel="stylesheet" href="../css/perfil-mascota-vet.css" />
+  <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
 </head>
 
 <body>
 
+  <a href="buscar-mascotas.html"><img src="../assets/logo_pataporte_v2.png" alt="Pataporte" class="logo-pataporte-corner"></a>
   <div class="contenedor">
 
     <!-- TOPBAR -->
@@ -34,7 +36,7 @@
 
         <div>
 
-          <h3 id="nombre">Cargando...</h3>
+          <div class="nombre-mascota" id="nombre">Cargando...</div>
 
           <small id="detalle">
             Especie | Raza | Edad
@@ -111,7 +113,7 @@
           Diagnóstico <span class="required">*</span>
         </label>
 
-        <textarea id="diag"></textarea>
+        <textarea id="diag" required></textarea>
 
         <div id="vacunas"></div>
 

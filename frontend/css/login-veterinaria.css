@@ -1,9 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-@font-face {
-  font-family: "Cal Sans";
-  src: local("Cal Sans");
-}
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
   --azul: #04308a;
@@ -29,11 +24,11 @@ body {
 .login-page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 0.95fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 .login-image {
-  background-image: url("../../assets/img_iniciar_sesion.png");
+  background-image: url("../assets/img_iniciar_sesion.png");
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -50,25 +45,25 @@ body {
 .login-box {
   width: 100%;
   max-width: 360px;
-
-  position: relative;
 }
 
 .volver-link {
-  display: inline-block;
-
-  margin-bottom: 70px;
-
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
   color: var(--azul);
-
   text-decoration: none;
-
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .volver-link:hover {
-  text-decoration: underline;
+  opacity: 0.8;
+  transform: translateX(-3px);
 }
 
 h1 {
@@ -76,13 +71,25 @@ h1 {
   font-family: "Cal Sans", "Inter", sans-serif;
   font-size: 54px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 400;
   white-space: nowrap;
 }
 
 .register-text {
   margin: 0 0 28px;
   font-size: 14px;
+  color: #575f63;
+}
+
+.form-link-action {
+  color: #0b1215;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.form-link-action:hover {
+  color: var(--color-primary);
 }
 
 a {
@@ -94,6 +101,11 @@ a {
   margin-bottom: 26px;
 }
 
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 label {
   display: block;
   margin-bottom: 10px;
@@ -101,46 +113,94 @@ label {
   font-weight: 500;
 }
 
-input {
+.input-field {
   width: 100%;
   border: none;
   border-bottom: 2px solid #b9c1ca;
   background: transparent;
   padding: 8px 0;
   font-size: 16px;
+  font-family: inherit;
+  color: var(--texto);
   outline: none;
+  border-radius: 0;
+  transition: border-color 0.25s ease;
 }
 
-input:focus {
+.input-field:focus {
   border-bottom-color: var(--azul);
 }
 
-.forgot-link {
-  display: inline-block;
-  margin: -4px 0 18px;
-  font-size: 12px;
-}
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 
-button {
-  display: block;
-  width: 230px;
-  height: 42px;
+  width: auto;
+  padding: 4px;
+
+  background: none;
   border: none;
-  background: var(--azul);
-  color: white;
-  font-weight: 800;
-  font-size: 20px;
+  color: #575f63;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   cursor: pointer;
 }
 
+.password-toggle:hover {
+  background: none;
+  border: none;
+  color: var(--azul);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.forgot-link {
+  display: block;
+  margin: -4px 0 18px;
+  font-size: 13px;
+  color: var(--gris);
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--azul);
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  border: 1.5px solid var(--texto);
+  background: var(--azul);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 0;
+  padding: 8px 16px;
+}
+
 button:hover {
-  opacity: 0.9;
+  background-color: #c90a0a;
+  color: #ffffff;
+  border-color: #c90a0a;
 }
 
 #error {
   display: none;
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
   margin-bottom: 24px;
   line-height: 1.45;
@@ -178,6 +238,12 @@ button:hover {
 
   h1 {
     font-size: 38px;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    text-align: center;
   }
 }
 

@@ -2,58 +2,122 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Registrar Mascota</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registrar Mascota — Pataporte</title>
+    <link rel="stylesheet" href="../css/crear-mascota.css" />
+    <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
   </head>
   <body>
-    <h2>Registrar Mascota</h2>
+    <a href="dashboard.html"><img src="../assets/logo_pataporte_v2.png" alt="Pataporte" class="logo-pataporte-corner"></a>
+    <div class="contenedor">
+      
+      <div class="back-link-wrapper">
+        <a href="dashboard.html" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Volver a Mis Mascotas
+        </a>
+      </div>
 
-    <form id="formMascota">
-      <label>Foto (URL) (opcional):</label><br />
-      <input
-        type="url"
-        id="foto_url"
-        placeholder="https://ejemplo.com/foto.jpg"
-      /><br /><br />
+      <div class="form-header">
+        <h1 class="form-title">Registrar mascota</h1>
+      </div>
 
-      <label>Nombre *:</label><br />
-      <input
-        type="text"
-        id="nombre"
-        placeholder="Ej: Fatiga"
-        required
-      /><br /><br />
+      <form id="formMascota">
+        <div class="form-grid">
+          
+          <!-- Columna Izquierda: Nombre -->
+          <div class="input-group">
+            <label for="nombre" class="input-label">Nombre <span class="required-asterisk">*</span></label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="nombre"
+                class="input-field"
+                placeholder="Ej: Fatiga"
+                required
+              />
+            </div>
+          </div>
 
-      <label>Especie *:</label><br />
-      <select id="especie" required>
-        <option value="perro">Perro</option>
-        <option value="gato">Gato</option>
-        <option value="otro" selected>Otro</option>
-      </select>
-      <br /><br />
+          <!-- Columna Derecha: Foto -->
+          <div class="input-group">
+            <label for="foto_archivo" class="input-label">Foto (jpeg/png/webp)</label>
+            <div class="input-wrapper">
+              <input
+                type="file"
+                id="foto_archivo"
+                accept="image/jpeg,image/png,image/webp"
+              />
+            </div>
+          </div>
 
-      <label>Raza (opcional):</label><br />
-      <input
-        type="text"
-        id="raza"
-        placeholder="Ej: Labrador, Siamés"
-      /><br /><br />
+          <!-- Columna Izquierda: Especie -->
+          <div class="input-group">
+            <label for="especie" class="input-label">Especie <span class="required-asterisk">*</span></label>
+            <div class="input-wrapper">
+              <select id="especie" class="input-field" required>
+                <option value="perro">Perro</option>
+                <option value="gato">Gato</option>
+                <option value="otro" selected>Otro</option>
+              </select>
+            </div>
+          </div>
 
-      <label>Fecha de nacimiento (opcional):</label><br />
-      <input type="date" id="fecha_de_nacimiento" /><br /><br />
+          <!-- Columna Derecha: Raza -->
+          <div class="input-group">
+            <label for="raza" class="input-label">Raza (opcional)</label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="raza"
+                class="input-field"
+                placeholder="Ej: Labrador, Siamés"
+              />
+            </div>
+          </div>
 
-      <label>Sexo *:</label><br />
-      <select id="sexo" required>
-        <option value="macho">Macho</option>
-        <option value="hembra">Hembra</option>
-        <option value="desconocido" selected>Desconocido</option></select
-      ><br /><br />
+          <!-- Columna Izquierda: Sexo -->
+          <div class="input-group">
+            <label for="sexo" class="input-label">Sexo <span class="required-asterisk">*</span></label>
+            <div class="input-wrapper">
+              <select id="sexo" class="input-field" required>
+                <option value="macho">Macho</option>
+                <option value="hembra">Hembra</option>
+                <option value="desconocido" selected>Desconocido</option>
+              </select>
+            </div>
+          </div>
 
-      <button type="submit">Registrar</button>
-      <button type="button" onclick="window.location.href='dashboard.html'" style="margin-left: 10px;">Cancelar</button>
-    </form>
+          <!-- Columna Derecha: Fecha de Nacimiento -->
+          <div class="input-group">
+            <label for="fecha_de_nacimiento" class="input-label">Fecha de nacimiento (opcional)</label>
+            <div class="input-wrapper">
+              <input
+                type="date"
+                id="fecha_de_nacimiento"
+                class="input-field"
+              />
+            </div>
+          </div>
 
-    <p id="mensaje"></p>
-  <script src="../js/api.js"></script>
-  <script src="../js/registrarMascota.js"></script>
+        </div>
+
+        <div class="form-footer-legend">* campos obligatorios</div>
+
+        <p id="mensaje"></p>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit">Registrar</button>
+          <button type="button" class="btn-cancel" onclick="window.location.href='dashboard.html'">Cancelar</button>
+        </div>
+      </form>
+
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/registrarMascota.js"></script>
   </body>
 </html>

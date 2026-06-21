@@ -42,21 +42,39 @@ form.addEventListener("submit", async (e) => {
     }
   }
 
-  const data = {
-    id_tutor: tutor.id_tutor,
-    foto_url: document.getElementById("foto_url").value.trim() || null,
-    nombre: capitalizar(nombreRaw),
-    especie: especie,
-    raza: document.getElementById("raza").value,
-    fecha_de_nacimiento:
-      document.getElementById("fecha_de_nacimiento").value || null,
-    sexo: document.getElementById("sexo").value || "desconocido",
-  };
+  const archivoFoto = document.getElementById("foto_archivo").files[0];
+  if (archivoFoto) {
+    const extensionesPermitidas = ["image/jpeg", "image/png", "image/webp"];
+    if (!extensionesPermitidas.includes(archivoFoto.type)) {
+      mensaje.innerText = "La foto debe ser JPG, PNG o WEBP";
+      mensaje.style.color = "red";
+      return;
+    }
+    if (archivoFoto.size > 5 * 1024 * 1024) {
+      mensaje.innerText = "La foto no puede superar los 5MB";
+      mensaje.style.color = "red";
+      return;
+    }
+  }
+
+  const formData = new FormData();
+  formData.append("id_tutor", tutor.id_tutor);
+  formData.append("nombre", capitalizar(nombreRaw));
+  formData.append("especie", especie);
+  formData.append("raza", document.getElementById("raza").value.trim());
+  formData.append("fecha_de_nacimiento", fechaNacimiento);
+  formData.append("sexo", document.getElementById("sexo").value || "desconocido");
+
+  if (archivoFoto) { 
+    formData.append("foto", archivoFoto);
+  }
+
+
 
   try {
-    const result = await api.post("/mascotas/", data);
+    const result = await api.postForm("/mascotas/", formData);
 
-    mensaje.innerText = `Mascota registrada. ID: ${result.id_mascota}`;
+    mensaje.innerText = `Mascota registrada!`;
     mensaje.style.color = "green";
 
     form.reset();
