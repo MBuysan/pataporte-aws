@@ -4,101 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mi mascota — Pataporte</title>
-    <style>
-      /* Mismo CSS que perfil-mascota-vet.html — sin los estilos del modal crear */
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; background: #f5f5f5; min-height: 100vh; padding: 40px 16px; }
-      .contenedor { max-width: 580px; margin: 0 auto; }
-
-      .header-mascota {
-        background: white; border-radius: 12px; padding: 24px;
-        margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        display: flex; align-items: center; gap: 16px;
-      }
-      .foto-mascota { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-      .foto-placeholder {
-        width: 64px; height: 64px; border-radius: 50%; background: #dde8f8;
-        color: #4a90e2; font-size: 26px; font-weight: bold;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      }
-      .info-header { flex: 1; }
-      .nombre-mascota { font-size: 22px; font-weight: bold; color: #222; margin-bottom: 4px; }
-      .detalle-mascota { font-size: 14px; color: #888; }
-
-      .acciones { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-      .btn-accion { padding: 10px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-      .btn-secundario { background: #f0f0f0; color: #444; }
-      .btn-secundario:hover { background: #e0e0e0; }
-
-      .seccion-contenido { display: none; margin-bottom: 16px; }
-      .item-card { background: white; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-      .item-card strong { display: block; font-size: 15px; color: #222; margin-bottom: 2px; }
-      .item-card small  { display: block; font-size: 13px; color: #888; }
-
-      .fila-consulta {
-        width: 100%; background: white; border: none; border-radius: 10px;
-        padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-        cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        transition: box-shadow 0.15s, transform 0.1s; text-align: left; margin-bottom: 8px;
-      }
-      .fila-consulta:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.12); transform: translateY(-1px); }
-      .consulta-fecha  { font-size: 13px; font-weight: bold; color: #4a90e2; white-space: nowrap; min-width: 110px; }
-      .consulta-motivo { flex: 1; font-size: 14px; color: #333; }
-      .consulta-flecha { font-size: 18px; color: #ccc; }
-
-      .mensaje { display: none; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
-      .mensaje-error { background: #fce8e8; color: #c0392b; }
-      .cargando, .sin-datos { color: #aaa; font-size: 14px; text-align: center; padding: 16px 0; }
-      .error-seccion { color: #c0392b; font-size: 14px; padding: 12px 0; }
-
-      .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
-      .modal-overlay.activo { display: flex; }
-      .modal { background: white; border-radius: 14px; padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.18); position: relative; }
-      .modal-titulo { font-size: 18px; font-weight: bold; color: #222; margin-bottom: 20px; }
-      .modal-cerrar { position: absolute; top: 16px; right: 18px; background: none; border: none; font-size: 22px; color: #aaa; cursor: pointer; }
-      .modal-cerrar:hover { color: #555; }
-      .modal-acciones { display: flex; gap: 10px; margin-top: 20px; }
-      .btn-modal-secundario { padding: 11px 20px; background: #f0f0f0; color: #555; border: none; border-radius: 8px; cursor: pointer; }
-      .btn-modal-secundario:hover { background: #e0e0e0; }
-
-      .detalle-campo    { margin-bottom: 14px; }
-      .detalle-etiqueta { font-size: 12px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-      .detalle-valor    { font-size: 15px; color: #222; }
-      .detalle-vacio    { font-size: 14px; color: #bbb; font-style: italic; }
-      .separador        { border: none; border-top: 1px solid #eee; margin: 16px 0; }
-      .lista-items      { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-    </style>
+    <link rel="stylesheet" href="../css/perfil-mascota-tutor.css?v=2" />
+    <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
   </head>
 
   <body>
+    <a href="dashboard.html"><img src="../assets/logo_pataporte_v2.png" alt="Pataporte" class="logo-pataporte-corner"></a>
     <div class="contenedor">
 
-      <div style="margin-bottom: 16px;">
-        <a href="dashboard.html" style="color: #4a90e2; text-decoration: none; font-size: 14px; font-weight: bold;">← Volver a Mis Mascotas</a>
+      <div class="top-nav-perfil">
+        <a href="dashboard.html" class="back-link">
+          ← Volver al inicio
+        </a>
+        <button id="btn-eliminar" class="btn-eliminar-link">Eliminar perfil mascota</button>
       </div>
 
       <div class="header-mascota">
-        <div class="foto-placeholder" id="foto-mascota">?</div>
-        <div class="info-header">
-          <div class="nombre-mascota" id="nombre-mascota">Cargando...</div>
-          <div class="detalle-mascota" id="detalle-mascota"></div>
+        <div class="header-left">
+          <div class="foto-placeholder" id="foto-mascota">?</div>
+          <div class="info-header">
+            <div class="nombre-mascota" id="nombre-mascota">Cargando...</div>
+            <div class="detalle-mascota" id="detalle-mascota"></div>
+          </div>
         </div>
+        <button id="btn-certificado" class="btn-obtener-certificado">Obtener certificado</button>
       </div>
 
       <div id="mensaje-pagina" class="mensaje"></div>
 
       <!-- Tratamientos: se cargan al abrir el perfil (solo lectura) -->
-      <p style="font-size:12px;font-weight:bold;color:#aaa;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
-        Tratamientos activos
-      </p>
-      <div id="seccion-tratamientos"><p class="cargando">Cargando...</p></div>
+      <div class="tratamientos-seccion">
+        <span class="seccion-titulo">Tratamientos activos</span>
+        <div id="seccion-tratamientos" class="inline-tratamientos">
+          <p class="cargando">Cargando...</p>
+        </div>
+      </div>
 
       <!-- Acciones principales -->
-      <div class="acciones" style="margin-top:16px;">
-        <button id="btn-historial" class="btn-accion btn-secundario">Historial clínico</button>
-        <button id="btn-vacunas" class="btn-accion btn-secundario" style="background:#eef4fe; color:#4a90e2;">Ver Vacunas</button>
-        <button id="btn-certificado" class="btn-accion btn-secundario" style="background:#fdf6e2; color:#d97706;">Obtener Certificado</button>
-        <button id="btn-eliminar" class="btn-accion" style="background:#fee2e2; color:#dc2626;">Eliminar mascota</button>
+      <div class="acciones-inferiores">
+        <button id="btn-vacunas" class="btn-inferior">Ver vacunas</button>
+        <button id="btn-historial" class="btn-inferior">Ver historial</button>
       </div>
       <div id="seccion-historial" class="seccion-contenido"></div>
 
@@ -118,7 +63,40 @@
     </div>
 
 
-    <script src="../js/api.js"></script>
-    <script src="../js/perfilMascotaTutor.js"></script>
+    <!-- Modal: eliminar mascota -->
+    <div id="modal-eliminar" class="modal-overlay">
+      <div class="modal modal-eliminar-content">
+        <button class="modal-cerrar-simple" id="cerrar-modal-eliminar">✕</button>
+        <p class="modal-titulo-eliminar">¿Quieres eliminar el perfil de tu mascota?</p>
+        <p class="modal-desc-eliminar">
+          Estás a punto de eliminar de forma permanente el perfil de tu mascota, su historial clínico, tratamientos y esquema de vacunacion junto a los datos de dicha mascota. Esta acción no se puede deshacer.
+        </p>
+        <p class="modal-instruccion-eliminar">
+          Escribe "eliminar perfil mascota" para continuar
+        </p>
+        <div class="modal-input-container">
+          <input type="text" id="confirmar-eliminar-input" class="modal-input-field" />
+          <button type="button" id="confirmar-eliminar-btn" class="btn-eliminar-confirmar" disabled>Eliminar</button>
+        </div>
+        <p class="modal-footer-eliminar">
+          Pataporte te enviará un correo electrónico con todo el historial de tu mascota
+        </p>
+      </div>
+    </div>
+
+
+    <!-- Modal: alerta personalizada -->
+    <div id="modal-alerta" class="modal-overlay">
+      <div class="modal modal-alerta-content">
+        <p id="modal-alerta-mensaje" class="modal-alerta-text"></p>
+        <div class="modal-alerta-acciones">
+          <button type="button" id="modal-alerta-cerrar-btn" class="btn-alerta-cerrar">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="../js/api.js?v=2"></script>
+    <script src="../js/perfilMascotaTutor.js?v=3"></script>
   </body>
 </html>

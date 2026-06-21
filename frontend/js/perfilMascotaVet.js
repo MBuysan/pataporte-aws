@@ -41,27 +41,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnCert.onclick = async () => {
 
-    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
-
     btnCert.disabled = true;
     btnCert.textContent = "Generando...";
 
     try {
-      const res = await api.post(`/pataporte/${idMascota}`);
-
-      alert(
-        `Pataporte generado correctamente.\n\n` +
-        `El certificado PDF fue enviado al correo del tutor.\n\n`
-      );
-
+      await api.post(`/pataporte/${idMascota}`);
+      btnCert.textContent = "✓ Enviado al tutor";
     } catch (err) {
-
-      alert(`Error al generar el Pataporte: ${err.message}`);
-
+      btnCert.textContent = "Error: " + err.message;
     } finally {
-
-      btnCert.disabled = false;
-      btnCert.textContent = "Generar Certificado";
+      setTimeout(() => {
+        btnCert.disabled = false;
+        btnCert.textContent = "Generar Certificado";
+      }, 3000);
     }
   };
 
@@ -69,16 +61,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   const contenidoDetalleConsulta = document.getElementById("contenido-detalle-consulta");
   const cerrarModalDetalleConsulta = document.getElementById("cerrar-modal-detalle-consulta");
 
+  function calcularEdad(fechaNacimiento) {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+
+    return edad;
+  }
   // ───────── MASCOTA ─────────────────────────────────────────────────────────
 
   let mascotaActual = null;
 
   try {
     mascotaActual = await api.get(`/mascotas/${idMascota}`);
+
     nombreEl.textContent = mascotaActual.nombre;
-    detalleEl.textContent = `${mascotaActual.especie}${mascotaActual.raza ? " · " + mascotaActual.raza : ""}`;
+    const edad = mascotaActual.fecha_de_nacimiento
+      ? calcularEdad(mascotaActual.fecha_de_nacimiento)
+      : null;
+
+    const detalle = [
+      mascotaActual.especie,
+      mascotaActual.raza || null,
+      edad != null ? `${edad} ${edad === 1 ? "año" : "años"}` : null,
+    ].filter(Boolean).join(" | ");
+
+    detalleEl.textContent = detalle;
     if (mascotaActual.foto_url) {
-      fotoEl.outerHTML = `<img src="${mascotaActual.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
+      fotoEl.outerHTML = `<img src="${API_URL}${mascotaActual.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
     } else {
       fotoEl.textContent = mascotaActual.nombre.charAt(0).toUpperCase();
     }
@@ -213,17 +229,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function convertirUTCALocalInput(fechaUTC) {
-
     const fecha = new Date(fechaUTC);
 
     const year = fecha.getFullYear();
     const month = String(fecha.getMonth() + 1).padStart(2, "0");
     const day = String(fecha.getDate()).padStart(2, "0");
 
-    const hours = String(fecha.getHours()).padStart(2, "0");
-    const minutes = String(fecha.getMinutes()).padStart(2, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${year}-${month}-${day}`;
   }
 
   function abrirModalEdicion(tratamiento) {
@@ -808,7 +820,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     <button class="fila" data-tipo="consulta" data-id="${e.id}">
       <span
   class="etiqueta-consulta"
-  data-text="${e.motivo || "Consulta"}"
+  data-text="Consulta"
 ></span>
 
 <span class="fila-fecha">
@@ -818,7 +830,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 <span>|</span>
 
 <span class="fila-desc">
-  ${e.diagnostico || "Sin diagnóstico"}
+  ${e.motivo || "Sin motivo"}
 </span>
 
       <span class="flecha-historial">

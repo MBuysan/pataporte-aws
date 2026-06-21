@@ -17,7 +17,9 @@ def obtener_canal():
             )
 
             channel = connection.channel()
+
             channel.queue_declare(queue="emails", durable=True)
+
 
             print("Conectado a RabbitMQ ✔")
             return channel, connection

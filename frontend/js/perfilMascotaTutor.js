@@ -19,6 +19,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   const contenidoDetalle = document.getElementById("contenido-detalle");
   const cerrarDetalle = document.getElementById("cerrar-modal-detalle");
   const cerrarDetallBtn = document.getElementById("cerrar-detalle-btn");
+  const modalEliminar = document.getElementById("modal-eliminar");
+  const cerrarModalEliminar = document.getElementById("cerrar-modal-eliminar");
+  const confirmarEliminarInput = document.getElementById("confirmar-eliminar-input");
+  const confirmarEliminarBtn = document.getElementById("confirmar-eliminar-btn");
+
+  // ── Alerta Personalizada Lógica ─────────────────────
+  const modalAlerta = document.getElementById("modal-alerta");
+  const modalAlertaMensaje = document.getElementById("modal-alerta-mensaje");
+  const modalAlertaCerrarBtn = document.getElementById("modal-alerta-cerrar-btn");
+  let alertaCallback = null;
+
+  function mostrarAlerta(mensaje, callback = null) {
+    modalAlertaMensaje.textContent = mensaje;
+    alertaCallback = callback;
+    modalAlerta.classList.add("activo");
+  }
+
+  if (modalAlertaCerrarBtn) {
+    modalAlertaCerrarBtn.addEventListener("click", () => {
+      modalAlerta.classList.remove("activo");
+      if (alertaCallback) {
+        alertaCallback();
+      }
+    });
+  }
+
+  if (modalAlerta) {
+    modalAlerta.addEventListener("click", (e) => {
+      if (e.target === modalAlerta) {
+        modalAlerta.classList.remove("activo");
+        if (alertaCallback) {
+          alertaCallback();
+        }
+      }
+    });
+  }
 
   let historialCargado = false;
   const tutor = JSON.parse(localStorage.getItem("tutor"));
@@ -36,51 +72,80 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnCert.addEventListener("click", async () => {
 
-    if (!confirm("¿Generar el Pataporte de vacunación de esta mascota?\n\nEl certificado PDF se enviará al correo registrado del tutor.")) return;
-
     btnCert.disabled = true;
     btnCert.textContent = "Generando...";
 
     try {
       const res = await api.post(`/pataporte/${idMascota}`);
 
-      alert(
+      mostrarAlerta(
         `Pataporte generado correctamente.\n\n` +
         `El certificado PDF fue enviado al correo del tutor.\n\n`
       );
 
     } catch (err) {
 
-      alert(`Error al generar el Pataporte: ${err.message}`);
+      mostrarAlerta(`Error al generar el Pataporte: ${err.message}`);
 
     } finally {
       
       btnCert.disabled = false;
-      btnCert.textContent = "Generar Pataporte";
+      btnCert.textContent = "Obtener certificado";
     }
   });
 
-  btnEliminar.addEventListener("click", async () => {
-    const nombreMascota = nombreEl.textContent;
-    const textoEsperado = `eliminar perfil ${nombreMascota}`;
+  // ── Modal Eliminar Mascota Lógica ───────────────────
+  if (btnEliminar && modalEliminar) {
+    btnEliminar.addEventListener("click", () => {
+      confirmarEliminarInput.value = "";
+      confirmarEliminarBtn.disabled = true;
+      modalEliminar.classList.add("activo");
+    });
+  }
 
-    const confirmacion = prompt(
-      `Esta acción eliminará definitivamente el perfil de ${nombreMascota}.\n\nAntes de eliminarlo, se enviará un respaldo clínico por correo.\n\nPara confirmar, escribí exactamente:\n${textoEsperado}`
-    );
+  if (cerrarModalEliminar) {
+    cerrarModalEliminar.addEventListener("click", () => {
+      modalEliminar.classList.remove("activo");
+    });
+  }
 
-    if (confirmacion !== textoEsperado) {
-      alert("Confirmación incorrecta. No se eliminó la mascota.");
-      return;
-    }
+  if (modalEliminar) {
+    modalEliminar.addEventListener("click", (e) => {
+      if (e.target === modalEliminar) {
+        modalEliminar.classList.remove("activo");
+      }
+    });
+  }
 
-    try {
-      await api.delete(`/mascotas/${idMascota}`);
-      alert("Mascota eliminada correctamente. Se envió el respaldo clínico por correo.");
-      window.location.href = "dashboard.html";
-    } catch (error) {
-      alert(`No se pudo eliminar la mascota: ${error.message}`);
-    }
-  });
+  if (confirmarEliminarInput) {
+    confirmarEliminarInput.addEventListener("input", () => {
+      if (confirmarEliminarInput.value.trim() === "eliminar perfil mascota") {
+        confirmarEliminarBtn.disabled = false;
+      } else {
+        confirmarEliminarBtn.disabled = true;
+      }
+    });
+  }
+
+  if (confirmarEliminarBtn) {
+    confirmarEliminarBtn.addEventListener("click", async () => {
+      if (confirmarEliminarInput.value.trim() !== "eliminar perfil mascota") return;
+
+      confirmarEliminarBtn.disabled = true;
+      confirmarEliminarBtn.textContent = "Eliminando...";
+
+      try {
+        await api.delete(`/mascotas/${idMascota}`);
+        mostrarAlerta("Mascota eliminada correctamente. Se envió el respaldo clínico por correo.", () => {
+          window.location.href = "dashboard.html";
+        });
+      } catch (error) {
+        mostrarAlerta(`No se pudo eliminar la mascota: ${error.message}`);
+        confirmarEliminarBtn.disabled = false;
+        confirmarEliminarBtn.textContent = "Eliminar";
+      }
+    });
+  }
 
   // Carga en paralelo: datos de mascota + tratamientos activos
   if (!tutor || !tutor.id_tutor) {
@@ -137,10 +202,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const m = await api.get(`/mascotas/${idMascota}`);
       nombreEl.textContent = m.nombre;
-      detalleEl.textContent = [m.especie, m.raza, m.sexo !== "desconocido" ? m.sexo : null]
-        .filter(Boolean).join(" · ");
+
+      // Calcular la edad a partir de la fecha de nacimiento
+      const calcularEdad = (fechaNacimientoStr) => {
+        if (!fechaNacimientoStr) return null;
+        const hoy = new Date();
+        const nacimiento = new Date(fechaNacimientoStr);
+        if (isNaN(nacimiento.getTime())) return null;
+
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+          edad--;
+        }
+
+        if (edad > 0) {
+          return edad === 1 ? "1 año" : `${edad} años`;
+        }
+
+        // Si es menor a un año, calcular en meses
+        let meses = (hoy.getFullYear() - nacimiento.getFullYear()) * 12 + hoy.getMonth() - nacimiento.getMonth();
+        if (hoy.getDate() < nacimiento.getDate()) {
+          meses--;
+        }
+        if (meses > 0) {
+          return meses === 1 ? "1 mes" : `${meses} meses`;
+        }
+
+        // Si es menor a un mes, calcular en días
+        const unDia = 24 * 60 * 60 * 1000;
+        const dias = Math.floor((hoy - nacimiento) / unDia);
+        if (dias > 0) {
+          return dias === 1 ? "1 día" : `${dias} días`;
+        }
+        return "0 días";
+      };
+
+      const formatString = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+      const edadStr = calcularEdad(m.fecha_de_nacimiento);
+      detalleEl.textContent = [formatString(m.especie), formatString(m.raza), edadStr]
+        .filter(Boolean).join(" | ");
+
       if (m.foto_url) {
-        fotoEl.outerHTML = `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`;
+        fotoEl.outerHTML = `<img src="${API_URL}${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`;
       } else {
         fotoEl.textContent = m.nombre.charAt(0).toUpperCase();
       }
@@ -168,18 +272,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       seccionTrat.innerHTML = trats.map(t => {
-        const inicio = t.inicio
-          ? new Date(t.inicio).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-          : "—";
-        const fin = t.finalizacion
-          ? new Date(t.finalizacion).toLocaleDateString("es-UY", { day: "numeric", month: "short", year: "numeric" })
-          : "Sin fecha de fin";
+        const formatFechaDMY = (dateStr) => {
+          if (!dateStr) return "—";
+          const d = new Date(dateStr);
+          if (isNaN(d.getTime())) return "—";
+          const dia = String(d.getDate()).padStart(2, "0");
+          const mes = String(d.getMonth() + 1).padStart(2, "0");
+          const anio = d.getFullYear();
+          return `${dia}/${mes}/${anio}`;
+        };
+        const inicio = formatFechaDMY(t.inicio);
+        const fin = formatFechaDMY(t.finalizacion);
         return `
-          <div class="item-card">
-            <strong>${t.nombre}</strong>
-            ${t.descripcion ? `<small>${t.descripcion}</small>` : ""}
-            ${t.frecuencia ? `<small style="color:#4a90e2;">🕐 ${t.frecuencia}</small>` : ""}
-            <small>Inicio: ${inicio} &nbsp;·&nbsp; Fin: ${fin}</small>
+          <div class="item-card tratamiento-card">
+            <div class="card-left">
+              <strong>${t.nombre}</strong>
+              ${t.descripcion ? `<small>${t.descripcion}</small>` : ""}
+              ${t.frecuencia ? `<small class="frecuencia-tutor">${t.frecuencia}</small>` : ""}
+            </div>
+            <div class="card-right">
+              <small>fecha inicio ${inicio}</small>
+              <small>fecha fin ${fin}</small>
+            </div>
           </div>`;
       }).join("");
 
@@ -187,7 +301,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       seccionTrat.innerHTML = `<p class="error-seccion">${e.message}</p>`;
     }
   }
-
+ 
 
   // ── Historial clínico — toggle con lazy load ──────────────────────────────
 
@@ -199,8 +313,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     btnHist.textContent =
       abierto
-        ? "Historial clínico"
-        : "Cerrar historial";
+        ? "Ver historial"
+        : "Ocultar historial";
 
     if (!abierto && !historialCargado) {
       await cargarHistorial();
@@ -217,7 +331,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response =
         await api.get(`/historial/${idMascota}/unificado`);
 
-      const eventos = response.eventos;
+      const eventos = response.eventos.filter(e => e.tipo === "consulta");
 
       historialCargado = true;
 
@@ -231,22 +345,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       eventos.sort(
         (a, b) =>
-          new Date(b.fecha) - new Date(a.fecha)
+          new Date(b.fecha || 0) - new Date(a.fecha || 0)
       );
 
-      seccionHist.innerHTML = `
-      <p style="
-        font-size: 14px;
-        font-weight: 700;
-        color: #a6a6a6;
-        margin: 16px 0 10px 2px;
-        letter-spacing: 0.5px;
-      ">
-        CONSULTAS
-      </p>
-
-      ${eventos.map(renderEvento).join("")}
-    `;
+      seccionHist.innerHTML = eventos.map(renderEvento).join("");
 
     } catch (e) {
 
@@ -291,25 +393,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         class="fila-consulta"
         data-id="${e.id}"
       >
-
-        <span style="
-          background:#e3f2fd;
-          color:#1976d2;
-          padding:4px 8px;
-          border-radius:6px;
-          font-size:10px;
-          font-weight:bold;
-          white-space:nowrap;
-        ">
-          CONSULTA
-        </span>
-
+        <span class="consulta-tag">CONSULTA</span>
         <span class="consulta-motivo">
-          <b>${fecha}, ${hora}</b> — ${e.motivo}
+          ${fecha}, ${hora} | ${e.motivo}
         </span>
-
         <span class="consulta-flecha">›</span>
-
       </button>
     `;
     }

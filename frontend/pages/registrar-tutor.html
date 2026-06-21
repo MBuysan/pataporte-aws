@@ -13,12 +13,14 @@
     />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/registrar-tutor.css" />
+    <link rel="icon" href="../assets/logo_pataporte_v2.png" type="image/png" />
   </head>
   <body>
     <div class="split-container">
       <!-- Panel Izquierdo (Formulario de Registro) -->
       <div class="form-panel">
         <div class="form-content">
+          <a href="../index.html" class="back-link">← Volver</a>
           <!-- Cabecera -->
           <div class="form-header">
             <h1 class="form-title">¡Regístrate!</h1>
@@ -79,7 +81,7 @@
 
               <div class="input-group">
                 <label for="telefono" class="input-label"
-                  >Teléfono (opcional)</label
+                  >Teléfono</label
                 >
                 <div class="input-wrapper">
                   <input
@@ -126,28 +128,22 @@
               </div>
             </div>
 
+            <!-- Indicadores de requisitos de contraseña -->
+            <div id="indicadores-password">
+              <p>La contraseña debe tener:</p>
+              <ul>
+                <li id="req-largo">Al menos 6 caracteres</li>
+                <li id="req-mayuscula">Al menos una mayúscula</li>
+                <li id="req-minuscula">Al menos una minúscula</li>
+                <li id="req-numero">Al menos un número</li>
+                <li id="req-especial">Al menos un carácter especial (!@#$%^&*?)</li>
+              </ul>
+            </div>
+
             <div class="form-footer-legend">*campos obligatorios</div>
 
             <button type="submit" class="btn-submit">Registrar</button>
           </form>
-
-          <!-- Botón Volver al inicio -->
-          <div class="back-link-wrapper">
-            <a href="../index.html" class="back-link">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-              Volver al inicio
-            </a>
-          </div>
         </div>
       </div>
 
@@ -159,32 +155,5 @@
     <script src="../js/validacionesDocumentos.js"></script>
     <script src="../js/registrarTutor.js"></script>
 
-    <!-- Script de interactividad premium (Ver/Ocultar Contraseña) -->
-    <script>
-      document
-        .getElementById("togglePassword")
-        .addEventListener("click", function () {
-          const passwordInput = document.getElementById("password");
-          const eyeIcon = document.getElementById("eyeIcon");
-
-          if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            // Icono Ojo tachado (Ocultar)
-            eyeIcon.innerHTML = `
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-          `;
-            this.setAttribute("aria-label", "Ocultar contraseña");
-          } else {
-            passwordInput.type = "password";
-            // Icono Ojo estándar (Mostrar)
-            eyeIcon.innerHTML = `
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          `;
-            this.setAttribute("aria-label", "Mostrar contraseña");
-          }
-        });
-    </script>
   </body>
 </html>

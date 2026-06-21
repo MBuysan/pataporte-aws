@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Request
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+import os
 
 
 from routers import (
@@ -23,6 +22,7 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_tables()
+    os.makedirs("uploads/mascotas", exist_ok=True)
     yield
 
 
@@ -48,6 +48,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# se monta la carpeta de uploads para servir archivos estaticos, en este caso las fotos de mascotas
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # se agregan prefijos a los router y se vinculan a la aplicación
 app.include_router(mascotas.router, prefix="/mascotas", tags=["Mascotas"])

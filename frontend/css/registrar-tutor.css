@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
+
+
 :root {
   --color-primary: #04308a;
   --color-primary-hover: #03256c;
@@ -5,6 +8,7 @@
   --color-background: #fbf9ef;
   --color-error: #c90a0a;
   --color-error-bg: #fdf2f2;
+  --color-success: #048a06;
   --color-text-main: #0b1215;
   --color-text-muted: #575f63;
   --color-border: #e2e2e1;
@@ -18,7 +22,13 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   background-color: var(--color-background);
   color: var(--color-text-main);
   min-height: 100vh;
@@ -51,6 +61,7 @@ PANEL FORMULARIO (IZQUIERDA)
   /* Más ancho para el diseño de 2 columnas */
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /* Cabecera del Formulario */
@@ -59,9 +70,13 @@ PANEL FORMULARIO (IZQUIERDA)
 }
 
 .form-title {
-  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  font-family:
+    "Cal Sans",
+    "Inter",
+    -apple-system,
+    sans-serif;
   font-size: 54px;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.5px;
   color: var(--color-text-main);
   margin-bottom: 10px;
@@ -175,28 +190,26 @@ DISPOSICIÓN GRID (2 COLUMNAS EN DESKTOP)
 
 /* Botón Siguiente / Registrar (Primario) */
 .btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   align-self: flex-start;
   background-color: var(--color-primary);
   color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 36px;
-  font-size: 15px;
-  font-weight: 700;
+  text-decoration: none;
+  border: 1.5px solid var(--color-text-main);
+  border-radius: 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(4, 48, 138, 0.1);
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .btn-submit:hover {
-  background-color: var(--color-primary-hover);
-  box-shadow: 0 4px 12px rgba(4, 48, 138, 0.2);
-}
-
-.btn-submit:active {
-  transform: scale(0.98);
+  background-color: #c90a0a;
+  color: #ffffff;
 }
 
 .btn-submit:disabled {
@@ -206,35 +219,22 @@ DISPOSICIÓN GRID (2 COLUMNAS EN DESKTOP)
   box-shadow: none;
 }
 
-/* Botón Volver al inicio */
-.back-link-wrapper {
-  margin-top: 36px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 24px;
-}
-
 .back-link {
+  position: absolute;
+  top: 15px;
+  right: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: var(--color-text-muted);
+  gap: 6px;
+  color: var(--color-primary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  transition: color 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .back-link:hover {
-  color: var(--color-primary);
-}
-
-.back-link svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.2s ease;
-}
-
-.back-link:hover svg {
+  opacity: 0.8;
   transform: translateX(-3px);
 }
 
@@ -242,7 +242,7 @@ DISPOSICIÓN GRID (2 COLUMNAS EN DESKTOP)
 #mensaje {
   display: none;
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
   margin-bottom: 24px;
   line-height: 1.45;
@@ -274,7 +274,9 @@ PANEL VISUAL (DERECHA) - IMAGEN + LOGO CORTADO
 .visual-panel {
   width: 45%;
   position: relative;
-  background-image: linear-gradient(rgba(4, 48, 138, 0.15), rgba(4, 48, 138, 0.25)), url('../../assets/img_registro.png');
+  background-image:
+    linear-gradient(rgba(4, 48, 138, 0.15), rgba(4, 48, 138, 0.25)),
+    url("../assets/img_registro.png");
   background-size: cover;
   background-position: left center;
   /* Permite ver el logo recortado en el borde izquierdo */
@@ -319,5 +321,64 @@ DISEÑO RESPONSIVO
     width: 100%;
     /* Botón de ancho completo en móvil */
     text-align: center;
+  }
+}
+
+/* ── Indicadores de requisitos de contraseña ────────────── */
+#indicadores-password {
+  grid-column: span 2;
+  font-size: 12px;
+  margin-top: -16px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: var(--color-background);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+#indicadores-password p {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#indicadores-password ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+#indicadores-password li {
+  color: var(--color-border);
+  font-size: 12px;
+}
+
+#indicadores-password li::before {
+  content: "○ ";
+}
+
+#indicadores-password li.cumplido {
+  color: var(--color-success);
+}
+
+#indicadores-password li.cumplido::before {
+  content: "✓ ";
+}
+
+#indicadores-password li.pendiente {
+  color: var(--color-error);
+}
+
+#indicadores-password li.pendiente::before {
+  content: "✗ ";
+}
+
+@media (max-width: 768px) {
+  #indicadores-password {
+    grid-column: span 1;
   }
 }

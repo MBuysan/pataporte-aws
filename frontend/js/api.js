@@ -62,6 +62,58 @@ async function apiRequest(method, endpoint, body = null, customOptions = {}) {
   return response.json();
 }
 
+async function apiFormRequest(method, endpoint, formData) {
+ 
+  const token = localStorage.getItem("access_token");
+ 
+  const options = {
+    method,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  };
+ 
+  const response = await fetch(`${API_URL}${endpoint}`, options);
+ 
+  if (response.status === 401 || response.status === 403) {
+ 
+    const rol = localStorage.getItem("rol");
+ 
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("rol");
+    localStorage.removeItem("veterinario_id");
+    localStorage.removeItem("tutor");
+ 
+    const paginaActual = window.location.pathname;
+ 
+    if (
+      !paginaActual.includes("login.html") &&
+      !paginaActual.includes("login-veterinario.html")
+    ) {
+      alert("Tu sesión expiró. Volvé a iniciar sesión.");
+      if (rol === "veterinario") {
+        window.location.href = "login-veterinario.html";
+      } else {
+        window.location.href = "login.html";
+      }
+    }
+ 
+    throw new Error("Credenciales inválidas");
+  }
+ 
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    console.error("BACKEND ERROR:", JSON.stringify(error, null, 2));
+    throw new Error(error.detail || "Ocurrió un error");
+  }
+ 
+  if (response.status === 204) return null;
+ 
+  return response.json();
+}
+
 const api = {
   get:    (endpoint, options)       => apiRequest("GET", endpoint, null, options),
 
@@ -76,4 +128,7 @@ const api = {
 
   delete: (endpoint, options) =>
     apiRequest("DELETE", endpoint, null, options),
+    
+  postForm:  (endpoint, formData) => 
+    apiFormRequest("POST", endpoint, formData),
 };

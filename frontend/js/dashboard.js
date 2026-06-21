@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnLogout = document.getElementById("btnLogout");
   const contenedorMascotas = document.getElementById("contenedor-mascotas");
   const mensajeEl = document.getElementById("mensaje-dashboard");
+  const btnEliminarCuenta = document.getElementById("btnEliminarCuenta");
 
   // 1. Verificar sesión
   const token = localStorage.getItem("access_token");
@@ -21,12 +22,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.href = "../index.html";
   });
 
-  // 3. Personalizar Saludo
+  // 3. Configurar Eliminar Cuenta
+  btnEliminarCuenta.addEventListener("click", async () => {
+    const confirmacion = window.prompt(
+      "Esta acción eliminará definitivamente tu cuenta y todas tus mascotas.\n\nEscribí exactamente:\neliminar mi cuenta"
+    );
+
+    if (confirmacion !== "eliminar mi cuenta") {
+      alert("Confirmación incorrecta.");
+      return;
+    }
+
+    alert(
+      "Pataporte está generando la documentación de respaldo de tus mascotas para enviarla por correo electrónico. Luego se eliminará definitivamente tu cuenta y toda la información asociada."
+    );
+
+    try {
+
+      await api.delete(
+        `/tutores/${tutorData.id_tutor}`
+      );
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("tutor");
+
+      alert(
+        "Cuenta eliminada correctamente."
+      );
+
+      window.location.href = "../index.html";
+
+    } catch (error) {
+
+      alert(
+        `No se pudo eliminar la cuenta: ${error.message}`
+      );
+    }
+  }
+  );
+
+  // 4. Personalizar Saludo
   if (tutorData.nombre) {
     saludoUsuario.textContent = `Hola, ${tutorData.nombre}`;
   }
 
-  // 4. Cargar Mascotas del Tutor
+  // 5. Cargar Mascotas del Tutor
   try {
     const idTutor = tutorData.id_tutor;
     // Consumir endpoint de la API que devuelve las mascotas de este tutor específico
@@ -62,11 +102,48 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.href = `perfil-mascota-tutor.html?id=${m.id_mascota}`;
       card.className = "fila-mascota";
 
-      // Formatear detalles: Especie y Raza
-      const detalle = [m.especie, m.raza].filter(Boolean).join(" · ");
+      // Calcular la edad a partir de la fecha de nacimiento
+      const calcularEdad = (fechaNacimientoStr) => {
+        if (!fechaNacimientoStr) return null;
+        const hoy = new Date();
+        const nacimiento = new Date(fechaNacimientoStr);
+        if (isNaN(nacimiento.getTime())) return null;
+
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+          edad--;
+        }
+
+        if (edad > 0) {
+          return edad === 1 ? "1 año" : `${edad} años`;
+        }
+
+        // Si es menor a un año, calcular en meses
+        let meses = (hoy.getFullYear() - nacimiento.getFullYear()) * 12 + hoy.getMonth() - nacimiento.getMonth();
+        if (hoy.getDate() < nacimiento.getDate()) {
+          meses--;
+        }
+        if (meses > 0) {
+          return meses === 1 ? "1 mes" : `${meses} meses`;
+        }
+
+        // Si es menor a un mes, calcular en días
+        const unDia = 24 * 60 * 60 * 1000;
+        const dias = Math.floor((hoy - nacimiento) / unDia);
+        if (dias > 0) {
+          return dias === 1 ? "1 día" : `${dias} días`;
+        }
+        return "0 días";
+      };
+
+      // Formatear detalles: Especie y Edad (Capitalizados y separados por barra vertical)
+      const formatString = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+      const edadStr = calcularEdad(m.fecha_de_nacimiento);
+      const detalle = [formatString(m.especie), edadStr].filter(Boolean).join(" | ");
 
       const fotoHtml = m.foto_url
-        ? `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
+        ? `<img src="${API_URL}${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
         : `<div class="foto-placeholder">${m.nombre.charAt(0).toUpperCase()}</div>`;
 
       card.innerHTML = `
@@ -92,5 +169,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       elemento.classList.add("mensaje-error");
     }
     elemento.style.display = "block";
+  }
+
+
+  const btnUserMenu = document.getElementById("btn-user-menu");
+  const userDropdown = document.getElementById("user-dropdown");
+
+  if (btnUserMenu && userDropdown) {
+    btnUserMenu.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const abierto = userDropdown.classList.toggle("activo");
+      btnUserMenu.setAttribute("aria-expanded", abierto);
+    });
+
+    document.addEventListener("click", function () {
+      userDropdown.classList.remove("activo");
+      btnUserMenu.setAttribute("aria-expanded", "false");
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        userDropdown.classList.remove("activo");
+        btnUserMenu.setAttribute("aria-expanded", "false");
+      }
+    });
   }
 });

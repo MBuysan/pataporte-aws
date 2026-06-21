@@ -4,10 +4,9 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 from datetime import datetime, timezone
 
-from services import auth_service
-from config.database import Mascota
+from services import auth_service, mascota_service
 from schemas.tutor import TutorCreate, TutorUpdate
-from config.database import MascotaTutor, CodigoAccesoMascota, UsuarioTutor
+from config.database import MascotaTutor, CodigoAccesoMascota, UsuarioTutor, Mascota
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -38,6 +37,27 @@ def crear(db: Session, data: TutorCreate):
 
     return nuevo
 
+def eliminar_tutor(db: Session, id_tutor: str):
+
+    tutor = obtener_por_id(db, id_tutor)
+
+    if not tutor:
+        raise HTTPException(
+            status_code=404,
+            detail="Tutor no encontrado"
+        )
+
+    mascotas = obtener_mascotas(db, id_tutor)
+
+    for mascota in mascotas:
+        mascota_service.eliminar(
+            db,
+            mascota.id_mascota,
+            id_tutor
+        )
+
+    db.delete(tutor)
+    db.commit()
 
 def obtener_por_id(db: Session, id_tutor: str):
     return db.query(UsuarioTutor).filter(UsuarioTutor.id_tutor == id_tutor).first()
