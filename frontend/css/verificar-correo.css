@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@400;500;600;700;800&display=swap");
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -27,6 +29,7 @@ h2 {
   font-weight: 400;
   margin-bottom: 10px;
   color: #111;
+  font-family: "Cal Sans", "Inter";
 }
 
 .subtitulo {
@@ -133,7 +136,6 @@ button[type="submit"]:hover {
 .btn-volver:hover {
   text-decoration: underline;
 }
-
 
 .logo-pataporte-corner {
   position: fixed;
