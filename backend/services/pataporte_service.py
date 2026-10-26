@@ -1,7 +1,7 @@
+from utils.email import enviar_email
 import hashlib
 import io
 import json
-import smtplib
 from messaging.publisher import publicar_email
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -470,10 +470,7 @@ def _enviar_pdf_por_email(destinatario: str, nombre_mascota: str, pdf_bytes: byt
         )
         msg.attach(adjunto)
  
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            servidor.sendmail(settings.MAIL_FROM, destinatario, msg.as_string())
+        enviar_email(destinatario, msg)
  
     except Exception as e:
-        # el email falla silenciosamente — el pataporte ya fue persistido
-        print(f"[ERROR EMAIL PATAPORTE] No se pudo enviar a {destinatario}: {e}")
+        raise RuntimeError("No se pudo enviar el PDF") from e

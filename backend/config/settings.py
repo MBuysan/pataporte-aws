@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -7,15 +7,21 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     ENVIRONMENT: str = "development"
-    MAIL_USERNAME: str
-    MAIL_PASSWORD: str
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
     MAIL_FROM: str
+    MAIL_HOST: str = "smtp.gmail.com"
+    MAIL_PORT: int = 465
+    MAIL_SSL: bool = True
+    MAIL_STARTTLS: bool = False
+    MAIL_TIMEOUT: int = 10
 
     RABBITMQ_HOST: str = "rabbitmq"
     RABBITMQ_PORT: int = 5672
+    RABBITMQ_USER: str = "guest"
+    RABBITMQ_PASSWORD: str = "guest"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()

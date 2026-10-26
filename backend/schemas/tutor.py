@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 from typing import Optional
+from utils.password_utils import validar_password
 
 
 # ── Lo que se recibe al REGISTRAR un tutor ─────────────────
@@ -10,6 +11,12 @@ class TutorCreate(BaseModel):
     email: EmailStr  # pydantic valida automaticamente que sea un email valido
     password: str
     telefono: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def validar_clave(cls, value: str) -> str:
+        validar_password(value)
+        return value
 
     @field_validator("cedula")
     @classmethod

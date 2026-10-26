@@ -1,78 +1,88 @@
+name: pataporte
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"  
-  backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      SECRET_KEY: ${SECRET_KEY}
-    volumes:
-      - ./backend:/app
-      - uploads_data:/app/uploads
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
-
-  worker:
-    build:
-      context: ./backend
-
-    container_name: pataporte-worker
-
-    command: python -m messaging.consumer
-
-    working_dir: /app
-
-    volumes:
-      - ./backend:/app
-
-    env_file:
-      - ./.env
-
-    environment:
-      PYTHONUNBUFFERED: "1"
-      PYTHONPATH: "/app"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-
-    depends_on:
-      rabbitmq:
-        condition: service_started
-
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
-    volumes:
-      - ./frontend:/usr/share/nginx/html
-    restart: unless-stopped
-
   db:
     image: postgres:15
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "127.0.0.1:${RABBITMQ_UI_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
-      retries: 5
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.20.7
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready', timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  worker:
+    build: ./backend
+    command: python -m messaging.consumer
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8085}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   db_data:
   uploads_data:
+  rabbitmq_data:

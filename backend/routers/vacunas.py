@@ -1,7 +1,5 @@
-from http.client import HTTPException
-import os
-import jwt
-from jwt import PyJWTError
+from utils.auth import get_current_user, get_current_vet, get_current_tutor, require_tutor, require_pet_access
+from fastapi import HTTPException
 from utils import password_utils
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -12,24 +10,8 @@ from services import vacuna_service
 from config.database import Dosis, EsquemaVacunacion, EsquemaVacuna
 from typing import Optional
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
 
 router = APIRouter()
-
-def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)) -> str:
-    """Extrae el id_veterinario del token JWT."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail="No autorizado")
-    if payload.get("rol") != "veterinario":
-        raise HTTPException(status_code=401, detail="No autorizado")
-
-    id_veterinario = payload.get("sub")
-    if not id_veterinario:
-        raise HTTPException(status_code=401, detail="Token inválido")
-    return id_veterinario
 
 @router.get(
     "/{id_mascota}/carnet",
@@ -38,7 +20,9 @@ def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)) -> str:
 def obtener_carnet(
     id_mascota: str,
     db: Session = Depends(get_db),
+    user: dict = Depends(get_current_user),
 ):
+    require_pet_access(db, id_mascota, user)
 
     esquemas = vacuna_service.esquema_por_mascota(db, id_mascota)
 
@@ -58,7 +42,9 @@ def obtener_carnet(
 def crear_carnet_vacunas(
     id_mascota: str,
     db: Session = Depends(get_db),
+    user: dict = Depends(get_current_user),
 ):
+    require_pet_access(db, id_mascota, user)
     return vacuna_service.crear_esquema(db, id_mascota)
 
 @router.post(
@@ -70,6 +56,7 @@ def agregar_vacuna_a_esquema(
     id_esquema: str,
     id_vacuna: str,
     db: Session = Depends(get_db),
+    vet: str = Depends(get_current_vet),
 ):
     return vacuna_service.agregar_vacuna_a_esquema(
         db, id_esquema, id_vacuna
@@ -100,7 +87,12 @@ def ver_vacunas(
     return vacuna_service.obtener_tipos_vacuna(db, especie)
 
 @router.get("/consulta/{id_consulta}")
-def vacunas_por_consulta(id_consulta: str, db: Session = Depends(get_db)):
+def vacunas_por_consulta(id_consulta: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    from config.database import Consulta
+    consulta = db.get(Consulta, id_consulta)
+    if not consulta:
+        raise HTTPException(status_code=404, detail="Consulta no encontrada")
+    require_pet_access(db, consulta.id_mascota, user)
 
     return (
         db.query(Dosis)
@@ -109,7 +101,8 @@ def vacunas_por_consulta(id_consulta: str, db: Session = Depends(get_db)):
     )
 
 @router.get("/mascota/{id_mascota}/vacunas")
-def vacunas_mascota(id_mascota: str, db: Session = Depends(get_db)):
+def vacunas_mascota(id_mascota: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    require_pet_access(db, id_mascota, user)
 
     return (
         db.query(EsquemaVacuna)

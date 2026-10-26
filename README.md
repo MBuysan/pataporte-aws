@@ -1,5 +1,12 @@
 # Pataporte
 
+> **Primer hito local preparado:** consultá [inicio y pruebas](docs/primer-hito.md) y la [guía interactiva AWS](docs/guia-despliegue-aws.html).
+>
+> Inicio: `python3 scripts/init_local.py`, luego `docker compose up -d --build`.
+> Web: http://localhost:8085 · Correos de prueba: http://localhost:8025.
+> Ensayo completo: `python3 scripts/check_local.py`.
+> CI y CloudFormation están preparados en el repositorio; el despliegue AWS sigue pendiente.
+
 Aplicación web para la gestión del historial médico de mascotas. Permite a tutores registrar sus animales, y a organizaciones veterinarias llevar el registro de consultas, tratamientos y vacunas con certificación digital.
 
 Proyecto desarrollado para Ingeniería de Software II.
@@ -23,9 +30,10 @@ Proyecto desarrollado para Ingeniería de Software II.
 **Backend**
 
 - Python 3.11 + FastAPI
-- PostgreSQL 15 con SQLAlchemy 2 (ORM) y Alembic (migraciones)
+- PostgreSQL 15 con SQLAlchemy 2 (ORM); Alembic instalado, migraciones pendientes
 - Autenticación JWT (PyJWT + bcrypt)
-- Envío de correos (verificación y recuperación de contraseña)
+- Envío de correos (verificación, recuperación y PDF), configurable por SMTP
+- RabbitMQ y worker para correos; Mailpit como buzón local de prueba
 
 **Frontend**
 
@@ -40,7 +48,7 @@ Proyecto desarrollado para Ingeniería de Software II.
 
 ## Arquitectura
 
-![Arquitectura del sistema](/frontend/assets/pataporte_architecture.jpg)
+![Arquitectura del sistema](frontend/assets/pataporte_architecture.jpg)
 
 ---
 
@@ -100,25 +108,26 @@ pataporte/
 2. Crear el archivo de entorno a partir de la plantilla:
 
    ```bash
-   cp .env_example .env
+   python3 scripts/init_local.py
    ```
 
-3. Editar `.env` con los valores correspondientes (ver sección [Variables de entorno](#variables-de-entorno)).
+3. El generador configura claves locales y Mailpit. Si `.env` ya existía, se conserva: revisar los campos nuevos de SMTP y RabbitMQ. Ver [el primer hito](docs/primer-hito.md).
 
 4. Levantar los servicios:
 
    ```bash
-   docker-compose up --build
+   docker compose up -d --build
    ```
 
 Una vez levantados:
 
 | Servicio      | URL                        |
 | ------------- | -------------------------- |
-| Frontend      | http://localhost           |
+| Frontend      | http://localhost:8085      |
 | Backend       | http://localhost:8000      |
 | API Docs      | http://localhost:8000/docs |
-| Base de datos | localhost:5432             |
+| Correo local  | http://localhost:8025      |
+| Base de datos | Solo dentro de Docker     |
 
 ---
 

@@ -1,57 +1,55 @@
 import json
-
-from config.database import SessionLocal
-
+import logging
+import time
+import pika
 from messaging.rabbitmq import obtener_canal
+from services.auth_service import _enviar_email_verificacion, _enviar_email_recuperacion
+from services.pataporte_service import _enviar_pdf_por_email, _generar_pdf
 
-from services.auth_service import _enviar_email_verificacion
-from services.mascota_service import (
-    _enviar_historial_por_email,
-    obtener_por_id,
-)
-from services.pataporte_service import (
-    _enviar_pdf_por_email,
-    _generar_pdf,
-)
-
-channel, connection = obtener_canal()
+logger = logging.getLogger(__name__)
 
 
-def callback(ch, method, properties, body):
+def procesar(data):
+    tipo = data["tipo"]
+    if tipo == "verificacion_email":
+        _enviar_email_verificacion(data["email"], data["codigo"])
+    elif tipo == "recuperacion_password":
+        _enviar_email_recuperacion(data["email"], data["codigo"])
+    elif tipo == "pdf_email":
+        pdf = _generar_pdf(data["credencial"], data["hash_verificacion"])
+        _enviar_pdf_por_email(data["email"], data["nombre_mascota"], pdf)
+    else:
+        raise ValueError("Tipo de mensaje no soportado")
+
+
+def callback(channel, method, properties, body):
     try:
-        data = json.loads(body)
-        tipo = data["tipo"]
-
-        if tipo == "verificacion_email":
-            _enviar_email_verificacion(
-                data["email"],
-                data["codigo"]
-            )
-
-        elif tipo == "pdf_email":
-
-            pdf = _generar_pdf(
-                data["credencial"],
-                data["hash_verificacion"]
-            )
-
-            _enviar_pdf_por_email(
-                data["email"],
-                data["nombre_mascota"],
-                pdf
-            )
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    except Exception as e:
-        print(f"Error procesando mensaje: {e}")
+        procesar(json.loads(body))
+    except Exception:
+        # En este hito local los fallos van a una cola inspeccionable, sin bucle infinito.
+        logger.error("Correo fallido: revisar emails.failed; no se confirma como enviado")
+        channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+    else:
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
-channel.basic_consume(
-    queue="emails",
-    on_message_callback=callback
-)
+def main():
+    logging.basicConfig(level=logging.INFO)
+    while True:
+        connection = None
+        try:
+            channel, connection = obtener_canal()
+            channel.basic_qos(prefetch_count=1)
+            channel.basic_consume(queue="emails", on_message_callback=callback)
+            logger.info("Worker listo")
+            channel.start_consuming()
+        except pika.exceptions.AMQPError:
+            logger.warning("RabbitMQ desconectado; reconectando")
+            time.sleep(3)
+        finally:
+            if connection and connection.is_open:
+                connection.close()
 
-print("Esperando mensajes...")
 
-channel.start_consuming()
+if __name__ == "__main__":
+    main()

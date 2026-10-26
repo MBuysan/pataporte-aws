@@ -1,34 +1,12 @@
+from utils.auth import get_current_user, get_current_vet, get_current_tutor, require_tutor, require_pet_access
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
-import jwt
-from jwt import PyJWTError
-import os
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
 from services import historial_service, consulta_service
 
 from utils import password_utils
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-
-def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-    except PyJWTError:
-        raise HTTPException(
-            status_code=401,
-            detail="No autorizado"
-        )
-    if payload.get("rol") != "veterinario":
-        raise HTTPException(status_code=401, detail="No autorizado")
-
-    id_veterinario = payload.get("sub")
-    if not id_veterinario:
-        raise HTTPException(status_code=401, detail="Token inválido")
-
-    return id_veterinario
 
 router = APIRouter( )
 
@@ -52,8 +30,12 @@ def agregar_consulta(
     summary="Ver detalle completo de una consulta",
     description="Devuelve la consulta con sus tratamientos y dosis asociadas.",
 )
-def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = Depends(get_db)):
-    return consulta_service.obtener_detalle(db, id_consulta)
+def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    require_pet_access(db, id_mascota, user)
+    detalle = consulta_service.obtener_detalle(db, id_consulta)
+    if str(detalle["id_mascota"]) != id_mascota:
+        raise HTTPException(status_code=404, detail="Consulta no encontrada")
+    return detalle
  
 
 
@@ -62,14 +44,16 @@ def obtener_detalle_consulta(id_mascota: str, id_consulta: str, db: Session = De
     response_model=list[ConsultaResponse],
     summary="Ver consultas del historial de una mascota",
 )
-def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db)):
+def ver_historial_consultas(id_mascota: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    require_pet_access(db, id_mascota, user)
     return historial_service.ver_historial_consultas(db, id_mascota)
 
 @router.get(
     "/{id_mascota}/unificado",
     summary="Ver historial unificado (consultas, tratamientos y vacunas)"
 )
-def ver_historial_unificado(id_mascota: str, db: Session = Depends(get_db)):
+def ver_historial_unificado(id_mascota: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    require_pet_access(db, id_mascota, user)
     return {"eventos": historial_service.obtener_historial_unificado(db, id_mascota)}
 
 

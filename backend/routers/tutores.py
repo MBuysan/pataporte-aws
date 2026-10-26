@@ -1,3 +1,4 @@
+from utils.auth import require_own_tutor
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -9,7 +10,7 @@ from services import tutor_service
 router = APIRouter()
 
 
-@router.post("/{id_tutor}/vincular-mascota", summary="Vincular mascota con código")
+@router.post("/{id_tutor}/vincular-mascota", dependencies=[Depends(require_own_tutor)], summary="Vincular mascota con código")
 def vincular_mascota(
     id_tutor: str, data: VincularMascotaRequest, db: Session = Depends(get_db)
 ):
@@ -34,7 +35,7 @@ def registrar_tutor(data: TutorCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Error interno")
 
 
-@router.get("/{id_tutor}", response_model=TutorResponse, summary="Obtener tutor")
+@router.get("/{id_tutor}", dependencies=[Depends(require_own_tutor)], response_model=TutorResponse, summary="Obtener tutor")
 def obtener_tutor(id_tutor: str, db: Session = Depends(get_db)):
     tutor = tutor_service.obtener_por_id(db, id_tutor)
     if not tutor:
@@ -42,13 +43,14 @@ def obtener_tutor(id_tutor: str, db: Session = Depends(get_db)):
     return tutor
 
 
-@router.patch("/{id_tutor}", response_model=TutorResponse, summary="Actualizar tutor")
+@router.patch("/{id_tutor}", dependencies=[Depends(require_own_tutor)], response_model=TutorResponse, summary="Actualizar tutor")
 def actualizar_tutor(id_tutor: str, data: TutorUpdate, db: Session = Depends(get_db)):
     return tutor_service.actualizar(db, id_tutor, data)
 
 
 @router.get(
     "/{id_tutor}/mascotas",
+    dependencies=[Depends(require_own_tutor)],
     response_model=list[MascotaResponse],
     summary="Mascotas del tutor",
 )
@@ -57,6 +59,7 @@ def mascotas_del_tutor(id_tutor: str, db: Session = Depends(get_db)):
 
 @router.delete(
     "/{id_tutor}",
+    dependencies=[Depends(require_own_tutor)],
     status_code=204,
     summary="Eliminar tutor"
 )

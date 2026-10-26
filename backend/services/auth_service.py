@@ -1,7 +1,6 @@
-import random
+from utils.email import enviar_email
+import secrets
 import string
-import smtplib
-import traceback
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
@@ -41,9 +40,9 @@ EXPIRACION_MINUTOS = 15
 def _generar_codigo() -> str:
     """
     genera un codigo alfanumerico de 6 caracteres en mayusculas. Ejemplo: 'A3F7KP'
-    random.choices elige caracteres al azar de la lista dada, con repeticion permitida.
+    secrets.choice utiliza una fuente criptográfica de aleatoriedad.
     """
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return "".join([secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6)])
 
 
 def _hashear(texto: str) -> str:
@@ -117,18 +116,10 @@ Equipo Pataporte
     mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
     try:
-        # SMTP_SSL abre una conexión cifrada directamente en el puerto 465.
-        # "with" garantiza que la conexión se cierre aunque ocurra un error.
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            # sendmail(remitente, [destinatarios], mensaje_serializado_como_texto)
-            servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
+        enviar_email(email, mensaje)
 
     except Exception as e:
-        # si el email falla, se registra pero no se interrumpe el flujo.
-        # el código ya fue guardado en la BD — el usuario puede pedir otro.
-        traceback.print_exc()
-        print(f"[ERROR EMAIL] No se pudo enviar email a {email}: {e}")
+        raise RuntimeError("No se pudo enviar el correo de recuperación") from e
 
 
 def _enviar_email_verificacion(email: str, codigo: str):
@@ -187,13 +178,10 @@ Equipo Pataporte
     mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
+        enviar_email(email, mensaje)
 
     except Exception as e:
-        traceback.print_exc()
-        print(f"[ERROR EMAIL] No se pudo enviar email de verificacion a {email}: {e}")
+        raise RuntimeError("No se pudo enviar el correo de verificación") from e
 
 
 #  funciones publicas (las llaman los routers)
@@ -242,7 +230,7 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     db.commit()
 
     publicar_email({
-        "tipo": "verificacion_email",
+        "tipo": "recuperacion_password",
         "email": tutor.email,
         "codigo": codigo_plano
     })
@@ -373,9 +361,9 @@ def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
 
     codigo_ingresado = data.codigo.strip().upper()
 
+    verificacion = None
     for c in candidatos:
-        # BYPASS SOLO PARA TESTING - quitar antes de producción
-        if codigo_ingresado == "123456" or verificar_password(codigo_ingresado, c.codigo_hash):
+        if verificar_password(codigo_ingresado, c.codigo_hash):
             verificacion = c
             break
 

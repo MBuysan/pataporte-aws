@@ -1,0 +1,637 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PATAPORTE network in two AZs. NAT disabled by default. No application
+  or database is deployed.
+Parameters:
+  ProjectName:
+    Type: String
+    Default: pataporte
+    AllowedPattern: '[a-z][a-z0-9-]{1,24}'
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues:
+    - dev
+    - test
+    - prod
+  VpcCidr:
+    Type: String
+    Default: 10.20.0.0/16
+  NatMode:
+    Type: String
+    Default: none
+    AllowedValues:
+    - none
+    - single
+    - per-az
+    Description: none no crea NAT; single comparte salida; per-az crea un NAT por
+      zona.
+  PublicSubnetACidr:
+    Type: String
+    Default: 10.20.0.0/24
+  AppSubnetACidr:
+    Type: String
+    Default: 10.20.10.0/24
+  DataSubnetACidr:
+    Type: String
+    Default: 10.20.20.0/24
+  PublicSubnetBCidr:
+    Type: String
+    Default: 10.20.1.0/24
+  AppSubnetBCidr:
+    Type: String
+    Default: 10.20.11.0/24
+  DataSubnetBCidr:
+    Type: String
+    Default: 10.20.21.0/24
+Conditions:
+  CreateNat:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: NatMode
+      - none
+  NatPerAz:
+    Fn::Equals:
+    - Ref: NatMode
+    - per-az
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-vpc
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-igw
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: Vpc
+      InternetGatewayId:
+        Ref: InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-public
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+    DependsOn: GatewayAttachment
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      CidrBlock:
+        Ref: PublicSubnetACidr
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-public-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  PublicSubnetARouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetA
+      RouteTableId:
+        Ref: PublicRouteTable
+  AppSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      CidrBlock:
+        Ref: AppSubnetACidr
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-app-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  AppRouteTableA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-app-routes-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  AppSubnetARouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: AppSubnetA
+      RouteTableId:
+        Ref: AppRouteTableA
+  DataSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      CidrBlock:
+        Ref: DataSubnetACidr
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-data-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  DataRouteTableA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-data-routes-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  DataSubnetARouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: DataSubnetA
+      RouteTableId:
+        Ref: DataRouteTableA
+  NatAddressA:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-nat-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+    Condition: CreateNat
+    DependsOn: GatewayAttachment
+  NatGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+        - NatAddressA
+        - AllocationId
+      SubnetId:
+        Ref: PublicSubnetA
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-nat-a
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+    Condition: CreateNat
+  AppDefaultRouteA:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: AppRouteTableA
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NatGatewayA
+    Condition: CreateNat
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      CidrBlock:
+        Ref: PublicSubnetBCidr
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-public-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  PublicSubnetBRouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnetB
+      RouteTableId:
+        Ref: PublicRouteTable
+  AppSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      CidrBlock:
+        Ref: AppSubnetBCidr
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-app-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  AppRouteTableB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-app-routes-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  AppSubnetBRouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: AppSubnetB
+      RouteTableId:
+        Ref: AppRouteTableB
+  DataSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      CidrBlock:
+        Ref: DataSubnetBCidr
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-data-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  DataRouteTableB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-data-routes-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  DataSubnetBRouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: DataSubnetB
+      RouteTableId:
+        Ref: DataRouteTableB
+  NatAddressB:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-nat-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+    Condition: NatPerAz
+    DependsOn: GatewayAttachment
+  NatGatewayB:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+        - NatAddressB
+        - AllocationId
+      SubnetId:
+        Ref: PublicSubnetB
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-nat-b
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+    Condition: NatPerAz
+  AppDefaultRouteB:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: AppRouteTableB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Fn::If:
+        - NatPerAz
+        - Ref: NatGatewayB
+        - Ref: NatGatewayA
+    Condition: CreateNat
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId:
+        Ref: Vpc
+      VpcEndpointType: Gateway
+      ServiceName:
+        Fn::Sub: com.amazonaws.${AWS::Region}.s3
+      RouteTableIds:
+      - Ref: AppRouteTableA
+      - Ref: AppRouteTableB
+      - Ref: DataRouteTableA
+      - Ref: DataRouteTableB
+  DynamodbEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId:
+        Ref: Vpc
+      VpcEndpointType: Gateway
+      ServiceName:
+        Fn::Sub: com.amazonaws.${AWS::Region}.dynamodb
+      RouteTableIds:
+      - Ref: AppRouteTableA
+      - Ref: AppRouteTableB
+      - Ref: DataRouteTableA
+      - Ref: DataRouteTableB
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: HTTPS entry point; tighten to CloudFront when configuring
+        edge
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-alb-sg
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  ApiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: FastAPI only from ALB
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 8000
+        ToPort: 8000
+        SourceSecurityGroupId:
+          Ref: AlbSecurityGroup
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-api-sg
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  WorkerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Workers and migration jobs; no inbound rules
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress: []
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-worker-sg
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: PostgreSQL only from application and workers
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 5432
+        ToPort: 5432
+        SourceSecurityGroupId:
+          Ref: ApiSecurityGroup
+      - IpProtocol: tcp
+        FromPort: 5432
+        ToPort: 5432
+        SourceSecurityGroupId:
+          Ref: WorkerSecurityGroup
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${ProjectName}-${EnvironmentName}-db-sg
+      - Key: project
+        Value:
+          Ref: ProjectName
+      - Key: environment
+        Value:
+          Ref: EnvironmentName
+Outputs:
+  VpcId:
+    Value:
+      Ref: Vpc
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-VpcId
+  PublicSubnetAId:
+    Value:
+      Ref: PublicSubnetA
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-PublicSubnetAId
+  PublicSubnetBId:
+    Value:
+      Ref: PublicSubnetB
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-PublicSubnetBId
+  AppSubnetAId:
+    Value:
+      Ref: AppSubnetA
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AppSubnetAId
+  AppSubnetBId:
+    Value:
+      Ref: AppSubnetB
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AppSubnetBId
+  DataSubnetAId:
+    Value:
+      Ref: DataSubnetA
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-DataSubnetAId
+  DataSubnetBId:
+    Value:
+      Ref: DataSubnetB
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-DataSubnetBId
+  AppRouteTableAId:
+    Value:
+      Ref: AppRouteTableA
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AppRouteTableAId
+  AppRouteTableBId:
+    Value:
+      Ref: AppRouteTableB
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AppRouteTableBId
+  AlbSecurityGroupId:
+    Value:
+      Ref: AlbSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AlbSecurityGroupId
+  ApiSecurityGroupId:
+    Value:
+      Ref: ApiSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-ApiSecurityGroupId
+  WorkerSecurityGroupId:
+    Value:
+      Ref: WorkerSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-WorkerSecurityGroupId
+  DatabaseSecurityGroupId:
+    Value:
+      Ref: DatabaseSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-DatabaseSecurityGroupId

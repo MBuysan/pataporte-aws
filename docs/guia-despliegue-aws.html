@@ -1,0 +1,1792 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Guía interactiva para desplegar PATAPORTE en AWS: 20 etapas, arquitectura explicada, trabajo en equipo y pruebas para la defensa.">
+<meta name="theme-color" content="#24362f">
+<title>PATAPORTE · Guía de campo AWS</title>
+<style>
+:root{--bg:#fafaf7;--paper:#fff;--ink:#24362f;--muted:#65716a;--line:#e0e5dc;--orange:#b5482a;--orange-soft:#f9eee7;--green:#416449;--green-soft:#edf3e9;--sidebar:#f1f3ec;--mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;--sans:"Avenir Next","Segoe UI","Trebuchet MS",sans-serif;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sidebar-width:268px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:155px}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65}button,input{font:inherit}button,a,input{-webkit-tap-highlight-color:transparent}button{cursor:pointer}a{color:inherit}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #b5482a;outline-offset:4px}button{color:inherit}svg{display:block}button svg{width:20px;height:20px}[hidden]{display:none!important}.skip-link{position:fixed;top:8px;left:280px;transform:translateY(-150%);background:var(--ink);color:#fff;padding:10px 18px;z-index:200}.skip-link:focus{transform:none}
+.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar-width);background:var(--sidebar);border-right:1px solid var(--line);z-index:80;display:flex;flex-direction:column;padding:28px 19px 18px}.brand{display:flex;align-items:center;gap:11px;text-decoration:none;margin:0 11px 22px}.brand-icon{width:39px;height:43px;background:var(--orange);color:white;display:grid;place-items:center;border-radius:11px 11px 15px 15px;transform:rotate(-5deg)}.brand-icon svg{width:26px;height:26px}.brand b{font-size:18px;letter-spacing:-.7px;display:block;line-height:1.2}.brand small{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--muted)}.guide-label{display:flex;justify-content:space-between;align-items:center;margin:0 11px 10px;padding-top:17px;border-top:1px solid var(--line);font-size:10px;letter-spacing:1.5px;font-weight:700;color:var(--muted)}.version-label{font-family:var(--mono);letter-spacing:0;font-size:10px;border:1px solid #d1d8cd;border-radius:4px;padding:1px 5px}.sidebar nav{overflow:auto;flex:1;scrollbar-width:thin;padding-right:4px}.nav-group{text-transform:uppercase;letter-spacing:1.7px;font-size:9px;font-weight:800;color:#73806d;padding:18px 12px 6px}.nav-link{display:flex;align-items:center;gap:10px;text-decoration:none;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.4;margin:2px 0;transition:background .15s}.nav-link:hover{background:#e4e9de}.nav-link.active{background:#e0e7da;color:#25442e;font-weight:700}.nav-number{font-size:10px;color:#7b8675;font-family:var(--mono)}.nav-link.active .nav-number{color:#416449}.nav-done{margin-left:auto;color:var(--green);opacity:0}.nav-link.completed .nav-done{opacity:1}.sidebar-foot{padding:18px 10px 0;margin-top:12px;border-top:1px solid var(--line)}.progress-label{display:flex;justify-content:space-between;font-size:11px;font-weight:700}.progress-label output{font-family:var(--mono);font-size:10px}.progress-track{height:4px;background:#dce3d5;border-radius:5px;margin:10px 0;overflow:hidden}.progress-fill{height:100%;width:0;background:var(--green);transition:width .3s}.progress-note{font-size:10px;line-height:1.5;color:var(--muted);margin:0}.reset-progress{border:0;background:none;padding:6px 0 0;text-decoration:underline;font-size:10px;color:var(--muted)}.close-sidebar{display:none}.backdrop{display:none}
+.shell{margin-left:var(--sidebar-width)}.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 46px;background:rgba(250,250,247,.96);position:sticky;top:0;z-index:40}.breadcrumb{display:flex;gap:12px;align-items:center;min-width:0;font-size:11px;color:var(--muted)}.breadcrumb b{font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:390px}.breadcrumb .slash{color:#b3bcb0}.top-actions{display:flex;gap:9px;align-items:center;flex-shrink:0}.text-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:none;border:1px solid var(--line);border-radius:7px;padding:8px 12px;font-size:11px;font-weight:600;text-decoration:none;transition:background .15s}.text-button:hover{background:#edf0e8}.text-button svg{width:15px;height:15px}.menu-toggle{display:none;background:none;border:0;padding:5px}
+.content{max-width:1190px;margin:0 auto;padding:48px 60px 30px}.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:30px;padding:0 0 28px;animation:arrive .45s ease-out}.eyebrow{text-transform:uppercase;font-weight:750;font-size:9px;letter-spacing:2px;color:var(--muted)}.hero .eyebrow{display:flex;align-items:center;gap:10px}.little-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block}.hero h1{font-family:var(--serif);font-size:clamp(49px,5.7vw,79px);font-weight:500;line-height:1.02;letter-spacing:-3.5px;margin:19px 0 18px;max-width:640px}.hero h1 em{font-weight:500;color:var(--orange)}.hero-description{font-size:14px;line-height:1.8;color:var(--muted);max-width:560px;margin:0}.hero-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:23px}.primary-button{display:inline-flex;align-items:center;gap:20px;border:0;border-radius:6px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:12px 17px;transition:background .2s}.primary-button:hover{background:var(--green)}.hero-art{align-self:center;position:relative;transform:rotate(7deg);margin-top:15px}.passport{height:214px;width:156px;border-radius:9px 14px 14px 9px;background:#e8eddf;border:1px solid #cad5bf;box-shadow:7px 9px 0 #edf0e7;display:flex;align-items:center;flex-direction:column;padding:20px 10px;position:relative}.passport:before{content:"";position:absolute;left:8px;top:0;bottom:0;border-left:1px solid #cbd5c0}.passport-top{font-size:8px;letter-spacing:2.7px;font-weight:800;color:var(--green)}.passport .paw-seal{width:66px;height:66px;border:1px solid #a1b092;border-radius:50%;display:grid;place-items:center;margin:18px 0 12px;color:var(--green)}.paw-seal svg{width:34px;height:34px}.passport strong{font-family:var(--serif);font-size:18px;font-weight:500;line-height:1}.passport small{font-family:var(--mono);font-size:7px;color:var(--green);margin-top:12px}.stamp{position:absolute;background:#f9f6ee;border:1px solid #c56a49;color:#a84122;border-radius:50%;width:64px;height:64px;display:grid;place-items:center;right:-16px;bottom:-9px;transform:rotate(-18deg);font-family:var(--mono);font-size:9px;text-align:center;line-height:1.25}.stamp b{font-size:19px}
+.meta-strip{display:grid;grid-template-columns:1fr 1fr 1fr 1.3fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:17px 0;margin:0 0 28px}.meta-item{padding:0 18px;border-left:1px solid var(--line)}.meta-item:first-child{padding-left:0;border:0}.meta-item span{display:block;font-size:8px;letter-spacing:1.5px;font-weight:700;color:var(--muted);text-transform:uppercase}.meta-item b{display:block;font-size:12px;font-weight:650;margin-top:4px}.meta-item .status{color:var(--orange)}
+.usage{border:1px solid var(--line);border-radius:8px;background:var(--paper);margin-bottom:31px}.usage summary{cursor:pointer;list-style:none;font-size:12px;font-weight:650;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}.usage summary:after{content:"+";font-size:17px;color:var(--muted)}.usage[open] summary:after{content:"−"}.usage .prose{padding:0 20px 10px;font-size:12px}
+.route-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.route-label span:last-child{font-size:10px;color:var(--muted)}.roadmap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:33px}.roadmap button{position:relative;text-align:left;border:0;background:none;padding:12px 12px 10px 0;display:flex;align-items:center;gap:10px;color:var(--ink)}.roadmap button:before{content:"";height:1px;background:var(--line);position:absolute;top:28px;left:38px;right:6px}.roadmap .step-dot{z-index:1;background:var(--bg);border:1px solid #b6c1ac;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:10px;flex-shrink:0}.roadmap button:hover .step-dot{background:var(--ink);color:#fff}.roadmap button b{font-size:11px;background:var(--bg);padding:0 7px;position:relative}.roadmap button small{display:block;font-weight:400;color:var(--muted);font-size:9px;margin-top:1px}
+.guide-heading{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:15px;gap:16px}.guide-heading h2{font-family:var(--serif);font-size:30px;letter-spacing:-.8px;font-weight:500;margin:0}.guide-heading p{font-size:11px;color:var(--muted);margin:4px 0 0}.guide-tools{display:flex;align-items:center;gap:6px;flex-shrink:0}.quiet-button{border:0;background:none;font-size:10px;color:var(--muted);padding:8px;text-decoration:underline;text-underline-offset:3px}
+.search-area{position:sticky;top:72px;z-index:30;padding:12px 0 10px;background:var(--bg);border-bottom:1px solid var(--line);margin-bottom:8px}.search-row{display:flex;gap:10px;align-items:center}.search-box{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:9px 12px;flex:1;min-width:0}.search-box:focus-within{border-color:var(--green);box-shadow:0 0 0 2px #41644915}.search-box svg{width:16px;height:16px;flex-shrink:0;color:var(--muted)}.search-box input{outline:none!important;border:0;width:100%;background:none;font-size:12px;color:var(--ink);min-width:0;padding:1px}.search-box kbd{font-family:var(--mono);font-size:9px;color:#7a8572;border:1px solid var(--line);padding:0 4px;border-radius:3px}.clear-search{border:0;background:none;font-size:17px;padding:0 4px;color:var(--muted)}.search-count{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;min-width:61px;text-align:right}.role-filters{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.role-filter{display:inline-flex;gap:7px;align-items:center;border:1px solid transparent;background:none;border-radius:5px;font-size:10px;padding:5px 9px;color:var(--muted)}.role-filter[aria-pressed=true]{background:var(--green-soft);border-color:#cbd7c2;color:#31533a;font-weight:700}.role-letter{display:grid;place-items:center;font-family:var(--mono);font-size:8px;width:17px;height:17px;border-radius:4px;background:#e5e9df;color:#3b513c}.filter-note{font-size:10px;color:var(--muted);margin:7px 0 0}.empty-state{padding:44px 20px;text-align:center;border:1px dashed var(--line);border-radius:8px;margin:20px 0}.empty-state h3{font-family:var(--serif);font-size:26px;font-weight:500;margin:0 0 8px}.empty-state p{font-size:12px;color:var(--muted)}
+.chapter{border-bottom:1px solid var(--line);scroll-margin-top:195px}.chapter-details>summary{list-style:none;display:flex;gap:19px;align-items:center;padding:20px 6px 20px 2px;cursor:pointer;transition:background .15s}.chapter-details>summary:hover{background:#f3f5ee}.chapter-details[open]>summary{padding-top:25px;padding-bottom:23px}.chapter-num{font-family:var(--serif);font-size:29px;font-style:italic;color:#8a9a82;line-height:1;min-width:36px}.chapter-details[open] .chapter-num{color:var(--orange)}.chapter-heading{flex:1;min-width:0}.chapter-title{font-size:14px;font-weight:650;line-height:1.4;display:block}.chapter-meta{display:flex;gap:12px;align-items:center;font-size:9px;color:var(--muted);margin-top:7px;line-height:1.5}.owner-pill{font-family:var(--mono);color:#5b7053;background:#edf0e6;border-radius:3px;padding:1px 5px;font-size:8px}.chapter-chevron{color:#87947e;flex-shrink:0;width:18px;transition:transform .2s}.chapter-chevron svg{width:17px;height:17px}.chapter-details[open] .chapter-chevron{transform:rotate(90deg)}.chapter.completed .chapter-num{color:var(--green)}.done-label{display:none;color:var(--green)}.chapter.completed .done-label{display:inline}.chapter.completed .done-label:before{content:"✓ ";font-weight:700}.chapter-content{padding:0 3px 12px 57px;min-width:0}.chapter-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 3px 29px 57px;padding-top:16px;border-top:1px solid var(--line)}.complete-button{border:1px solid #c9d4c1;border-radius:6px;background:#fff;font-size:11px;display:flex;align-items:center;gap:9px;padding:9px 13px}.complete-button[aria-pressed=true]{background:var(--green);border-color:var(--green);color:white}.complete-button span{font-size:15px;line-height:1}.next-chapter{font-size:11px;background:none;border:0;display:flex;align-items:center;gap:18px;padding:9px 0;font-weight:650}.next-chapter span{color:var(--orange);font-size:17px}
+.prose{font-size:13px;line-height:1.85;overflow-wrap:break-word}.prose h3{font-family:var(--serif);font-size:25px;font-weight:500;letter-spacing:-.5px;line-height:1.3;margin:31px 0 13px}.prose h3:first-child{margin-top:0}.prose p{margin:0 0 15px}.prose ul,.prose ol{padding-left:24px;margin:0 0 20px}.prose li{margin:6px 0;padding-left:2px}.prose li::marker{color:var(--green);font-weight:600}.prose strong{font-weight:700}.prose a{color:var(--orange);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}.prose code:not(pre code){font-family:var(--mono);font-size:.86em;background:#edf0e7;border-radius:3px;padding:2px 4px;color:#304d36;overflow-wrap:anywhere}.prose blockquote{border-left:2px solid var(--green);margin:20px 0;padding:8px 18px;background:var(--green-soft)}.prose .table-scroll{overflow-x:auto;width:100%;margin:22px 0;border:1px solid var(--line);border-radius:7px;scrollbar-width:thin}.prose table{width:100%;border-collapse:collapse;font-size:11px;line-height:1.7;min-width:470px;background:#fff}.prose th{text-align:left;background:#edf1e8;color:#496344;font-weight:700;vertical-align:top;padding:11px 13px;font-size:10px;border-bottom:1px solid var(--line)}.prose td{padding:11px 13px;vertical-align:top;border-bottom:1px solid #e8ece4;min-width:105px}.prose tr:last-child td{border:0}.prose td:first-child{font-weight:550}.prose tbody tr:nth-child(even){background:#fbfcf8}.code-wrap{margin:21px 0;border-radius:8px;overflow:hidden;background:#1e2925;color:#e1e9dd}.code-head{display:flex;justify-content:space-between;align-items:center;background:#29372f;padding:7px 13px;gap:16px}.code-head>span{font-family:var(--mono);font-size:9px;color:#c0d3b3;text-transform:uppercase;letter-spacing:1.3px}.copy-code{border:1px solid #53614f;border-radius:4px;background:none;color:#d7e0d2;font-size:9px;padding:3px 8px}.copy-code:hover{background:#3c4d3d}.codeblock{margin:0;padding:17px;overflow:auto;font-family:var(--mono);font-size:11px;line-height:1.85;background:#1e2925!important;tab-size:2}.codeblock code{font:inherit}.codeblock .c1,.codeblock .c,.codeblock .cm{color:#a9b8a3!important}.prose mark{background:#f7d8a8;color:#4a371c;border-radius:2px;padding:1px}.milestone{background:#edf3e9;border:1px solid #dce6d3;border-radius:7px;padding:14px 17px!important;color:#36513c;margin-top:23px!important}
+.architecture{border:1px solid var(--line);border-radius:8px;background:#f4f6ef;padding:20px;margin:24px 0}.map-caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:8px;letter-spacing:1.4px;font-weight:750;color:var(--muted);margin-bottom:23px}.map-caption span:last-child{letter-spacing:0;text-transform:none;font-size:10px;font-weight:400}.flow-lane{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:13px;margin:14px 0}.lane-label{font-size:9px;color:var(--muted);font-weight:650}.flow-chain{display:flex;align-items:center;gap:7px;min-width:0}.service-node{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;background:white;border:1px solid #d5decf;border-radius:6px;padding:11px;text-align:left;line-height:1.4;transition:background .15s,border .15s;max-width:210px}.service-node b{font-size:10px;white-space:nowrap}.service-node span{font-size:8px;color:var(--muted);margin-top:3px}.service-node:hover,.service-node[aria-pressed=true]{border-color:#8ba17c;background:#e6eedf}.flow-arrow{color:#7d9270;font-size:15px}.flow-note{font-size:10px!important;line-height:1.6;margin:18px 0!important;color:var(--muted)}.service-detail{border-top:1px solid #d5decf;padding-top:15px;font-size:11px;line-height:1.7}.service-detail p{margin:7px 0 0}.service-detail button{border:0;background:none;color:var(--orange);padding:6px 0 0;font-size:10px;text-decoration:underline}.service-detail strong{font-size:12px}
+.closing{margin-top:42px;display:flex;justify-content:space-between;gap:20px;align-items:center;padding:26px 0;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.closing b{display:block;color:var(--ink);font-family:var(--serif);font-size:21px;font-weight:500;letter-spacing:-.4px;margin-bottom:2px}.closing a{text-underline-offset:3px}.toast{position:fixed;bottom:25px;left:calc(50% + 100px);transform:translate(-50%,20px);background:var(--ink);color:#fff;border-radius:7px;padding:12px 20px;font-size:11px;z-index:100;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}.back-top{position:fixed;right:23px;bottom:22px;width:37px;height:37px;border:1px solid var(--line);background:white;border-radius:50%;z-index:35;font-size:17px;box-shadow:0 3px 12px #24362f0a}.chapter:target>details>summary{background:#f0f3e9}summary::-webkit-details-marker{display:none}.no-js-note{padding:12px 20px;background:#fff3d6;color:#624819;font-size:12px}
+@keyframes arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:1600px){.content{padding-top:60px}.hero h1{font-size:86px}}
+@media(max-width:1200px){:root{--sidebar-width:242px}.sidebar{padding-left:12px;padding-right:12px}.content{padding:35px 32px 24px}.topbar{padding:0 32px}.hero{grid-template-columns:minmax(0,1fr) 140px;gap:20px}.passport{width:132px;height:189px;padding:16px 8px}.passport .paw-seal{width:55px;height:55px;margin:15px 0 10px}.passport strong{font-size:16px}.stamp{width:58px;height:58px}.hero h1{font-size:64px}.service-node{padding:9px 7px}.flow-lane{grid-template-columns:78px minmax(0,1fr);gap:7px}.flow-chain{gap:5px}}
+@media(max-width:1000px){.hero{grid-template-columns:1fr}.hero-art{display:none}.hero h1{font-size:67px}.meta-strip{grid-template-columns:1fr 1fr 1fr}.meta-item:last-child{display:none}.flow-lane{grid-template-columns:1fr;gap:5px}.lane-label{font-size:9px}.service-node{padding:10px}.role-filter{font-size:9px;padding:5px 7px}.chapter-content{padding-left:20px}.chapter-actions{margin-left:20px}.roadmap button{gap:2px}.roadmap button b{font-size:10px;padding:0 4px}}
+@media(max-width:760px){:root{--sidebar-width:268px}.shell{margin:0}.sidebar{transform:translateX(-100%);transition:transform .2s ease;padding-top:23px;box-shadow:none}.sidebar.open{transform:translateX(0);box-shadow:15px 0 60px #152a2a22}.close-sidebar{display:block;position:absolute;right:12px;top:16px;background:none;border:0;font-size:24px;padding:2px 8px;color:var(--muted)}.backdrop.open{display:block;position:fixed;inset:0;background:#172b2455;backdrop-filter:blur(2px);z-index:70}.menu-toggle{display:block}.topbar{height:61px;padding:0 20px;gap:10px}.breadcrumb{flex:1;gap:9px;font-size:10px}.breadcrumb>span:first-child{display:none}.breadcrumb .slash{display:none}.breadcrumb b{max-width:215px}.top-actions{gap:3px}.top-actions .text-button{border:0;padding:7px}.top-actions .text-button span{display:none}.content{padding:29px 23px 20px}.hero{padding-bottom:25px}.hero .eyebrow{font-size:8px;letter-spacing:1.5px}.hero h1{font-size:64px;margin:17px 0;letter-spacing:-2.7px}.hero-description{font-size:13px;max-width:540px}.hero-actions{margin-top:20px}.meta-strip{padding:14px 0;margin-bottom:22px}.meta-item{padding:0 10px}.meta-item span{font-size:7px;letter-spacing:1px}.meta-item b{font-size:11px}.usage{margin-bottom:24px}.usage summary{padding:13px;font-size:11px}.route-label span:last-child{font-size:9px}.roadmap{margin-bottom:25px}.roadmap button{align-items:flex-start;flex-direction:column;gap:8px;padding:8px 5px 8px 0}.roadmap button:before{top:24px;left:35px}.roadmap button b{padding:0;font-size:10px;line-height:1.5}.roadmap button small{font-size:8px}.guide-heading{gap:8px}.guide-heading h2{font-size:28px}.guide-tools{gap:0}.quiet-button{font-size:9px;padding:7px 4px}.guide-heading p{font-size:10px}.search-area{top:61px;padding:9px 0 8px}.role-filters{gap:1px;margin-top:8px}.role-filter{font-size:9px;padding:5px 6px;gap:4px}.role-letter{width:14px;height:14px;font-size:7px}.filter-note{font-size:9px}.search-box{padding:8px 9px}.search-box input{font-size:11px}.search-box kbd{display:none}.search-count{font-size:9px;min-width:53px}.chapter-details>summary{padding:18px 0;gap:12px}.chapter-num{font-size:27px;min-width:30px}.chapter-title{font-size:13px}.chapter-meta{font-size:8px;gap:9px}.chapter-content{padding-left:0;padding-right:0}.chapter-actions{margin-left:0;margin-right:0;gap:10px}.prose{font-size:12px;line-height:1.9}.prose h3{font-size:23px}.prose table{font-size:10px}.codeblock{font-size:10px;padding:13px}.architecture{padding:13px}.flow-chain{gap:4px}.service-node{padding:9px 6px}.service-node b{font-size:9px}.service-node span{font-size:7px}.flow-arrow{font-size:12px}.closing{align-items:flex-start;font-size:9px}.closing b{font-size:18px}.toast{left:50%;font-size:10px}.skip-link{left:10px}.chapter{scroll-margin-top:189px}}
+@media(max-width:390px){.content{padding-left:17px;padding-right:17px}.hero h1{font-size:58px}.role-filter{font-size:8px;padding:5px 4px}.chapter-title{font-size:12px}.complete-button{font-size:10px}.next-chapter{font-size:10px;gap:9px}.service-node span{font-size:7px}.service-node b{font-size:8px}.topbar{padding:0 15px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+@media print{@page{margin:16mm 15mm}.sidebar,.topbar,.search-area,.guide-tools,.hero-actions,.usage,.roadmap,.route-label,.chapter-actions,.code-head button,.back-top,.closing,.toast,.skip-link,.next-chapter{display:none!important}.shell{margin:0}.content{padding:0;max-width:none}.hero{display:block;padding-bottom:14px;animation:none}.hero h1{font-size:47px;letter-spacing:-1px}.hero-description{max-width:none}.hero-art{display:none}.meta-strip{margin-bottom:18px}.chapter{break-inside:auto;scroll-margin:0}.chapter-details>summary{padding:20px 0 12px;cursor:default}.chapter-content{padding:0}.chapter-chevron{display:none}.chapter-title{font-size:17px}.chapter-num{font-size:27px}.prose{font-size:10pt;line-height:1.6}.prose h3{font-size:16pt;break-after:avoid}.prose table{font-size:8pt;min-width:0}.prose th,.prose td{min-width:0;padding:7px;overflow-wrap:anywhere}.table-scroll{overflow:visible!important}.code-wrap{break-inside:avoid;background:#f1f3ed!important;color:#1e2925!important;border:1px solid #d7dfd0}.code-head{background:#e7ecdf!important}.code-head>span{color:#24362f!important}.codeblock{white-space:pre-wrap!important;overflow-wrap:anywhere;font-size:8pt;color:#1e2925!important;background:#f1f3ed!important}.codeblock span{color:#1e2925!important}.architecture{break-inside:avoid}.service-node,.service-detail button{pointer-events:none}.prose a{color:#75321e}.chapter[hidden]{display:block!important}.owner-pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: #aaaaaa; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: #aaaaaa; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.codeblock .hll { background-color: #404040 }
+.codeblock { background: #202020; color: #D0D0D0 }
+.codeblock .c { color: #ABABAB; font-style: italic } /* Comment */
+.codeblock .err { color: #A61717; background-color: #E3D2D2 } /* Error */
+.codeblock .esc { color: #D0D0D0 } /* Escape */
+.codeblock .g { color: #D0D0D0 } /* Generic */
+.codeblock .k { color: #6EBF26; font-weight: bold } /* Keyword */
+.codeblock .l { color: #D0D0D0 } /* Literal */
+.codeblock .n { color: #D0D0D0 } /* Name */
+.codeblock .o { color: #D0D0D0 } /* Operator */
+.codeblock .x { color: #D0D0D0 } /* Other */
+.codeblock .p { color: #D0D0D0 } /* Punctuation */
+.codeblock .ch { color: #ABABAB; font-style: italic } /* Comment.Hashbang */
+.codeblock .cm { color: #ABABAB; font-style: italic } /* Comment.Multiline */
+.codeblock .cp { color: #FF3A3A; font-weight: bold } /* Comment.Preproc */
+.codeblock .cpf { color: #ABABAB; font-style: italic } /* Comment.PreprocFile */
+.codeblock .c1 { color: #ABABAB; font-style: italic } /* Comment.Single */
+.codeblock .cs { color: #E50808; font-weight: bold; background-color: #520000 } /* Comment.Special */
+.codeblock .gd { color: #FF3A3A } /* Generic.Deleted */
+.codeblock .ge { color: #D0D0D0; font-style: italic } /* Generic.Emph */
+.codeblock .ges { color: #D0D0D0; font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.codeblock .gr { color: #FF3A3A } /* Generic.Error */
+.codeblock .gh { color: #FFF; font-weight: bold } /* Generic.Heading */
+.codeblock .gi { color: #589819 } /* Generic.Inserted */
+.codeblock .go { color: #CCC } /* Generic.Output */
+.codeblock .gp { color: #AAA } /* Generic.Prompt */
+.codeblock .gs { color: #D0D0D0; font-weight: bold } /* Generic.Strong */
+.codeblock .gu { color: #FFF; text-decoration: underline } /* Generic.Subheading */
+.codeblock .gt { color: #FF3A3A } /* Generic.Traceback */
+.codeblock .kc { color: #6EBF26; font-weight: bold } /* Keyword.Constant */
+.codeblock .kd { color: #6EBF26; font-weight: bold } /* Keyword.Declaration */
+.codeblock .kn { color: #6EBF26; font-weight: bold } /* Keyword.Namespace */
+.codeblock .kp { color: #6EBF26 } /* Keyword.Pseudo */
+.codeblock .kr { color: #6EBF26; font-weight: bold } /* Keyword.Reserved */
+.codeblock .kt { color: #6EBF26; font-weight: bold } /* Keyword.Type */
+.codeblock .ld { color: #D0D0D0 } /* Literal.Date */
+.codeblock .m { color: #51B2FD } /* Literal.Number */
+.codeblock .s { color: #ED9D13 } /* Literal.String */
+.codeblock .na { color: #BBB } /* Name.Attribute */
+.codeblock .nb { color: #2FBCCD } /* Name.Builtin */
+.codeblock .nc { color: #71ADFF; text-decoration: underline } /* Name.Class */
+.codeblock .no { color: #40FFFF } /* Name.Constant */
+.codeblock .nd { color: #FFA500 } /* Name.Decorator */
+.codeblock .ni { color: #D0D0D0 } /* Name.Entity */
+.codeblock .ne { color: #BBB } /* Name.Exception */
+.codeblock .nf { color: #71ADFF } /* Name.Function */
+.codeblock .nl { color: #D0D0D0 } /* Name.Label */
+.codeblock .nn { color: #71ADFF; text-decoration: underline } /* Name.Namespace */
+.codeblock .nx { color: #D0D0D0 } /* Name.Other */
+.codeblock .py { color: #D0D0D0 } /* Name.Property */
+.codeblock .nt { color: #6EBF26; font-weight: bold } /* Name.Tag */
+.codeblock .nv { color: #40FFFF } /* Name.Variable */
+.codeblock .ow { color: #6EBF26; font-weight: bold } /* Operator.Word */
+.codeblock .pm { color: #D0D0D0 } /* Punctuation.Marker */
+.codeblock .w { color: #666 } /* Text.Whitespace */
+.codeblock .mb { color: #51B2FD } /* Literal.Number.Bin */
+.codeblock .mf { color: #51B2FD } /* Literal.Number.Float */
+.codeblock .mh { color: #51B2FD } /* Literal.Number.Hex */
+.codeblock .mi { color: #51B2FD } /* Literal.Number.Integer */
+.codeblock .mo { color: #51B2FD } /* Literal.Number.Oct */
+.codeblock .sa { color: #ED9D13 } /* Literal.String.Affix */
+.codeblock .sb { color: #ED9D13 } /* Literal.String.Backtick */
+.codeblock .sc { color: #ED9D13 } /* Literal.String.Char */
+.codeblock .dl { color: #ED9D13 } /* Literal.String.Delimiter */
+.codeblock .sd { color: #ED9D13 } /* Literal.String.Doc */
+.codeblock .s2 { color: #ED9D13 } /* Literal.String.Double */
+.codeblock .se { color: #ED9D13 } /* Literal.String.Escape */
+.codeblock .sh { color: #ED9D13 } /* Literal.String.Heredoc */
+.codeblock .si { color: #ED9D13 } /* Literal.String.Interpol */
+.codeblock .sx { color: #FFA500 } /* Literal.String.Other */
+.codeblock .sr { color: #ED9D13 } /* Literal.String.Regex */
+.codeblock .s1 { color: #ED9D13 } /* Literal.String.Single */
+.codeblock .ss { color: #ED9D13 } /* Literal.String.Symbol */
+.codeblock .bp { color: #2FBCCD } /* Name.Builtin.Pseudo */
+.codeblock .fm { color: #71ADFF } /* Name.Function.Magic */
+.codeblock .vc { color: #40FFFF } /* Name.Variable.Class */
+.codeblock .vg { color: #40FFFF } /* Name.Variable.Global */
+.codeblock .vi { color: #40FFFF } /* Name.Variable.Instance */
+.codeblock .vm { color: #40FFFF } /* Name.Variable.Magic */
+.codeblock .il { color: #51B2FD } /* Literal.Number.Integer.Long */</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Saltar al contenido</a>
+<div class="backdrop" aria-hidden="true"></div>
+<aside class="sidebar" id="sidebar" aria-label="Índice de la guía">
+  <button type="button" class="close-sidebar" id="close-sidebar" aria-label="Cerrar índice">×</button>
+  <a class="brand" href="#main-content"><span class="brand-icon"><svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><ellipse cx="8" cy="10" rx="3.2" ry="4.3" transform="rotate(-27 8 10)"/><ellipse cx="16" cy="6.8" rx="3.2" ry="4.3"/><ellipse cx="24" cy="10" rx="3.2" ry="4.3" transform="rotate(27 24 10)"/><path d="M16 13c-4 0-4.2 4.6-7.5 7.1-2.7 2-2.6 6.2.8 7.3 2.4.8 4.2-1 6.7-1s4.3 1.8 6.7 1c3.4-1.1 3.5-5.3.8-7.3C20.2 17.6 20 13 16 13Z"/></svg></span><span><b>pataporte</b><small>GUÍA DE CAMPO</small></span></a>
+  <div class="guide-label"><span>EL RECORRIDO</span><span class="version-label">AWS / 2026</span></div>
+  <nav aria-label="Etapas de implementación"><div class="nav-group">Preparar</div>
+<a class="nav-link" href="#etapa-01" data-nav="1"><span class="nav-number">01</span><span>La arquitectura</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-02" data-nav="2"><span class="nav-number">02</span><span>Cuenta y permisos</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-03" data-nav="3"><span class="nav-number">03</span><span>Repositorio y contratos</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-04" data-nav="4"><span class="nav-number">04</span><span>Preparar la aplicación</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<div class="nav-group">Construir</div>
+<a class="nav-link" href="#etapa-05" data-nav="5"><span class="nav-number">05</span><span>CloudFormation</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-06" data-nav="6"><span class="nav-number">06</span><span>Red y permisos</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-07" data-nav="7"><span class="nav-number">07</span><span>RDS y migraciones</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-08" data-nav="8"><span class="nav-number">08</span><span>S3 y frontend</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-09" data-nav="9"><span class="nav-number">09</span><span>ECS sobre EC2</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<div class="nav-group">Automatizar</div>
+<a class="nav-link" href="#etapa-10" data-nav="10"><span class="nav-number">10</span><span>Outbox y SQS</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-11" data-nav="11"><span class="nav-number">11</span><span>Lambda y DynamoDB</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-12" data-nav="12"><span class="nav-number">12</span><span>Recordatorios y fotos</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-13" data-nav="13"><span class="nav-number">13</span><span>GitHub Actions</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-14" data-nav="14"><span class="nav-number">14</span><span>Observabilidad</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<div class="nav-group">Demostrar</div>
+<a class="nav-link" href="#etapa-15" data-nav="15"><span class="nav-number">15</span><span>Pruebas y recuperación</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-16" data-nav="16"><span class="nav-number">16</span><span>Segunda región</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-17" data-nav="17"><span class="nav-number">17</span><span>Equipo y entrega</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-18" data-nav="18"><span class="nav-number">18</span><span>Resolver problemas</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-19" data-nav="19"><span class="nav-number">19</span><span>Apagar el laboratorio</span><span class="nav-done" aria-hidden="true">✓</span></a>
+<a class="nav-link" href="#etapa-20" data-nav="20"><span class="nav-number">20</span><span>Fuentes del curso</span><span class="nav-done" aria-hidden="true">✓</span></a></nav>
+  <div class="sidebar-foot">
+    <div class="progress-label"><span>Tu avance</span><output id="progress-text">0 / 20</output></div>
+    <div class="progress-track" id="progress-meter" role="progressbar" aria-label="Etapas marcadas como completadas" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><div class="progress-fill"></div></div>
+    <p class="progress-note">Se guarda solo en este navegador.<br>No se sincroniza entre integrantes.</p>
+    <button type="button" class="reset-progress" id="reset-progress">Reiniciar avance</button>
+  </div>
+</aside>
+<div class="shell">
+  <header class="topbar">
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Abrir índice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <div class="breadcrumb"><span>Ingeniería · AWS</span><span class="slash">/</span><b id="current-chapter">Tu hoja de ruta</b></div>
+    <div class="top-actions">
+      <button type="button" class="text-button" data-jump="17"><span>El equipo</span><span aria-hidden="true">↗</span></button>
+      <button type="button" class="text-button" id="print-guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 8V3h12v5M6 17H3V9h18v8h-3M6 14h12v7H6z"/><path d="M17 11h1"/></svg><span>Imprimir guía</span></button>
+    </div>
+  </header>
+  <main class="content" id="main-content">
+    <noscript><p class="no-js-note">Podés leer todas las etapas desplegándolas. La búsqueda, los filtros y el avance necesitan JavaScript.</p></noscript>
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <div class="eyebrow"><span class="little-dot"></span>DE LA FACULTAD A LA NUBE · PASO A PASO</div>
+        <h1 id="page-title">Un pasaporte<br>hacia <em>AWS.</em></h1>
+        <p class="hero-description">Toda la ruta para llevar PATAPORTE a la nube. Qué construir, por qué elegirlo y cómo demostrar que funciona. Una guía para trabajar de a tres.</p>
+        <div class="hero-actions"><button type="button" class="primary-button" data-jump="1">Empezar el recorrido <span aria-hidden="true">↗</span></button><button type="button" class="text-button" data-jump="17">Dividir el trabajo <span aria-hidden="true">→</span></button></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="passport"><span class="passport-top">PATAPORTE</span><span class="paw-seal"><svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><ellipse cx="8" cy="10" rx="3.2" ry="4.3" transform="rotate(-27 8 10)"/><ellipse cx="16" cy="6.8" rx="3.2" ry="4.3"/><ellipse cx="24" cy="10" rx="3.2" ry="4.3" transform="rotate(27 24 10)"/><path d="M16 13c-4 0-4.2 4.6-7.5 7.1-2.7 2-2.6 6.2.8 7.3 2.4.8 4.2-1 6.7-1s4.3 1.8 6.7 1c3.4-1.1 3.5-5.3.8-7.3C20.2 17.6 20 13 16 13Z"/></svg></span><strong>Guía de campo</strong><small>CLOUD EDITION · 2026</small><span class="stamp"><span>AWS<br><b>20</b><br>ETAPAS</span></span></div></div>
+    </section>
+    <div class="meta-strip" aria-label="Datos de la guía">
+      <div class="meta-item"><span>Entrega del informe</span><b>09 noviembre 2026</b></div>
+      <div class="meta-item"><span>Equipo</span><b>3 personas · 1 proyecto</b></div>
+      <div class="meta-item"><span>Lectura completa</span><b>~55 min · a tu ritmo</b></div>
+      <div class="meta-item"><span>Estado del documento</span><b class="status">Plan de implementación</b></div>
+    </div>
+    <details class="usage"><summary>Antes de empezar · cómo usar esta guía</summary><div class="prose"><p><strong>Esta guía describe trabajo por implementar.</strong> No se creó infraestructura AWS al prepararla. Los comandos y archivos propuestos requieren los permisos y parámetros de su laboratorio.</p><p><strong>Punto de partida disponible:</strong> ver <a href="primer-hito.md">primer hito local</a> para iniciar la aplicación y sus pruebas, conocer los cambios y revisar lo pendiente.</p>
+<p>Trabajen por etapas. En cada una se indica qué construir, por qué y qué evidencia permite darla por terminada. Primero consigan un recorrido funcional completo; luego agreguen elasticidad y recuperación; finalmente incorporen las extensiones.</p>
+<p>La entrega del informe es el <strong>9 de noviembre de 2026</strong> y las fechas comunicadas para la defensa son <strong>11 o 16 de noviembre</strong>, pendientes de confirmación. Esta guía de implementación puede ser extensa. El informe final de unas diez páginas debe resumir decisiones y resultados, con enlaces al repositorio.</p>
+<p>Convenciones:</p>
+<ul>
+<li>Los comandos se ejecutan desde la raíz de <code>pataporte-aws</code>, salvo que se indique otro lugar.</li>
+<li><code>infra/</code>, <code>scripts/</code>, <code>workers/</code> y los workflows nombrados son <strong>archivos a crear</strong>, no archivos que ya existen.</li>
+<li>Las variables y los dominios con <code>example.com</code> son ejemplos que deben reemplazar.</li>
+<li>Los valores de CPU, memoria, concurrencia y alarmas son puntos de partida propuestos; deben ajustarse con mediciones.</li>
+<li>Los comandos de AWS incluidos son instrucciones para el equipo. La preparación de esta guía no los ejecutó.</li>
+</ul>
+<p>Lectura sugerida: todos leen las secciones 1 a 4; después cada responsable trabaja sus componentes. Los tres participan en las secciones 13 a 17.</p>
+<p><strong>Ruta de implementación:</strong> permisos y contratos → correcciones locales → infraestructura base → primera versión funcional → eventos confiables → pipeline → pruebas → extensión regional.</p>
+</div></details>
+    <div class="route-label"><span class="eyebrow">CUATRO MOMENTOS, UN MISMO RECORRIDO</span><span>Diseñar → construir → comprobar</span></div>
+    <div class="roadmap" aria-label="Momentos de implementación">
+      <button type="button" data-jump="1"><span class="step-dot">01</span><b>Preparar<small>Contexto y acuerdos</small></b></button>
+      <button type="button" data-jump="5"><span class="step-dot">02</span><b>Construir<small>Infra y aplicación</small></b></button>
+      <button type="button" data-jump="10"><span class="step-dot">03</span><b>Automatizar<small>Eventos y releases</small></b></button>
+      <button type="button" data-jump="15"><span class="step-dot">04</span><b>Demostrar<small>Pruebas y defensa</small></b></button>
+    </div>
+    <section id="the-guide" aria-labelledby="guide-title">
+      <div class="guide-heading"><div><h2 id="guide-title">La hoja de ruta.</h2><p>20 etapas explicadas, del primer acuerdo a la defensa.</p></div><div class="guide-tools"><button type="button" class="quiet-button" id="expand-all">Expandir</button><button type="button" class="quiet-button" id="collapse-all">Contraer</button></div></div>
+      <div class="search-area">
+        <div class="search-row"><label class="search-box" for="guide-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="guide-search" type="search" placeholder="Buscar un servicio, una decisión o un problema…" autocomplete="off" aria-label="Buscar en toda la guía"><button type="button" class="clear-search" id="clear-search" aria-label="Limpiar búsqueda" hidden>×</button><kbd aria-hidden="true">/</kbd></label><output class="search-count" id="search-count" aria-live="polite">20 / 20</output></div>
+        <div class="role-filters" role="group" aria-label="Filtrar etapas por integrante">
+          <button type="button" class="role-filter" data-role="all" aria-pressed="true">Todo el equipo</button>
+          <button type="button" class="role-filter" data-role="A" aria-pressed="false"><span class="role-letter">A</span>Plataforma y datos</button>
+          <button type="button" class="role-filter" data-role="B" aria-pressed="false"><span class="role-letter">B</span>Aplicación y eventos</button>
+          <button type="button" class="role-filter" data-role="C" aria-pressed="false"><span class="role-letter">C</span>Entrega y operación</button>
+        </div>
+        <p class="filter-note" id="filter-note">Abrí una etapa para leerla. Tu avance se guarda en este navegador.</p>
+      </div>
+      <div id="empty-state" class="empty-state" hidden><h3>No encontramos esa ruta.</h3><p>Probá con otra palabra o cambiá el filtro del equipo.</p><button type="button" class="text-button" id="reset-filters">Mostrar todas las etapas</button></div>
+      <div class="chapters"><article class="chapter" id="etapa-01" data-number="1" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">01</span><span class="chapter-heading"><span class="chapter-title">Qué vamos a construir y por qué</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>2 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>1.1 Arquitectura elegida</h3>
+<p>Mantendremos FastAPI y PostgreSQL. La adaptación se concentra en sacar el estado del contenedor, automatizar despliegues y desacoplar trabajos lentos.</p>
+<div class="architecture" aria-label="Mapa interactivo de la arquitectura"><div class="map-caption"><span>MAPA DEL SISTEMA</span><span>Seleccioná un servicio para explorarlo</span></div><div class="flow-lane"><span class="lane-label">Web global</span><div class="flow-chain"><button type="button" class="service-node" data-service="cloudfront" aria-pressed="false"><b>CloudFront</b><span>Distribución global</span></button><span class="flow-arrow" aria-hidden="true">→</span><button type="button" class="service-node" data-service="s3" aria-pressed="false"><b>S3</b><span>Frontend privado</span></button></div></div><div class="flow-lane"><span class="lane-label">API privada</span><div class="flow-chain"><button type="button" class="service-node" data-service="alb" aria-pressed="false"><b>ALB</b><span>Entrada de la API</span></button><span class="flow-arrow" aria-hidden="true">→</span><button type="button" class="service-node" data-service="ecs" aria-pressed="false"><b>ECS + EC2</b><span>FastAPI en 2 zonas</span></button><span class="flow-arrow" aria-hidden="true">→</span><button type="button" class="service-node" data-service="rds" aria-pressed="false"><b>RDS</b><span>PostgreSQL Multi-AZ</span></button></div></div><div class="flow-lane"><span class="lane-label">Trabajo asíncrono</span><div class="flow-chain"><button type="button" class="service-node" data-service="outbox" aria-pressed="false"><b>Outbox</b><span>Publicador en ECS</span></button><span class="flow-arrow" aria-hidden="true">→</span><button type="button" class="service-node" data-service="sqs" aria-pressed="false"><b>SQS</b><span>Trabajos + DLQ</span></button><span class="flow-arrow" aria-hidden="true">→</span><button type="button" class="service-node" data-service="lambda" aria-pressed="false"><b>Lambda</b><span>PDF y correo</span></button><span class="flow-arrow" aria-hidden="true">→</span><button type="button" class="service-node" data-service="dynamo" aria-pressed="false"><b>DynamoDB</b><span>Estado e idempotencia</span></button></div></div><p class="flow-note">CloudFront envía /api/* al ALB. Outbox lee PostgreSQL; Lambda también guarda archivos en S3 y llama al proveedor de correo.</p><div id="service-detail" class="service-detail" aria-live="polite"><span class="eyebrow">EXPLORÁ EL MAPA</span><p>Cada servicio tiene un trabajo concreto. Seleccioná uno para ver su propósito y quién lo implementa.</p></div></div><p>El diagrama resume caminos de datos; IAM, Secrets Manager, CloudWatch, ECR y CloudFormation atraviesan varios componentes y se detallan más adelante. EventBridge Scheduler ejecutará una tarea ECS programada para consultar RDS y crear trabajos en la outbox. El publicador enviará esos trabajos a SQS.</p>
+<p>La API tendrá al menos dos tareas distribuidas en dos zonas. Los servidores EC2 se crearán con un Launch Template y un Auto Scaling Group. ECS decidirá dónde ejecutar los contenedores. Dos zonas ofrecen tolerancia a fallos zonales; una segunda región requiere medidas adicionales.</p>
+<h3>1.2 Por qué ECS sobre EC2</h3>
+<p>ECS sobre EC2 permite aplicar conjuntamente Docker, ECR, ECS, AMI, Launch Template, EBS y Auto Scaling. Tiene un costo operativo: el equipo administra los hosts, sus actualizaciones y su capacidad. Fargate es una alternativa válida si el tiempo o las restricciones del laboratorio hacen preferible delegar esos hosts.</p>
+<p>Hay dos decisiones de escalado diferentes: cuántas tareas requiere la API y cuántos hosts necesitan esas tareas. El primero es ECS Service Auto Scaling; el segundo se conecta al ASG mediante un capacity provider. Documenten ambos. <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/asg-capacity-providers.html">AWS: capacity providers de ECS</a>.</p>
+<h3>1.3 Alcance por niveles</h3>
+<table>
+<thead>
+<tr>
+  <th>Nivel</th>
+  <th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Base funcional</td>
+  <td>Usuarios, mascotas y certificados funcionan en AWS; red, RDS, S3 y ECS están definidos en CloudFormation.</td>
+</tr>
+<tr>
+  <td>Entrega principal</td>
+  <td>Pipeline, dos zonas, escalado, outbox, SQS/Lambda/DynamoDB, alarmas y pruebas de recuperación.</td>
+</tr>
+<tr>
+  <td>Extensiones</td>
+  <td>Recordatorios de vacunas, miniaturas y recuperación entre regiones.</td>
+</tr>
+</tbody>
+</table>
+<p>El objetivo es cubrir tecnologías con una razón verificable. PostgreSQL y MySQL son alternativas de motor; para esta aplicación elegimos PostgreSQL. ALB atiende el tráfico HTTP de la API. Lambda ejecuta trabajos acotados; ECS aloja la API y procesos persistentes.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="1" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="1">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-02" data-number="2" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">02</span><span class="chapter-heading"><span class="chapter-title">Comprobar cuenta, permisos, herramientas y presupuesto</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>2.1 Organización de cuentas para tres personas</h3>
+<p><strong>Recomendación:</strong> cada uno puede experimentar en su propio laboratorio; la integración y la demostración se realizan en una cuenta elegida por el equipo y autorizada para ese uso. Compartan código, contratos y procedimientos desde el primer día.</p>
+<p>Para saber si realmente están en cuentas diferentes, cada integrante ejecuta, en su sesión:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
+</code></pre></div>
+<p>Comparen el campo <code>Account</code>. La cuenta, la región y el stack identifican dónde vive un recurso. Estar en el mismo curso de Academy no significa que se vean mutuamente todos los recursos.</p>
+<table>
+<thead>
+<tr>
+  <th>Modalidad</th>
+  <th>Uso recomendado</th>
+  <th>Condición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Cuenta común con accesos individuales</td>
+  <td>Integración compartida y trazabilidad por persona.</td>
+  <td>El docente/administrador habilita un mecanismo permitido.</td>
+</tr>
+<tr>
+  <td>Una cuenta de integración y un operador</td>
+  <td>Los tres contribuyen por GitHub; el operador ejecuta el despliegue conjunto.</td>
+  <td>No requiere entregar a compañeros la contraseña de Academy.</td>
+</tr>
+<tr>
+  <td>Laboratorios separados</td>
+  <td>Ensayar plantillas y componentes pequeños.</td>
+  <td>Parametrizar cuenta, región, nombres y roles.</td>
+</tr>
+<tr>
+  <td>Componentes repartidos entre cuentas</td>
+  <td>Solo si el proyecto exige estudiar ese escenario.</td>
+  <td>Requiere permisos y conectividad entre cuentas; agrega dependencia entre sesiones y presupuestos.</td>
+</tr>
+</tbody>
+</table>
+<p>AWS ofrece acceso entre cuentas mediante roles y políticas de recursos. Una política IAM no sustituye la conectividad de red: por ejemplo, RDS privado sigue necesitando una ruta de red válida. AWS RAM comparte determinados tipos de recursos y no convierte varias cuentas en una sola. <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies-cross-account-resource-access.html">AWS: acceso entre cuentas</a>, <a href="https://docs.aws.amazon.com/ram/latest/userguide/shareable.html">recursos compartibles con RAM</a>.</p>
+<p><strong>No organicen la arquitectura contando con permisos administrativos que todavía no verificaron.</strong> Los servicios disponibles en Academy dependen del laboratorio. Su documentación actual de laboratorio y las indicaciones del docente son las que deben usar para confirmar permisos, regiones, saldo y comportamiento al finalizar una sesión. La guía oficial para docentes describe un entorno con servicios restringidos; por su antigüedad, no debe usarse para asumir un presupuesto actual. <a href="https://d1.awsstatic.com/AWS%20Academy%20Learner%20Lab%20Educator%20Guide.pdf">AWS Academy: guía para docentes</a>.</p>
+<h3>2.2 Comprobar los permisos antes de diseñar dependencias</h3>
+<p>Registren en una tabla compartida si pueden utilizar CloudFormation, EC2/ASG/ALB, ECS/ECR, RDS, S3/CloudFront, SQS, Lambda, DynamoDB, Scheduler, SNS, Secrets Manager y SSM. Verifiquen también <code>iam:PassRole</code>, creación de roles/proveedores OIDC, service-linked roles, tipos de instancia, cuotas y regiones.</p>
+<p>En los ejemplos de clase aparece <code>LabInstanceProfile</code>. No asuman que ese perfil o <code>LabRole</code> sirven indistintamente para todos los servicios: un rol necesita una relación de confianza y permisos adecuados para cada uso. Parametricen los ARN existentes cuando Academy impida crearlos.</p>
+<p>Si OIDC no está permitido, el pipeline podrá usar <strong>credenciales temporales del laboratorio</strong> cargadas en secretos de GitHub, incluyendo <code>AWS_SESSION_TOKEN</code>, si las reglas del curso lo autorizan. Expiran y deben renovarse. Para la defensa expliquen esa limitación y muestren OIDC como diseño objetivo. La identidad OIDC requiere una configuración inicial de confianza; el pipeline no puede crear su propio acceso sin una identidad previa.</p>
+<h3>2.3 Preparar herramientas y variables</h3>
+<p>Instalen Git, Docker con Compose y Buildx, AWS CLI v2, Python compatible con el proyecto y una herramienta de pruebas de carga. Para validar CloudFormation agreguen <code>cfn-lint</code> al entorno de desarrollo.</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>aws<span class="w"> </span>--version
+docker<span class="w"> </span>version
+docker<span class="w"> </span>compose<span class="w"> </span>version
+docker<span class="w"> </span>buildx<span class="w"> </span>version
+git<span class="w"> </span>status<span class="w"> </span>--short<span class="w"> </span>--branch
+</code></pre></div>
+<p>Ejemplo de variables no secretas para una sesión local, suponiendo una región habilitada:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span>pataporte-lab
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION</span><span class="o">=</span>us-east-1
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATAPORTE_ENV</span><span class="o">=</span>dev
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATAPORTE_PREFIX</span><span class="o">=</span>pataporte-dev
+aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
+</code></pre></div>
+<p>Configuren el perfil con las credenciales temporales indicadas por el laboratorio. Mantengan esas credenciales fuera del repositorio y de capturas públicas. Cuando expiren, renueven la sesión; no atribuyan automáticamente <code>ExpiredToken</code> a un fallo de la aplicación.</p>
+<h3>2.4 Fijar presupuesto y dominio</h3>
+<p>Anoten saldo inicial, límite acordado, fecha de revisión y responsable. Calculen el costo de EC2, RDS Multi-AZ, ALB, NAT, endpoints de interfaz, almacenamiento y logs para las horas que estarán encendidos. Los importes dependen de región y configuración; no hay una cifra fija válida para todo el proyecto.</p>
+<p>Decidan si disponen de un dominio con control de DNS. CloudFront puede servir su dominio predeterminado con HTTPS. Para HTTPS desde CloudFront a un ALB público, preparen un nombre de origen y un certificado válido que coincida con él. La variante sin dominio puede usar HTTP en ese tramo para el laboratorio, pero deben documentar que ese salto no está cifrado.</p>
+<p><strong>Etapa terminada:</strong> cuenta de integración, región, acceso de cada persona, restricciones, presupuesto y estrategia de dominio están documentados.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="2" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="2">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-03" data-number="3" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">03</span><span class="chapter-heading"><span class="chapter-title">Preparar el repositorio y definir contratos</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>2 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>3.1 Estructura propuesta</h3>
+<div class="code-wrap"><div class="code-head"><span>text</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>pataporte-aws/
+  backend/                   # FastAPI y modelos existentes
+  frontend/                  # Web existente
+  workers/
+    outbox/                  # Publicador persistente para ECS
+    notifications/           # Handler Lambda y lógica de correo/PDF
+    thumbnails/              # Handler Lambda para fotos
+  infra/
+    bootstrap.yaml           # ECR, bucket de artefactos y acceso inicial permitido
+    network.yaml
+    data.yaml
+    messaging.yaml
+    compute.yaml             # Cluster, hosts y capacity provider
+    app.yaml                 # Definiciones y servicios con imagen versionada
+    edge.yaml
+    monitoring.yaml
+    reminders.yaml           # Extensión programada
+  scripts/                   # Validar, desplegar, migrar y verificar
+  tests/
+    integration/
+    load/
+  docs/
+    guia-despliegue-aws.md
+    decisiones.md
+    evidencias/
+  .github/workflows/
+    ci.yml
+    deploy.yml
+</code></pre></div>
+<p>Separar infraestructura estable y aplicación permite actualizar una imagen sin modificar la base o las subredes. No es obligatorio utilizar exactamente esos nombres, pero sí acordar las responsabilidades y los parámetros.</p>
+<h3>3.2 Contratos que deben cerrar entre los tres</h3>
+<p>Antes del trabajo paralelo, acuerden:</p>
+<table>
+<thead>
+<tr>
+  <th>Contrato</th>
+  <th>Decisión propuesta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Rutas de API</td>
+  <td>Prefijo <code>/api</code> en local y AWS.</td>
+</tr>
+<tr>
+  <td>Salud</td>
+  <td><code>/api/health/live</code> y <code>/api/health/ready</code>.</td>
+</tr>
+<tr>
+  <td>Versiones</td>
+  <td>Imagen identificada por commit y, para desplegar, preferentemente digest.</td>
+</tr>
+<tr>
+  <td>Archivos privados</td>
+  <td>Guardar bucket/key; generar URL temporal después de autorizar al usuario.</td>
+</tr>
+<tr>
+  <td>Mensajes</td>
+  <td>JSON con <code>event_id</code>, <code>event_type</code>, <code>schema_version</code>, <code>occurred_at</code>, <code>correlation_id</code> y <code>payload</code>.</td>
+</tr>
+<tr>
+  <td>Roles</td>
+  <td>Separar rol del host, ejecución de ECS, aplicación, Lambda, Scheduler y despliegue.</td>
+</tr>
+<tr>
+  <td>Outputs de CloudFormation</td>
+  <td>VPC, subredes, SG, ARN de secretos, repositorio, cluster, servicios, bucket y colas.</td>
+</tr>
+<tr>
+  <td>Secretos</td>
+  <td>Nunca como parámetros de texto en comandos registrados ni dentro del frontend.</td>
+</tr>
+</tbody>
+</table>
+<p>Creen tres ramas o conjuntos de PR por área. Cada PR requiere revisión de otro integrante. Para evitar bloqueos, publiquen pronto los contratos y ejemplos de mensajes, aunque la infraestructura todavía no esté desplegada.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="3" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="3">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-04" data-number="4" data-roles="B"><details class="chapter-details"><summary><span class="chapter-num">04</span><span class="chapter-heading"><span class="chapter-title">Corregir y preparar la aplicación</span><span class="chapter-meta"><span class="owner-pill">B</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>4.1 Lograr una referencia local funcional</h3>
+<p>Creen <code>.env</code> desde <code>.env_example</code>, completen valores de desarrollo y levanten:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
+docker<span class="w"> </span>compose<span class="w"> </span>ps
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span><span class="w"> </span>backend<span class="w"> </span>worker
+</code></pre></div>
+<p>Comprueben registro, verificación, login, creación de mascota, carga de foto, consulta veterinaria, vacuna y generación/verificación de pataporte. Usen datos ficticios. Anoten fallos existentes para distinguirlos de errores de AWS.</p>
+<h3>4.2 Unificar configuración y rutas</h3>
+<p>En <code>backend/main.py</code>, agreguen <code>/api</code> a los prefijos de los routers y a las rutas de salud. Si mantienen documentación interactiva, configuren sus URLs y OpenAPI bajo ese prefijo. Revisen también <code>tokenUrl</code> y las llamadas del frontend.</p>
+<p>Configuren en el frontend:</p>
+<ul>
+<li>Desarrollo: <code>API_URL = &quot;http://localhost:8000/api&quot;</code>.</li>
+<li>AWS: <code>API_URL = &quot;/api&quot;</code>.</li>
+</ul>
+<p>Generen esa configuración durante el despliegue mediante un archivo pequeño cargado antes de <code>api.js</code>. Cambien también la llamada directa de <code>frontend/js/registrarTutor.js</code>; no alcanza con editar únicamente <code>api.js</code>. Revisen otras cadenas locales con:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>rg<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;localhost|127\.0\.0\.1|http://&#39;</span><span class="w"> </span>frontend<span class="w"> </span>backend
+</code></pre></div>
+<p>CloudFront enviará <code>/api/*</code> al ALB <strong>sin quitar el prefijo</strong>. Por eso FastAPI debe reconocer esas rutas. Ajusten CORS por entorno para desarrollo o accesos separados; CORS no constituye autenticación.</p>
+<h3>4.3 Corregir permisos de la aplicación</h3>
+<p>Revisen los routers de tutores, tratamientos, historial, veterinarios, vacunas y mascotas. La política IAM de un contenedor permite llamar a AWS; no determina qué mascota puede ver una persona.</p>
+<p>Prueben tres situaciones por operación: sin token; token válido de otra persona; token válido con el rol y la relación adecuados. Al crear una mascota, obtengan la identidad del JWT; no confíen en un <code>id_tutor</code> enviado libremente en el formulario. Definan también qué relación autoriza a cada veterinario.</p>
+<p>Retiren <code>print(&quot;TOKEN RAW:&quot;, token)</code> de <code>routers/mascotas.py</code>. Eviten que logs contengan tokens, contraseñas, códigos de recuperación o historias clínicas.</p>
+<h3>4.4 Preparar el contenedor y las conexiones</h3>
+<p>Quiten <code>--reload</code> del Dockerfile de producción. El comando básico sigue siendo:</p>
+<div class="code-wrap"><div class="code-head"><span>text</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>python -m uvicorn main:app --host 0.0.0.0 --port 8000
+</code></pre></div>
+<p>Agreguen <code>.dockerignore</code>, una identidad de ejecución sin privilegios innecesarios y dependencias versionadas. No monten el código fuente del host en ECS. El despliegue debe ejecutar exactamente el contenido de la imagen publicada.</p>
+<p>En SQLAlchemy consideren <code>pool_pre_ping=True</code>, tiempos de conexión acotados y un pool dimensionado. Calculen el máximo de conexiones como suma de pools y overflow de todas las tareas, más publicador, migraciones y administración. Escalar contenedores sin controlar esa suma puede agotar RDS.</p>
+<h3>4.5 Separar salud, esquema y trabajos</h3>
+<ul>
+<li><code>live</code>: confirma que el proceso responde, sin depender de servicios externos.</li>
+<li><code>ready</code>: hace una comprobación breve y acotada de PostgreSQL; devuelve 503 si no puede atender.</li>
+<li>Migraciones: paso independiente y único por despliegue.</li>
+<li>Fotos: almacenamiento compartido en S3.</li>
+<li>PDF y correo: trabajo asíncrono.</li>
+</ul>
+<p>El código actual usa <code>create_all()</code> y un seed al arrancar. Muévanlos a migraciones/seed controlado. Revisen también <code>routers/tratamientos.py</code>: utiliza <code>timezone.utc</code> sin importar <code>timezone</code>.</p>
+<p>Los helpers de correo actuales capturan excepciones y solo imprimen el error. Deben propagar el fallo al procesador: de lo contrario, un mensaje puede marcarse exitoso aunque no se haya enviado. Además, recuperación de contraseña publica actualmente el mismo tipo de mensaje de verificación; separen los tipos y sus plantillas.</p>
+<p><strong>Etapa terminada:</strong> el flujo principal funciona localmente con las rutas elegidas, permisos comprobados y fallos de correo detectables.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="4" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="4">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-05" data-number="5" data-roles="A"><details class="chapter-details"><summary><span class="chapter-num">05</span><span class="chapter-heading"><span class="chapter-title">Crear CloudFormation por capas</span><span class="chapter-meta"><span class="owner-pill">A</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>5.1 Responsabilidad y dependencias</h3>
+<table>
+<thead>
+<tr>
+  <th>Stack propuesto</th>
+  <th>Recursos principales</th>
+  <th>Depende de</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>bootstrap</td>
+  <td>ECR y bucket privado de artefactos; identidad de despliegue si está permitida.</td>
+  <td>Identidad inicial autorizada.</td>
+</tr>
+<tr>
+  <td>network</td>
+  <td>VPC, subredes, rutas, SG y endpoints.</td>
+  <td>Ninguno de aplicación.</td>
+</tr>
+<tr>
+  <td>data</td>
+  <td>RDS, secretos, buckets de archivos y tabla DynamoDB.</td>
+  <td>network para RDS.</td>
+</tr>
+<tr>
+  <td>messaging</td>
+  <td>SQS, DLQ y políticas de acceso.</td>
+  <td>ARN de consumidores cuando corresponda.</td>
+</tr>
+<tr>
+  <td>compute</td>
+  <td>Cluster ECS, Launch Template, ASG y capacity provider.</td>
+  <td>network y roles.</td>
+</tr>
+<tr>
+  <td>app</td>
+  <td>Task Definitions, servicios, ALB y listener; publicador outbox.</td>
+  <td>compute, data, messaging, imagen disponible.</td>
+</tr>
+<tr>
+  <td>edge</td>
+  <td>CloudFront, OAC y permisos del bucket de frontend.</td>
+  <td>Bucket de frontend y origen de API.</td>
+</tr>
+<tr>
+  <td>monitoring</td>
+  <td>Logs, dashboard, alarmas y SNS.</td>
+  <td>Identificadores de los recursos anteriores.</td>
+</tr>
+<tr>
+  <td>reminders</td>
+  <td>Programación y tarea para recordatorios.</td>
+  <td>app, RDS y roles.</td>
+</tr>
+</tbody>
+</table>
+<p>La partición puede ajustarse para evitar dependencias circulares: por ejemplo, creen el bucket antes de la distribución y su bucket policy en la capa que ya conoce el ARN de CloudFront. Una tarea inicial de revisión debe comprobar que el grafo de stacks tiene un orden de creación válido.</p>
+<p>Pasen IDs y ARN como parámetros o Outputs. Si usan exports de CloudFormation, incorporen proyecto y entorno al nombre: exports globales como <code>MyMainVPC</code> impedirían repetir el entorno en la misma cuenta/región.</p>
+<h3>5.2 Establecer parámetros y etiquetas</h3>
+<p>Definan <code>ProjectName</code>, <code>EnvironmentName</code>, CIDR, AZ, clases de instancia, número mínimo/máximo de hosts y tareas, política de retención, ARN de roles existentes e imagen. Usen condiciones para las diferencias entre laboratorio y demostración.</p>
+<p>Etiquetas sugeridas: <code>project=pataporte</code>, <code>environment=dev</code>, <code>owner=equipo</code>, <code>component=api</code> y <code>managed-by=cloudformation</code>. No agreguen información secreta a etiquetas.</p>
+<h3>5.3 Validar y desplegar de forma repetible</h3>
+<p>Ejemplos para ejecutar <strong>una vez creados los archivos y sus parámetros</strong>:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>cfn-lint<span class="w"> </span>infra/*.yaml
+aws<span class="w"> </span>cloudformation<span class="w"> </span>validate-template<span class="w"> </span>--template-body<span class="w"> </span>file://infra/network.yaml
+aws<span class="w"> </span>cloudformation<span class="w"> </span>deploy<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--template-file<span class="w"> </span>infra/network.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>pataporte-dev-network<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--parameter-overrides<span class="w"> </span><span class="nv">ProjectName</span><span class="o">=</span>pataporte<span class="w"> </span><span class="nv">EnvironmentName</span><span class="o">=</span>dev<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--no-fail-on-empty-changeset
+aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>pataporte-dev-network<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs&#39;</span>
+</code></pre></div>
+<p>Agreguen <code>--capabilities CAPABILITY_NAMED_IAM</code> únicamente a los stacks que realmente creen recursos IAM con nombre. La flag reconoce la creación de IAM; no otorga permisos que la sesión no tiene.</p>
+<p>Antes de actualizar datos persistentes, revisen un change set. Busquen reemplazos de RDS/buckets, cambios de cifrado y eliminaciones. Los change sets permiten anticipar cambios, aunque no garantizan que la ejecución vaya a terminar bien. <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html">AWS: change sets</a>.</p>
+<p><strong>Etapa terminada:</strong> las plantillas están versionadas, validadas y se conoce su orden de ejecución.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="5" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="5">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-06" data-number="6" data-roles="A"><details class="chapter-details"><summary><span class="chapter-num">06</span><span class="chapter-heading"><span class="chapter-title">Construir la red y los permisos</span><span class="chapter-meta"><span class="owner-pill">A</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>6.1 Distribuir la VPC</h3>
+<p>Usen dos AZ de la región habilitada y planifiquen, como ejemplo, una VPC <code>10.20.0.0/16</code>:</p>
+<table>
+<thead>
+<tr>
+  <th>Capa</th>
+  <th>AZ A</th>
+  <th>AZ B</th>
+  <th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Pública</td>
+  <td>10.20.0.0/24</td>
+  <td>10.20.1.0/24</td>
+  <td>ALB público y NAT cuando corresponda.</td>
+</tr>
+<tr>
+  <td>Aplicación privada</td>
+  <td>10.20.10.0/24</td>
+  <td>10.20.11.0/24</td>
+  <td>Hosts ECS, tareas y procesos con acceso a RDS.</td>
+</tr>
+<tr>
+  <td>Datos privada</td>
+  <td>10.20.20.0/24</td>
+  <td>10.20.21.0/24</td>
+  <td>DB Subnet Group de RDS.</td>
+</tr>
+</tbody>
+</table>
+<p>Habiliten DNS support y DNS hostnames. Las subredes públicas tienen ruta por Internet Gateway; las de datos no necesitan ruta directa a Internet. Las de aplicación requieren conectividad saliente a servicios AWS y, si conservan Gmail, al servidor SMTP.</p>
+<h3>6.2 Elegir NAT y endpoints explícitamente</h3>
+<p>Para la primera integración, NAT simplifica la salida. Un NAT por AZ evita depender de la salida de otra zona. Un único NAT es una simplificación de costo que deja un punto de fallo para ese tráfico; la plantilla del curso con NAT utiliza esa variante.</p>
+<p>Agreguen Gateway Endpoints de S3 y DynamoDB a las tablas de rutas privadas. Los Gateway Endpoints funcionan mediante rutas, no creando una ENI ni simplemente cambiando DNS. Los Interface Endpoints sí crean interfaces privadas y normalmente usan Private DNS.</p>
+<p>Si quieren retirar NAT, enumeren <strong>todas</strong> las dependencias: ECR API y DKR, S3 para capas de imágenes, ECS/control del agente, CloudWatch Logs, secretos y SSM; también SQS u otros servicios que consuma la aplicación. Los endpoints no ofrecen salida genérica a Gmail ni a repositorios de paquetes. Preparar una AMI y una imagen con sus dependencias evita descargar herramientas al arrancar.</p>
+<p>Con ECS sobre EC2 hay requisitos de conectividad del host además de los de la tarea. El SG de los endpoints de interfaz debe permitir HTTPS desde sus consumidores. Comparen el costo de varios endpoints por AZ con NAT antes de presentar una opción como más barata. <a href="https://docs.aws.amazon.com/AmazonECR/latest/userguide/vpc-endpoints.html">AWS: ECR y endpoints de VPC</a>.</p>
+<h3>6.3 Definir conexiones permitidas</h3>
+<table>
+<thead>
+<tr>
+  <th>Origen</th>
+  <th>Destino</th>
+  <th>Puerto</th>
+  <th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>CloudFront</td>
+  <td>ALB</td>
+  <td>443 en el diseño con TLS; 80 solo en variante lab.</td>
+  <td>API.</td>
+</tr>
+<tr>
+  <td>SG del ALB</td>
+  <td>SG de tareas API</td>
+  <td>8000</td>
+  <td>Tráfico y health checks.</td>
+</tr>
+<tr>
+  <td>SG de API/publicador/tarea de migración</td>
+  <td>SG de RDS</td>
+  <td>5432</td>
+  <td>Consultas y cambios autorizados.</td>
+</tr>
+<tr>
+  <td>Consumidores privados</td>
+  <td>SG de endpoints</td>
+  <td>443</td>
+  <td>APIs AWS por red privada.</td>
+</tr>
+</tbody>
+</table>
+<p>Restrinjan el ALB a CloudFront con mecanismos apropiados: prefijo administrado de orígenes de CloudFront y regla de listener que compruebe un header secreto configurado en la distribución. El header no es un secreto de usuario y no reemplaza JWT. Verifiquen el soporte y la cuota de reglas del entorno; eviten registrar ese valor.</p>
+<p>Los SG son stateful. Eviten modificar NACL sin comprender puertos de retorno; para este proyecto pueden conservar NACL predeterminadas y explicar el control aplicado con SG. Administren EC2 mediante SSM, con rol y conectividad, en lugar de necesitar SSH público.</p>
+<h3>6.4 Separar identidades</h3>
+<table>
+<thead>
+<tr>
+  <th>Identidad</th>
+  <th>Permisos esperados</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Rol del host EC2</td>
+  <td>Registrar/operar el agente ECS, acceso del host necesario para imágenes/logs y SSM.</td>
+</tr>
+<tr>
+  <td>Execution role de ECS</td>
+  <td>Operaciones de arranque de tareas e inyección de secretos según la configuración.</td>
+</tr>
+<tr>
+  <td>Task role de API</td>
+  <td>Acceso a prefijos S3 y servicios que efectivamente usa la API.</td>
+</tr>
+<tr>
+  <td>Task role de outbox</td>
+  <td>Enviar a las colas previstas; acceso autorizado a la configuración DB.</td>
+</tr>
+<tr>
+  <td>Rol Lambda</td>
+  <td>Consumir su cola, usar su tabla DynamoDB, S3 y proveedor de correo.</td>
+</tr>
+<tr>
+  <td>Rol Scheduler</td>
+  <td>Ejecutar la tarea prevista y pasar solo los roles necesarios.</td>
+</tr>
+<tr>
+  <td>Rol de despliegue</td>
+  <td>Actualizar los stacks y artefactos previstos; PassRole limitado.</td>
+</tr>
+</tbody>
+</table>
+<p>En Academy podrían quedar varios usos cubiertos por roles preexistentes más amplios. Documenten la diferencia respecto del diseño ideal, sin afirmar aislamiento que no implementaron.</p>
+<p><strong>Etapa terminada:</strong> solo ALB recibe tráfico público; API y RDS usan red privada; hosts pueden arrancar, obtener imágenes y emitir logs.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="6" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="6">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-07" data-number="7" data-roles="AB"><details class="chapter-details"><summary><span class="chapter-num">07</span><span class="chapter-heading"><span class="chapter-title">Preparar PostgreSQL en RDS y las migraciones</span><span class="chapter-meta"><span class="owner-pill">A + B</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>7.1 Adaptar la plantilla de clase</h3>
+<p>La plantilla <code>2_7-rds-postgres.xxx</code> sirve como punto de partida didáctico. Configuren para la entrega:</p>
+<ul>
+<li>DB Subnet Group en las subredes privadas de datos de dos AZ.</li>
+<li><code>PubliclyAccessible: false</code>.</li>
+<li><code>MultiAZ: true</code>, si está permitido y entra en presupuesto.</li>
+<li>Cifrado habilitado desde la creación.</li>
+<li>Backups automáticos con retención definida, por ejemplo siete días.</li>
+<li>SG con entrada 5432 desde los SG de los clientes autorizados.</li>
+<li>Credenciales administradas en Secrets Manager si la cuenta lo permite.</li>
+<li>Política de snapshot/retención y protección de borrado apropiadas para la demostración.</li>
+</ul>
+<p>Para datos importantes, usen <code>DeletionPolicy: Snapshot</code> y <code>UpdateReplacePolicy: Snapshot</code> donde corresponda, y revisen qué se conserva. La protección de borrado de RDS y la protección del stack son controles diferentes.</p>
+<p>Multi-AZ reduce el impacto de un fallo zonal; el failover puede interrumpir conexiones. La aplicación debe reconectar y gestionar operaciones ambiguas. El standby de una DB Instance Multi-AZ no se ofrece como réplica de lectura de la aplicación.</p>
+<h3>7.2 Configurar conexión y secreto</h3>
+<p>Guarden las credenciales en un secreto y pasen su ARN a las tareas. Construyan correctamente la URL de conexión; contraseñas con caracteres especiales requieren codificación o el uso de <code>sqlalchemy.engine.URL.create</code>.</p>
+<p>Para verificar TLS usen el endpoint real de RDS y el certificado CA correspondiente, con <code>sslmode=verify-full</code> y <code>sslrootcert</code>. Incluyan el bundle en la imagen y manténganlo actualizado. Cifrar sin verificar el servidor ofrece menos protección. <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/ssl-certificate-rotation-postgresql.html">AWS: certificados PostgreSQL</a>.</p>
+<p>Separar usuario de migraciones y usuario de aplicación permite que el segundo tenga solo permisos DML. Si lo simplifican en el laboratorio, registren esa decisión.</p>
+<h3>7.3 Crear y ensayar migraciones</h3>
+<p>Inicialicen Alembic, vinculen sus metadatos con los modelos y creen una migración inicial. Revisen manualmente el resultado, especialmente enums, restricciones y claves. Prueben una base vacía y una actualización desde la versión anterior.</p>
+<p>Si la base ya tiene tablas, preparen una estrategia de baseline: comparen esquema real y migración antes de usar <code>stamp</code>. Marcar una versión no modifica ni verifica tablas por sí solo.</p>
+<p>Migren en una tarea ECS puntual, con la misma imagen candidata, subredes privadas y SG que permiten llegar a RDS:</p>
+<div class="code-wrap"><div class="code-head"><span>text</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>alembic upgrade head
+</code></pre></div>
+<p>Un runner público de GitHub no puede conectarse directamente al RDS privado solo por tener credenciales AWS. El pipeline debe ejecutar la tarea en la VPC, esperar su terminación y comprobar su exit code. No ejecutar migraciones simultáneas desde cada réplica.</p>
+<h3>7.4 Probar respaldo y restauración</h3>
+<p>Creen un registro ficticio, tomen snapshot o usen PITR, restauren en <strong>otra instancia</strong>, comprueben datos y registren duración. La restauración no sobrescribe automáticamente el origen: produce un nuevo endpoint y requiere una decisión de cambio de aplicación. <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.html">AWS: restauración a un momento determinado</a>.</p>
+<p><strong>Etapa terminada:</strong> la aplicación conecta desde la VPC, TLS se verifica, el esquema lo administra Alembic y existe una restauración ensayada.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="7" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="7">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-08" data-number="8" data-roles="BC"><details class="chapter-details"><summary><span class="chapter-num">08</span><span class="chapter-heading"><span class="chapter-title">Mover archivos a S3 y distribuir el frontend</span><span class="chapter-meta"><span class="owner-pill">B + C</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>8.1 Separar buckets por propósito</h3>
+<p>Creen buckets para frontend, archivos privados y artefactos de despliegue. El bucket de frontend contendrá únicamente HTML/CSS/JS y assets necesarios; no el Dockerfile, archivos de infraestructura ni secretos.</p>
+<p>En archivos privados usen claves como:</p>
+<div class="code-wrap"><div class="code-head"><span>text</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>originals/mascotas/&lt;mascota-id&gt;/&lt;archivo-id&gt;.jpg
+thumbnails/mascotas/&lt;mascota-id&gt;/&lt;archivo-id&gt;.jpg
+certificates/&lt;pataporte-id&gt;.pdf
+</code></pre></div>
+<p>Activen bloqueo de acceso público, cifrado y versionado donde la recuperación lo requiera. Una URL difícil de adivinar no es un control de acceso.</p>
+<h3>8.2 Adaptar cargas y lecturas</h3>
+<p>Primera versión: FastAPI valida la imagen y la sube a S3 con Boto3. Guarde la key, no una URL temporal que caduca. Al leer, compruebe autorización y emita un enlace de corta duración.</p>
+<p>Segunda versión para cargas grandes: un endpoint autenticado autoriza una key concreta y entrega una URL prefirmada. El navegador sube directamente y confirma la carga. Limiten tamaño y tipo, validen contenido real, impidan keys arbitrarias y verifiquen que el objeto pertenece a la operación autorizada. Para imponer condiciones de carga consideren un POST prefirmado. El endpoint de confirmación no debe aceptar como prueba cualquier key enviada por el cliente.</p>
+<p>Los enlaces temporales son credenciales por posesión durante su vigencia. Definan cuánto dura esa autorización y qué pasa al revocar acceso. No publiquen certificados privados en la distribución abierta del frontend.</p>
+<p>Si migran fotos existentes, copien los objetos y conviertan sus rutas <code>/uploads/...</code> a keys. Verifiquen conteos y muestras antes de dejar de servir el volumen local.</p>
+<h3>8.3 Configurar CloudFront</h3>
+<p>Origen estático: endpoint REST de S3 con OAC y firma de solicitudes. La bucket policy autoriza esa distribución. Mantengan el bucket privado; el website endpoint de S3 no es compatible con OAC. <a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html">AWS: OAC</a>.</p>
+<p>Origen dinámico: ALB. Behavior <code>/api/*</code> con métodos requeridos por la API, caché deshabilitada y política que reenvíe correctamente Authorization, query strings y headers necesarios. La configuración de reenvío de Authorization tiene reglas específicas; compruébenla con solicitudes reales. No permitan cachear respuestas médicas o de usuarios.</p>
+<p>La web actual tiene varias páginas HTML. Configuren <code>index.html</code> como raíz y conserven las rutas de páginas; no transformen todos los 404 en el index como si fuera una SPA.</p>
+<p>Para dominio personalizado de CloudFront, el certificado ACM del viewer debe estar en <code>us-east-1</code>. El certificado del ALB debe estar disponible en su región y coincidir con el nombre de origen configurado. Con HTTP hacia las tareas, el cifrado termina en el ALB; si afirman TLS hasta el contenedor deben implementar también ese tramo. <a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html">AWS: certificados de CloudFront</a>.</p>
+<p>Publiquen HTML y configuración con caché corta; usen nombres versionados para assets con caché larga. Conserven cada release del frontend para poder revertirla. Invalidar caché no sustituye disponer de la versión anterior.</p>
+<p><strong>Etapa terminada:</strong> la web funciona por HTTPS, S3 directo deniega acceso, fotos sobreviven al reemplazo de tareas y cada usuario conserva sus permisos.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="8" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="8">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-09" data-number="9" data-roles="AC"><details class="chapter-details"><summary><span class="chapter-num">09</span><span class="chapter-heading"><span class="chapter-title">Publicar imágenes y ejecutar ECS sobre EC2</span><span class="chapter-meta"><span class="owner-pill">A + C</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>9.1 Crear repositorios y publicar</h3>
+<p>Creen ECR mediante bootstrap, con tags inmutables, análisis de imágenes y una retención que no borre versiones todavía desplegadas. Para arquitectura x86 de los hosts, construyan <code>linux/amd64</code>, especialmente si desarrollan en Mac Apple Silicon.</p>
+<p>Ejemplo, después de crear el repositorio y completar los valores:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code><span class="nb">export</span><span class="w"> </span><span class="nv">PATAPORTE_ACCOUNT_ID</span><span class="o">=</span><span class="m">123456789012</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATAPORTE_ECR_HOST</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_ACCOUNT_ID</span><span class="s2">.dkr.ecr.</span><span class="nv">$AWS_REGION</span><span class="s2">.amazonaws.com&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATAPORTE_IMAGE_TAG</span><span class="o">=</span>commit-a-desplegar
+aws<span class="w"> </span>ecr<span class="w"> </span>get-login-password<span class="w"> </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$AWS_REGION</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>docker<span class="w"> </span>login<span class="w"> </span>--username<span class="w"> </span>AWS<span class="w"> </span>--password-stdin<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_ECR_HOST</span><span class="s2">&quot;</span>
+docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span>--platform<span class="w"> </span>linux/amd64<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tag<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_ECR_HOST</span><span class="s2">/pataporte-api:</span><span class="nv">$PATAPORTE_IMAGE_TAG</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--push<span class="w"> </span>backend
+</code></pre></div>
+<p>La imagen del publicador puede compartir una base de código y cambiar el comando, siempre que contenga ese módulo. Refactoricen dependencias para que importar el generador PDF no inicialice RabbitMQ ni exija una conexión DB innecesaria.</p>
+<h3>9.2 Configurar hosts y tareas</h3>
+<p>Launch Template: AMI ECS-optimized compatible con arquitectura y región, discos EBS cifrados, perfil del host, SG, IMDSv2 y User Data mínimo que registre el host en el cluster. No copien los AMI ID fijos de clase sin comprobarlos.</p>
+<p>ASG: dos zonas, mínimo inicial dos hosts para la demostración y máximo según cuota/presupuesto. La instancia debe poder alojar las tareas más el agente y el sistema. Revisen límites de ENI/IP: en modo <code>awsvpc</code> pueden limitar tareas antes que CPU o memoria.</p>
+<p>Task Definition de la API: imagen versionada, puerto 8000, modo <code>awsvpc</code>, CPU/memoria, roles, secretos, configuración, logs y health check. En ese modo el Target Group del ALB debe ser <code>ip</code>, incluso cuando ECS utiliza EC2. <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/alb.html">AWS: ALB con ECS</a>.</p>
+<p>Servicio API: al menos dos tareas con distribución por AZ/host. Servicio outbox: proceso persistente separado y sin listener público. Configuren período de gracia para health checks y límites de despliegue con capacidad para coexistir versiones.</p>
+<h3>9.3 Escalar sin políticas que compitan</h3>
+<ol>
+<li>Definan ECS Service Auto Scaling, por ejemplo CPU objetivo inicial de 60%, mínimo dos tareas y máximo acotado.</li>
+<li>Asocien el ASG a un capacity provider con managed scaling.</li>
+<li>Configuren drenaje/protección apropiados para que retirar un host no corte tareas arbitrariamente.</li>
+<li>Reserven capacidad para los despliegues y para tolerar la pérdida de un host.</li>
+<li>Midan y ajusten tiempos de arranque, warmup y cooldown.</li>
+</ol>
+<p>No agreguen sobre el mismo ASG la política de CPU del ejemplo de clase y otra administrada por el capacity provider sin diseñar su interacción. ECS necesita gestionar la capacidad de hosts en función de las tareas pendientes.</p>
+<h3>9.4 Fallos de despliegue</h3>
+<p>Habiliten deployment circuit breaker con rollback para el servicio. Necesita una versión anterior completada para volver a ella; el primer despliegue fallido no tiene ese respaldo. Un contenedor RUNNING no prueba que el flujo de negocio funcione: agreguen smoke tests. <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html">AWS: circuit breaker</a>.</p>
+<p><strong>Etapa terminada:</strong> dos réplicas atienden detrás del ALB, un contenedor detenido se reemplaza y la imagen ejecutada coincide con la release registrada.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="9" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="9">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-10" data-number="10" data-roles="B"><details class="chapter-details"><summary><span class="chapter-num">10</span><span class="chapter-heading"><span class="chapter-title">Sustituir RabbitMQ con un flujo confiable de eventos</span><span class="chapter-meta"><span class="owner-pill">B</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>10.1 Entender el problema que estamos resolviendo</h3>
+<p>Actualmente varios servicios hacen <code>commit()</code> y después publican en RabbitMQ. Si el proceso cae en medio, el registro queda guardado pero el mensaje puede perderse. Cambiar RabbitMQ por SQS conservando esa secuencia deja el mismo problema.</p>
+<p>Usaremos <strong>transactional outbox</strong>: dentro de una sola transacción PostgreSQL se guarda el cambio de negocio y un registro que representa el trabajo pendiente. Un proceso independiente publica los pendientes. La outbox aporta durabilidad entre la base y la cola; el consumidor debe tolerar duplicados. Este patrón está incluido en la solución de referencia del caso de entradas. <a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html">AWS: transactional outbox</a>.</p>
+<h3>10.2 Crear tabla y contrato de mensaje</h3>
+<p>Campos propuestos para <code>outbox_events</code>:</p>
+<table>
+<thead>
+<tr>
+  <th>Campo</th>
+  <th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>event_id, UUID y PK</td>
+  <td>Identidad estable del evento en todos los reintentos.</td>
+</tr>
+<tr>
+  <td>event_type, schema_version</td>
+  <td>Elegir handler y validar contrato.</td>
+</tr>
+<tr>
+  <td>aggregate_id</td>
+  <td>Mascota, pataporte o entidad asociada.</td>
+</tr>
+<tr>
+  <td>payload, JSONB</td>
+  <td>Datos o referencias necesarias para ejecutar.</td>
+</tr>
+<tr>
+  <td>created_at, available_at</td>
+  <td>Cuándo se creó y desde cuándo puede publicarse.</td>
+</tr>
+<tr>
+  <td>published_at</td>
+  <td>Confirmación de publicación en la cola.</td>
+</tr>
+<tr>
+  <td>attempts, last_error</td>
+  <td>Operación y diagnóstico sin información secreta.</td>
+</tr>
+<tr>
+  <td>lease_owner, lease_until</td>
+  <td>Solo si implementan publicación con leases en lugar de bloqueo transaccional.</td>
+</tr>
+</tbody>
+</table>
+<p>Ejemplo de contrato, con datos ficticios:</p>
+<div class="code-wrap"><div class="code-head"><span>json</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;event_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;62e3bffe-303e-4ba0-8f7c-e572bc9ce305&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;event_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pataporte.pdf_email.requested&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;occurred_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-10-25T15:00:00Z&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;correlation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;request-ejemplo&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;pataporte_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;id-de-ejemplo&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;recipient&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tutor@example.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;credential&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="nt">&quot;verification_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hash-de-ejemplo&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>La credencial de emisión debe representar un snapshot, para que el PDF no cambie si luego se modifica una vacuna. Un payload grande puede reemplazarse por una referencia a S3, respetando los límites vigentes de la cola. Si usan S3, la publicación solo se habilita cuando existe el objeto; también deben reconciliar objetos huérfanos o escrituras fallidas.</p>
+<p>Separar tipos de correo:</p>
+<ul>
+<li><code>auth.email_verification.requested</code>.</li>
+<li><code>auth.password_recovery.requested</code>.</li>
+<li><code>pataporte.pdf_email.requested</code>.</li>
+<li><code>vaccination.reminder.requested</code>.</li>
+</ul>
+<p>Los códigos sensibles deben tener vencimiento, retención mínima y acceso limitado. El worker debe descartar de forma registrada un código ya vencido, en lugar de enviarlo horas después de restaurar una cola.</p>
+<h3>10.3 Cambiar la transacción de negocio</h3>
+<p>Refactoricen los servicios para que una unidad de trabajo controle el commit. Las funciones que hoy confirman cambios internamente no deben impedir guardar entidad y evento de forma atómica.</p>
+<p>Pseudocódigo, <strong>no implementación lista para pegar</strong>:</p>
+<div class="code-wrap"><div class="code-head"><span>python</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code><span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">begin</span><span class="p">():</span>
+    <span class="n">pataporte</span> <span class="o">=</span> <span class="n">crear_registro_pataporte_sin_commit</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">datos</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">evento</span> <span class="o">=</span> <span class="n">construir_evento_con_id_estable</span><span class="p">(</span><span class="n">pataporte</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">evento</span><span class="p">)</span>
+<span class="c1"># El commit incluye ambos registros o ninguno.</span>
+</code></pre></div>
+<p>También definan idempotencia de la solicitud HTTP de emisión: un reintento del cliente con la misma clave y usuario no debería crear certificados nuevos indefinidamente. Una restricción transaccional en RDS puede asociar esa clave con la respuesta original.</p>
+<h3>10.4 Implementar el publicador ECS</h3>
+<ol>
+<li>Seleccionar un lote pequeño de eventos disponibles.</li>
+<li>Coordinar publicadores con <code>FOR UPDATE SKIP LOCKED</code> o leases con vencimiento.</li>
+<li>Publicar usando Boto3 y el mismo <code>event_id</code>.</li>
+<li>Marcar <code>published_at</code> únicamente después de la confirmación de SQS.</li>
+<li>Ante fallos, registrar el intento y reintentar con espera incremental y variación aleatoria.</li>
+<li>Medir cantidad y antigüedad del evento más viejo sin publicar.</li>
+</ol>
+<p>Para empezar, un publicador con transacciones cortas, lotes pequeños y tiempos de red acotados es suficiente. Un fallo después de publicar pero antes de guardar <code>published_at</code> puede duplicar el mensaje. Es una situación esperada que el consumidor debe resolver.</p>
+<p>No borren eventos apenas publicados: definan una retención corta para diagnóstico y una limpieza controlada de payloads sensibles.</p>
+<h3>10.5 Crear colas y políticas</h3>
+<p>Comiencen con una cola estándar para notificaciones y una DLQ. La identidad de un trabajo la aporta <code>event_id</code>; no dependan del ID de entrega asignado por SQS.</p>
+<p>Configuración inicial propuesta: Lambda de 60 segundos, batch size 1, ventana de lote 0 y visibility timeout de al menos 360 segundos. Si cambian timeout o batching, recalculen. Configuren redrive después de al menos cinco recepciones y retención de DLQ mayor que la de origen. Lambda recomienda visibility timeout de al menos seis veces su timeout, más la ventana de batching cuando se utiliza. <a href="https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-configure.html">AWS: configuración SQS/Lambda</a>.</p>
+<p>Mantengan misma región para cola y función. Cifren mensajes, limiten SendMessage al publicador y consumo al worker. Si usan KMS propio, agreguen los permisos requeridos sobre la clave.</p>
+<p><strong>Etapa terminada:</strong> al detener el publicador se acumulan eventos en PostgreSQL; al reiniciarlo llegan a SQS sin perder cambios de negocio.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="10" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="10">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-11" data-number="11" data-roles="B"><details class="chapter-details"><summary><span class="chapter-num">11</span><span class="chapter-heading"><span class="chapter-title">Implementar Lambda y DynamoDB</span><span class="chapter-meta"><span class="owner-pill">B</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>11.1 Extraer lógica reutilizable</h3>
+<p>Muevan la generación PDF a un módulo que reciba datos y devuelva bytes. Sepárenlo de conexiones de base, configuración del servidor y consumidores RabbitMQ. El handler Lambda no debe importar un módulo que cree conexiones al importar.</p>
+<p>Empaqueten dependencias compatibles con Linux y la arquitectura elegida. Si usan ZIP, construyan en un entorno compatible con Lambda. Si usan imagen de contenedor, creen una imagen específica con el runtime/handler de Lambda; la imagen Uvicorn no funciona como handler solo por subirla a ECR.</p>
+<p>Para actualizar código ZIP de forma inmutable, suban paquetes con una key que incorpore el commit, o actualicen su versión de objeto. Para imágenes, actualicen explícitamente el digest en la configuración de la función.</p>
+<h3>11.2 Procesar el trabajo</h3>
+<p>Secuencia propuesta:</p>
+<ol>
+<li>Validar tipo, versión, campos y vigencia.</li>
+<li>Obtener coordinación idempotente por <code>event_id</code> y efecto.</li>
+<li>Registrar estado de procesamiento.</li>
+<li>Generar PDF y escribirlo en una key determinista de S3.</li>
+<li>Enviar correo con el proveedor configurado.</li>
+<li>Guardar resultado y marcar completado.</li>
+<li>Ante fallo, devolver error del mensaje para permitir reintento.</li>
+</ol>
+<p>Usen claves distintas para efectos distintos si separan generar PDF de enviar correo. De lo contrario, un paso completado podría bloquear el reintento del otro.</p>
+<p>Para estos trabajos, Lambda puede funcionar fuera de la VPC del proyecto si solo necesita S3, SQS, DynamoDB y el proveedor de correo. Si debe consultar RDS privado, necesita conectividad a esa VPC. Diseñen el payload para evitar esa dependencia cuando resulte razonable.</p>
+<h3>11.3 Usar DynamoDB con un modelo explícito</h3>
+<p>Para reducir errores, separen dos responsabilidades:</p>
+<table>
+<thead>
+<tr>
+  <th>Tabla propuesta</th>
+  <th>Clave y contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>NotificationIdempotency</td>
+  <td>Esquema requerido por la librería de idempotencia: identificador, estado interno, expiración y coordinación de ejecuciones.</td>
+</tr>
+<tr>
+  <td>NotificationJobs</td>
+  <td><code>pk=EVENT#&lt;id&gt;</code>, <code>sk=META</code>; tipo, resultado, intentos, fechas, usuario autorizado y key del PDF.</td>
+</tr>
+</tbody>
+</table>
+<p>Usen capacidad on-demand al inicio si el entorno lo admite. Para listar trabajos por usuario y fecha, agreguen un GSI con <code>USER#&lt;id&gt;</code> y <code>created_at#event_id</code>. Consulten mediante Query en lugar de escanear toda la tabla.</p>
+<p>La tabla de estado no es el historial clínico: ese dato sigue en PostgreSQL. Tampoco es la fuente que determina si un certificado continúa vigente. La API debe verificar propiedad antes de exponer estados o URLs de descarga.</p>
+<p>Pueden utilizar Powertools para la coordinación de idempotencia, respetando su esquema y comportamiento de expiración, en lugar de improvisar un único <code>attribute_not_exists</code> que bloquee para siempre trabajos fallidos. El registro necesita distinguir ejecución en curso y completada, y permitir recuperación de una ejecución abandonada. <a href="https://docs.aws.amazon.com/powertools/python/latest/utilities/idempotency/">AWS Powertools: idempotencia</a>.</p>
+<p>TTL sirve para limpiar registros antiguos; no los elimina exactamente en el segundo de vencimiento. Comprueben la expiración en la lógica cuando tenga significado funcional. La retención de idempotencia debe cubrir la ventana de reintentos y redrive; por ejemplo, treinta días como punto de partida si conserva sentido para el negocio. <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html">AWS: TTL</a>.</p>
+<h3>11.4 Reconocer el límite del envío de correo</h3>
+<p>Una caída después de que el proveedor aceptó el correo y antes de registrar el éxito deja un resultado ambiguo. DynamoDB y SMTP no participan en una transacción conjunta. La coordinación reduce duplicados, pero no prueba entrega exactamente una vez.</p>
+<p>Para PDF, una key determinista permite repetir la escritura de manera controlada. Para correo, evalúen capacidades del proveedor, identificadores de operación y reconciliación. En el informe declaren la garantía real: reintentos con deduplicación de trabajos completados y posibilidad residual de duplicados en fallos ambiguos.</p>
+<h3>11.5 Manejar lotes, concurrencia y fallos</h3>
+<p>Habiliten <code>ReportBatchItemFailures</code> y devuelvan únicamente los ID de mensajes fallidos. Un mensaje mal formado debe terminar en DLQ después de sus intentos; no registrarse como exitoso por capturar su excepción. <a href="https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html">AWS: errores de Lambda con SQS</a>.</p>
+<p>Limiten la concurrencia del event source mapping y coordínenla con la concurrencia reservada de la función y la capacidad del correo. Concurrencia reservada no mantiene funciones calientes; provisioned concurrency es otro mecanismo. Empiecen con pocos consumidores y midan.</p>
+<h3>11.6 Elegir proveedor de correo</h3>
+<p>Para una primera demostración pueden mantener SMTP con contraseña de aplicación en Secrets Manager, si está permitido. Amazon SES es una opción integrada; requiere configurar/verificar identidades y revisar sandbox y cuotas. No asuman que Academy permite SES o sacar una cuenta de sandbox. Mientras exista esa restricción, prueben con destinatarios autorizados o un modo simulado claramente identificado. <a href="https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html">AWS: sandbox de SES</a>.</p>
+<p><strong>Etapa terminada:</strong> llega un PDF, su key es estable, el estado es consultable y un error real produce reintento/DLQ. Repitan el mismo evento para comprobar deduplicación.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="11" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="11">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-12" data-number="12" data-roles="B"><details class="chapter-details"><summary><span class="chapter-num">12</span><span class="chapter-heading"><span class="chapter-title">Agregar recordatorios y procesamiento de fotos</span><span class="chapter-meta"><span class="owner-pill">B</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><p>Son extensiones: suman una justificación concreta para Scheduler y eventos de S3, pero deben implementarse después de estabilizar registro, certificados y pipeline.</p>
+<h3>12.1 Recordatorios de vacunas con Scheduler</h3>
+<p>La aplicación ya tiene fechas de próxima dosis. Definan primero la regla del negocio: por ejemplo, un aviso siete días antes, zona horaria America/Montevideo y preferencias de contacto.</p>
+<ol>
+<li>Crear un proceso que consulte dosis próximas mediante una consulta indexada.</li>
+<li>Por cada aviso, insertar un evento outbox con una clave de negocio única, por ejemplo esquema-vacuna + fecha-de-dosis + anticipación.</li>
+<li>Ejecutar el proceso una vez por día mediante EventBridge Scheduler y una tarea ECS puntual con acceso a RDS.</li>
+<li>El publicador existente lleva los eventos a SQS y la Lambda envía el mensaje.</li>
+<li>Al repetir la tarea, la restricción única evita crear el mismo recordatorio.</li>
+</ol>
+<p>Scheduler necesita permiso para RunTask y PassRole sobre las identidades previstas. El éxito de solicitar RunTask no prueba que el proceso terminó correctamente: monitoreen el estado STOPPED y exit code de la tarea. Configuren reintentos/DLQ de entrega y alarma de ejecución fallida. Scheduler admite programaciones únicas o recurrentes y roles de ejecución. <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-eventbridge-scheduler.html">AWS: Scheduler</a>.</p>
+<p>Elegimos ECS para esta consulta porque reutiliza código y conectividad con PostgreSQL. Otra variante válida es Lambda en la VPC, con sus permisos y concurrencia controlados.</p>
+<h3>12.2 Miniaturas con eventos de S3</h3>
+<ol>
+<li>Configurar eventos de creación exclusivamente sobre <code>originals/</code>.</li>
+<li>Enviar a una cola de fotos con su DLQ y consumidor Lambda, o usar invocación asíncrona directa con destino de fallo configurado.</li>
+<li>Validar formato real, dimensiones y tamaño.</li>
+<li>Generar miniatura bajo <code>thumbnails/</code>, fuera del prefijo que dispara eventos.</li>
+<li>Usar bucket/key/versionId como identidad del procesamiento para tolerar eventos repetidos.</li>
+<li>Mantener el acceso privado y actualizar la referencia o usar una convención determinista.</li>
+</ol>
+<p>Utilizar una cola facilita observar atraso y controlar reintentos; para pocos archivos, la invocación directa simplifica componentes. Si se sobrescribe la misma key, consideren versión/orden para que un evento viejo no reemplace el resultado nuevo. Los eventos no representan una entrega única garantizada. <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/notification-how-to-event-types-and-destinations.html">AWS: eventos de S3</a>.</p>
+<h3>12.3 Dónde encaja EventBridge como bus</h3>
+<p>Scheduler programa; un event bus distribuye eventos según reglas. Son capacidades distintas. Si agregan varios consumidores de <code>PataporteEmitido</code>, pueden publicar desde outbox a EventBridge y rutear a colas independientes de notificaciones y auditoría. Verifiquen fallos por entrada en PutEvents y políticas de cada destino.</p>
+<p>No hace falta introducir un bus en el recorrido principal para afirmar que usan Scheduler. Tampoco una cola estándar entrega una copia de cada mensaje a todos sus consumidores: varias Lambdas sobre la misma cola compiten por los mensajes. Para fan-out, creen destinos y colas independientes.</p>
+<p><strong>Etapa terminada:</strong> un aviso programado se produce una sola vez por regla de negocio, y una foto genera miniatura sin disparar un bucle.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="12" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="12">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-13" data-number="13" data-roles="C"><details class="chapter-details"><summary><span class="chapter-num">13</span><span class="chapter-heading"><span class="chapter-title">Crear el pipeline de GitHub Actions</span><span class="chapter-meta"><span class="owner-pill">C</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>13.1 Definir quién puede desplegar y con qué identidad</h3>
+<p>Usen un repositorio compartido y acceso individual. La rama principal representa una versión integrada. Un environment de GitHub puede controlar quién despliega y dónde se guardan secretos y variables.</p>
+<p>Diseño objetivo: GitHub solicita un token OIDC y asume un rol AWS con credenciales temporales. La trust policy limita repositorio y rama o environment. Con environments, el claim <code>sub</code> cambia: configuren la condición que realmente emite ese workflow y protejan el environment.</p>
+<p>El permiso <code>id-token: write</code> permite solicitar el token, no administrar AWS. La política del rol define los permisos reales. <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_oidc.html">AWS: GitHub OIDC</a>.</p>
+<p>Si Academy no permite crear esa confianza, usen el camino autorizado de credenciales temporales. Documenten su vencimiento y quién las renueva. Los PR y cambios de código siguen siendo de los tres, aunque solo una identidad opere el lab. No ofrezcan credenciales a PR de forks ni a código sin revisar.</p>
+<h3>13.2 Separar validación y despliegue</h3>
+<table>
+<thead>
+<tr>
+  <th>Workflow</th>
+  <th>Cuándo</th>
+  <th>Qué demuestra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>CI</td>
+  <td>PR y cambios de código.</td>
+  <td>Código, migraciones, tests y plantillas se validan antes de integrar.</td>
+</tr>
+<tr>
+  <td>Deploy</td>
+  <td>Rama/environment autorizado o ejecución manual.</td>
+  <td>Una release identificada llega a AWS y supera comprobaciones.</td>
+</tr>
+</tbody>
+</table>
+<p>Fijen las actions utilizadas a commits verificados de sus repositorios oficiales y manténganlas actualizadas. Eviten elegir versiones de memoria o usar etiquetas flotantes en la entrega definitiva.</p>
+<h3>13.3 Orden exacto de una release</h3>
+<ol>
+<li>Checkout del commit.</li>
+<li>Instalar dependencias de validación.</li>
+<li>Ejecutar tests de autorización y flujos críticos, además de validar CloudFormation.</li>
+<li>Autenticarse en AWS y comprobar Account/Region esperados.</li>
+<li>Asegurar bootstrap de ECR/artefactos mediante una identidad inicial disponible.</li>
+<li>Construir y publicar imágenes con el commit como tag; resolver sus digests.</li>
+<li>Empaquetar Lambdas y frontend en artefactos de release.</li>
+<li>Crear/actualizar stacks de infraestructura y registrar Outputs.</li>
+<li>Registrar una Task Definition de migración con la imagen candidata.</li>
+<li>Ejecutar y verificar migración dentro de la VPC.</li>
+<li>Actualizar servicios ECS y código/configuración de Lambda.</li>
+<li>Esperar estabilización y comprobar que se está ejecutando la imagen candidata.</li>
+<li>Publicar frontend/configuración e invalidar los archivos necesarios.</li>
+<li>Ejecutar smoke tests por CloudFront.</li>
+<li>Guardar manifiesto de release y evidencias sin secretos.</li>
+</ol>
+<p>Las primeras etapas pueden crear infraestructura vacía antes de existir la imagen. Los servicios de aplicación solo se crean cuando la imagen está disponible. Así se evita el problema circular de necesitar ECR para construir y una imagen para iniciar ECS.</p>
+<h3>13.4 Ejemplos de comprobaciones</h3>
+<p>Los scripts propuestos deben fallar con un exit code distinto de cero si falla su etapa. No basta con imprimir una advertencia.</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>aws<span class="w"> </span>ecs<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>services-stable<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cluster<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_CLUSTER</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--services<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_API_SERVICE</span><span class="s2">&quot;</span>
+aws<span class="w"> </span>ecs<span class="w"> </span>describe-services<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cluster<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_CLUSTER</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--services<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_API_SERVICE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;services[0].deployments&#39;</span>
+curl<span class="w"> </span>--fail<span class="w"> </span>--silent<span class="w"> </span>--show-error<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$PATAPORTE_BASE_URL</span><span class="s2">/api/health/ready&quot;</span>
+</code></pre></div>
+<p>Estabilidad puede corresponder a una versión anterior luego de rollback. Además de esperar, comparen la Task Definition/digest con la release candidata y revisen eventos de despliegue.</p>
+<p>Para migraciones, el script debe: ejecutar RunTask con la red/roles previstos; comprobar <code>failures</code> de la respuesta; esperar tasks-stopped; verificar container exit code y stoppedReason; y conservar una referencia a sus logs. Si falla, no publicar la nueva API.</p>
+<p>Ejemplo de permisos y exclusión mutua a adaptar al workflow completo:</p>
+<div class="code-wrap"><div class="code-head"><span>yaml</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code><span class="nt">permissions</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+<span class="w">  </span><span class="nt">id-token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
+
+<span class="nt">concurrency</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pataporte-dev-deploy</span>
+<span class="w">  </span><span class="nt">cancel-in-progress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>No cancelen a mitad de una migración/despliegue para empezar otro sobre la misma base. Un workflow de CI puede tener otra política de cancelación.</p>
+<h3>13.5 Manejar configuración y frontend</h3>
+<p>Los ARN, nombres de bucket, región y URL pública son configuración. Contraseñas, tokens y códigos son secretos. El navegador nunca debe recibir credenciales AWS del servidor ni SECRET_KEY de JWT.</p>
+<p>Construyan un directorio de publicación que incluya solo archivos web. Validación previa: comprobar que no contiene localhost, <code>.env</code> ni archivos internos. Escriban configuración pública antes de publicar HTML que la utilice.</p>
+<p>Si utilizan <code>aws s3 sync --delete</code>, limítenlo al bucket/prefijo de frontend. No lo apliquen al bucket de fotos o certificados. Conserven assets antiguos el tiempo necesario para clientes con HTML cacheado.</p>
+<h3>13.6 Rollback completo y compatible</h3>
+<p>Guarden commit, digests, versiones Lambda, artefacto del frontend y revisión Alembic. Para revertir, desplieguen la release previa mediante la misma fuente de configuración para no dejar drift entre CloudFormation y ECS.</p>
+<p>Una reversión de imagen no revierte datos ni recupera una columna eliminada. Utilicen migraciones compatibles por etapas: agregar esquema, publicar código compatible, migrar datos y recién después retirar lo viejo. Eviten cambios destructivos durante la demostración.</p>
+<p><strong>Etapa terminada:</strong> un commit revisado produce un despliegue verificable, y una release defectuosa puede detectarse y revertirse sin reconstruir manualmente todo.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="13" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="13">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-14" data-number="14" data-roles="AC"><details class="chapter-details"><summary><span class="chapter-num">14</span><span class="chapter-heading"><span class="chapter-title">Configurar observabilidad, seguridad y costos</span><span class="chapter-meta"><span class="owner-pill">A + C</span><span>3 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>14.1 Hacer que cada recorrido pueda investigarse</h3>
+<p>Generen un <code>correlation_id</code> al recibir una solicitud y propáguenlo a outbox, SQS y Lambda. Cada log estructurado debería incluir componente, entorno, versión, request/event ID, resultado y duración. Registren identificadores técnicos y códigos de error, con retención limitada.</p>
+<p>Creen Log Groups separados para API, publicador, migraciones, Lambdas y tareas programadas. Un dashboard debe permitir ver:</p>
+<table>
+<thead>
+<tr>
+  <th>Capa</th>
+  <th>Métricas y señales</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>CloudFront/ALB/API</td>
+  <td>Requests, latencia p95, errores 4xx/5xx, targets saludables y fallos de autenticación.</td>
+</tr>
+<tr>
+  <td>ECS/EC2</td>
+  <td>CPU, memoria, tareas deseadas/ejecutándose/pendientes, reemplazos y capacidad del ASG.</td>
+</tr>
+<tr>
+  <td>RDS</td>
+  <td>Conexiones, CPU, memoria disponible, almacenamiento libre y eventos de failover.</td>
+</tr>
+<tr>
+  <td>Outbox</td>
+  <td>Pendientes, antigüedad máxima y fallos de publicación.</td>
+</tr>
+<tr>
+  <td>SQS/DLQ</td>
+  <td>Cantidad visible/en proceso, edad del mensaje más antiguo y mensajes en DLQ.</td>
+</tr>
+<tr>
+  <td>Lambda</td>
+  <td>Errores, duración, throttling y concurrencia.</td>
+</tr>
+<tr>
+  <td>Negocio</td>
+  <td>Certificados solicitados/completados y fallos de envío.</td>
+</tr>
+</tbody>
+</table>
+<p>La cantidad de mensajes en DLQ y los eventos pendientes en outbox son estados, no solo errores de log. Deben poder detectarse aunque ningún usuario se queje.</p>
+<h3>14.2 Configurar alarmas con una acción útil</h3>
+<p>Puntos de partida: DLQ con mensajes durante un minuto; mensaje/outbox más viejo que cinco minutos; error rate de API superior al 1% durante cinco minutos con tráfico suficiente; targets saludables por debajo del mínimo; y RDS próximo a su límite de conexiones/almacenamiento.</p>
+<p>Ajusten umbrales según las mediciones y la importancia de cada mensaje. Un código de verificación necesita mucha menos demora que un certificado solicitado por correo.</p>
+<p>Envíen avisos a un topic SNS con suscripciones confirmadas. Cada alarma debe tener responsable y un procedimiento: qué mirar primero, cómo contener el fallo y cuándo reintentar. No borren una DLQ para que desaparezca una alarma.</p>
+<h3>14.3 Completar los controles que afectan al funcionamiento</h3>
+<ul>
+<li>Revisar permisos por recurso y usuario en todos los endpoints.</li>
+<li>Deshabilitar caché de respuestas privadas en CloudFront.</li>
+<li>Cifrar RDS, buckets y colas; usar TLS y verificar certificados según cada tramo.</li>
+<li>Rotar/configurar secretos fuera del código. Un secreto inyectado como variable en una tarea no cambia automáticamente dentro de procesos ya iniciados: planifiquen redeploy al rotarlo.</li>
+<li>Limitar archivos por contenido, tamaño y dimensiones; generar nombres propios.</li>
+<li>Restringir acciones IAM por ARN, prefijo y propósito donde sea posible.</li>
+<li>Controlar exposición de Swagger/OpenAPI y datos de diagnóstico en el entorno final.</li>
+<li>Usar datos ficticios en pruebas y evidencias.</li>
+</ul>
+<p>El certificado actual se verifica por hash y registro del servidor. No lo describan como una firma digital criptográfica del veterinario si no implementaron claves y verificación de firmas. Expliquen la garantía concreta que ofrece la versión existente.</p>
+<h3>14.4 Controlar gasto</h3>
+<p>Usen las etiquetas acordadas, revisen gasto diariamente y creen alertas si la cuenta lo permite. Fijen retención de logs, limpieza de imágenes antiguas y lifecycle para versiones/artefactos de S3.</p>
+<p>Antes de mover certificados a almacenamiento de archivo, definan cuánto pueden tardar en recuperarse y cuánto cuesta hacerlo. Algunas clases requieren restauración o tienen duraciones mínimas y cargos; una transición no es siempre conveniente para archivos pequeños.</p>
+<p>Mantengan el entorno pequeño durante desarrollo y activen la configuración de demostración solo cuando haga falta. Si usan una instancia, un NAT único o RDS Single-AZ por presupuesto, identifiquen exactamente qué objetivo de disponibilidad deja de cumplirse.</p>
+<p><strong>Etapa terminada:</strong> el equipo puede ubicar un trabajo fallido de punta a punta, recibe una alarma de prueba y conoce el costo de mantener el entorno.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="14" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="14">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-15" data-number="15" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">15</span><span class="chapter-heading"><span class="chapter-title">Probar funcionalidad, carga y recuperación</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>15.1 Establecer criterios antes de medir</h3>
+<p>Definan objetivos por recorrido: latencia p95, tasa de error, capacidad de usuarios concurrentes y tiempo máximo de completar un certificado. Una propuesta inicial para discutir podría ser p95 menor a un segundo y errores menores a 1% para un escenario de lectura de 50 usuarios concurrentes. Son metas de ensayo, no garantías alcanzadas.</p>
+<p>Para recordatorios/correos, definan otro objetivo de latencia. Separen tiempo de respuesta HTTP y demora de procesamiento en cola.</p>
+<h3>15.2 Matriz mínima de pruebas</h3>
+<table>
+<thead>
+<tr>
+  <th>Prueba</th>
+  <th>Acción</th>
+  <th>Resultado esperado</th>
+  <th>Evidencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Registro</td>
+  <td>Alta, correo y código correcto/incorrecto/vencido.</td>
+  <td>Solo se activa con código válido.</td>
+  <td>Resultado y evento correlacionado.</td>
+</tr>
+<tr>
+  <td>Recuperación</td>
+  <td>Solicitar y usar código una vez.</td>
+  <td>Plantilla correcta; no reutilizable ni válido tras vencer.</td>
+  <td>Test y estado.</td>
+</tr>
+<tr>
+  <td>Autorización</td>
+  <td>Usuario A solicita/edita mascota de B.</td>
+  <td>Acceso rechazado.</td>
+  <td>Test automatizado.</td>
+</tr>
+<tr>
+  <td>Persistencia</td>
+  <td>Subir foto y reemplazar tarea API.</td>
+  <td>La foto sigue accesible solo a autorizados.</td>
+  <td>Key S3 y resultado antes/después.</td>
+</tr>
+<tr>
+  <td>Certificado</td>
+  <td>Emitir y verificar pataporte.</td>
+  <td>Snapshot y estado coherentes; PDF recibido.</td>
+  <td>ID, hash y trazas.</td>
+</tr>
+<tr>
+  <td>Outbox</td>
+  <td>Detener publicador y emitir.</td>
+  <td>El evento queda pendiente y luego se publica.</td>
+  <td>Métrica y fila saneada.</td>
+</tr>
+<tr>
+  <td>Duplicados</td>
+  <td>Entregar dos veces el mismo evento.</td>
+  <td>Trabajo completado reconocido; sin duplicar efectos evitables.</td>
+  <td>Registro de idempotencia.</td>
+</tr>
+<tr>
+  <td>Fallo de correo</td>
+  <td>Proveedor simulado devuelve error.</td>
+  <td>Reintentos y eventual DLQ.</td>
+  <td>Errores, intentos y alarma.</td>
+</tr>
+<tr>
+  <td>Redrive</td>
+  <td>Corregir causa y reprocesar un mensaje.</td>
+  <td>Se completa el trabajo válido.</td>
+  <td>Estado final y trazas.</td>
+</tr>
+<tr>
+  <td>Health check</td>
+  <td>Detener una tarea API.</td>
+  <td>ECS la reemplaza; la otra atiende.</td>
+  <td>Eventos y requests durante el fallo.</td>
+</tr>
+<tr>
+  <td>Host</td>
+  <td>Retirar un host en un ensayo controlado.</td>
+  <td>Tareas se reubican/recuperan con capacidad suficiente.</td>
+  <td>Timeline ASG/ECS.</td>
+</tr>
+<tr>
+  <td>RDS</td>
+  <td>Ensayar failover permitido o restauración.</td>
+  <td>Reconexión/recuperación verificable.</td>
+  <td>Eventos y duración medida.</td>
+</tr>
+<tr>
+  <td>Release mala</td>
+  <td>Desplegar una versión que falla su health check.</td>
+  <td>No se considera exitosa; rollback con versión previa.</td>
+  <td>Pipeline y deployment events.</td>
+</tr>
+<tr>
+  <td>Secretos</td>
+  <td>Rotar un valor de prueba y renovar tareas.</td>
+  <td>La configuración nueva se utiliza.</td>
+  <td>Revisión y prueba funcional.</td>
+</tr>
+</tbody>
+</table>
+<p>Un ensayo de caída de tarea demuestra recuperación de proceso, no la pérdida completa de una AZ. Para afirmar tolerancia zonal, examinen distribución, dependencias y capacidad restante, y ensayen el alcance realmente permitido.</p>
+<p>Las pruebas de fallos se realizan sobre el entorno de prueba con datos ficticios y un procedimiento de recuperación preparado. Para ensayos de cola usen un proveedor de correo simulado o destinatarios de prueba, evitando envíos masivos.</p>
+<h3>15.3 Generar carga representativa</h3>
+<p>Prueben un endpoint de negocio autenticado, no solamente <code>/health</code>. Creen previamente usuarios y mascotas de ensayo. Un ejemplo de archivo a crear en <code>tests/load/api.js</code>:</p>
+<div class="code-wrap"><div class="code-head"><span>javascript</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code><span class="k">import</span><span class="w"> </span><span class="nx">http</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;k6/http&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">check</span><span class="p">,</span><span class="w"> </span><span class="nx">sleep</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;k6&#39;</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">stages</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;1m&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;2m&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="mf">25</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;2m&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="mf">50</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;1m&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nx">thresholds</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">http_req_failed</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;rate&lt;0.01&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">http_req_duration</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;p(95)&lt;1000&#39;</span><span class="p">],</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">__ENV</span><span class="p">.</span><span class="nx">BASE_URL</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">__ENV</span><span class="p">.</span><span class="nx">TEST_TOKEN</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">tutor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">__ENV</span><span class="p">.</span><span class="nx">TEST_TUTOR_ID</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">base</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">token</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">tutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">&#39;Falta configuración del ensayo&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">http</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">base</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;/api/tutores/&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">tutor</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;/mascotas&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Authorization</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Bearer &#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">token</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="w">  </span><span class="nx">check</span><span class="p">(</span><span class="nx">response</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">&#39;respuesta autorizada&#39;</span><span class="o">:</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">200</span><span class="w"> </span><span class="p">});</span>
+<span class="w">  </span><span class="nx">sleep</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>El token debe corresponder al tutor indicado y durar lo suficiente para el ensayo. Inyéctenlo sin guardarlo en Git ni imprimirlo. Ejecución propuesta, después de crear el archivo y cargar las variables:</p>
+<div class="code-wrap"><div class="code-head"><span>bash</span><button type="button" class="copy-code">Copiar código</button></div><pre class="codeblock"><code>k6<span class="w"> </span>run<span class="w"> </span>tests/load/api.js
+</code></pre></div>
+<p>Un solo tutor prueba capacidad de ese patrón de lectura; amplíen a varios usuarios/datasets para evitar conclusiones engañosas. Para evaluar generación masiva, produzcan trabajos de prueba y midan la cola con correo simulado.</p>
+<h3>15.4 Medir elasticidad y límites</h3>
+<p>Anoten cuántas tareas y hosts había al inicio, cuándo se detectó demanda, cuándo estuvo lista la capacidad nueva y cómo cambió p95. Mantengan la carga durante suficiente tiempo para observar políticas y warmup. No cambien el umbral en medio del ensayo sin registrarlo.</p>
+<p>Observen si el límite real es CPU, conexiones RDS, ENI, cuota, proveedor de correo o consulta lenta. Escalar API no corrige automáticamente el resto. Repitan tras el cambio que resuelva el cuello de botella.</p>
+<h3>15.5 Guardar evidencia reproducible</h3>
+<p>Por ensayo guarden: fecha, commit, configuración, cantidad de datos, método, resultado, métricas y limitaciones. Las capturas deben mostrar contexto y unidades, sin secretos ni información personal. Una tabla con valores antes/después es más defendible que una pantalla con muchas métricas sin interpretación.</p>
+<p><strong>Etapa terminada:</strong> los objetivos cumplidos tienen evidencia; los no cumplidos tienen diagnóstico y una limitación declarada.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="15" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="15">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-16" data-number="16" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">16</span><span class="chapter-heading"><span class="chapter-title">Extender a una segunda región</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>16.1 Separar los objetivos</h3>
+<table>
+<thead>
+<tr>
+  <th>Objetivo</th>
+  <th>Mecanismo</th>
+  <th>Límite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Acceso global a la web</td>
+  <td>CloudFront.</td>
+  <td>La API y los datos pueden seguir en una región.</td>
+</tr>
+<tr>
+  <td>Tolerancia a fallo zonal</td>
+  <td>ECS/hosts distribuidos y RDS Multi-AZ.</td>
+  <td>No cubre pérdida completa de la región.</td>
+</tr>
+<tr>
+  <td>Recuperación regional</td>
+  <td>Segunda infraestructura, datos replicados/respaldados y conmutación controlada.</td>
+  <td>Depende del atraso de datos y del procedimiento.</td>
+</tr>
+</tbody>
+</table>
+<p>RDS Multi-AZ de instancia mantiene un standby sincrónico dentro de la región. Es alta disponibilidad, no una estrategia regional completa. <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZSingleStandby.html">AWS: Multi-AZ</a>.</p>
+<h3>16.2 Definir RTO, RPO y presupuesto</h3>
+<p>RTO es cuánto puede tardar la recuperación. RPO es cuántos datos recientes podría perderse. Elijan objetivos y midan resultados; no confundan el valor deseado con el demostrado.</p>
+<p>Para el proyecto proponemos región primaria con escritura única y una secundaria de recuperación. Desplegar escritura activa en todas las regiones exige resolver conflictos y consistencia con mucho más alcance. Mantener un único escritor es una decisión coherente para los datos clínicos existentes.</p>
+<h3>16.3 Preparar la región secundaria</h3>
+<ol>
+<li>Verificar que está habilitada y que admite motores, clases y servicios elegidos.</li>
+<li>Desplegar las plantillas con parámetros propios: VPC, subredes, roles, certificados y nombres regionales.</li>
+<li>Tener disponibles las mismas imágenes y paquetes de release en esa región.</li>
+<li>Replicar archivos S3, con versionado/permisos y claves de cifrado adecuados.</li>
+<li>Elegir réplica PostgreSQL cross-region, o copias de backups y restauración si acepta un RTO mayor.</li>
+<li>Preparar secretos/configuración regionales y proveedor de correo.</li>
+<li>Crear colas, consumidores y tablas operativas de destino.</li>
+<li>Mantener desactivados los escritores, publicadores y programaciones secundarios hasta decidir la conmutación.</li>
+</ol>
+<p>La replicación S3 es asíncrona; configurar replicación en vivo no copia por sí sola objetos anteriores. Planeen Batch Replication u otro procedimiento para esos objetos. <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication.html">AWS: replicación de S3</a>.</p>
+<p>Una réplica RDS entre regiones también requiere considerar retraso y promoción antes de aceptar escrituras. Disponibilidad y compatibilidad dependen del motor, versión y región. <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.XRgn.html">AWS: réplicas entre regiones</a>.</p>
+<p>Las colas SQS regionales no se replican automáticamente. Una outbox ya marcada como publicada puede no reenviarse en la secundaria aunque su mensaje haya quedado en la cola primaria. Necesitan reconciliar trabajos solicitados y completados antes del replay. Conserven metadatos suficientes, repliquen/restauren el estado operativo elegido y eviten activar consumidores sin una decisión sobre duplicados.</p>
+<p>Global Tables puede ayudar a replicar determinados metadatos DynamoDB, pero requiere analizar su modo de consistencia y conflictos. No vuelve atómico un correo con la escritura en la tabla.</p>
+<h3>16.4 Procedimiento de conmutación</h3>
+<ol>
+<li>Detectar y confirmar el incidente con alcance y hora.</li>
+<li>Detener o aislar escrituras/publicadores de la región primaria; impedir dos escritores cuando vuelva la conectividad.</li>
+<li>Medir atraso disponible y aceptar/documentar el RPO.</li>
+<li>Promover réplica o restaurar PostgreSQL y comprobar esquema/datos.</li>
+<li>Actualizar endpoint/secretos y desplegar tareas de la secundaria.</li>
+<li>Comprobar disponibilidad de archivos y control de idempotencia.</li>
+<li>Cambiar origen de API/DNS mediante el procedimiento elegido.</li>
+<li>Probar autenticación, lectura, escritura y descarga.</li>
+<li>Reconciliar outbox y colas, habilitar consumo y recordatorios con control.</li>
+<li>Medir RTO real y planear el retorno a una primaria sin crear divergencias.</li>
+</ol>
+<p>Cambiar DNS o distribución no es instantáneo. Además, el origin failover de CloudFront solo cubre determinados métodos, como GET/HEAD/OPTIONS, y no resuelve automáticamente escrituras POST/PUT de la API. Una conmutación de API requiere decidir también cuál es el escritor de datos. <a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/high_availability_origin_failover.html">AWS: límites de origin failover</a>.</p>
+<h3>16.5 Alcance demostrable en Academy</h3>
+<p>Si las cuotas o el saldo impiden mantener la secundaria, pueden ensayar un despliegue temporal/restauración y luego desmontarlo, o presentar el diseño pendiente. Deben distinguir claramente lo diseñado de lo ejecutado. Una réplica S3 aislada no permite afirmar que toda PATAPORTE sobrevive a una región.</p>
+<p><strong>Etapa terminada:</strong> existe un procedimiento probado con RTO/RPO medidos, o la extensión figura explícitamente como diseño sin validar.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="16" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="16">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-17" data-number="17" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">17</span><span class="chapter-heading"><span class="chapter-title">Organizar el trabajo, el informe y la defensa</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>4 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>17.1 Reparto para tres personas</h3>
+<table>
+<thead>
+<tr>
+  <th>Integrante</th>
+  <th>Responsabilidad principal</th>
+  <th>Entregables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>A: plataforma y datos</td>
+  <td>Red, RDS, hosts EC2/ASG y cluster ECS.</td>
+  <td>CloudFormation de esas capas, configuración de roles permitidos, Outputs y ensayos de conectividad/recuperación.</td>
+</tr>
+<tr>
+  <td>B: aplicación y eventos</td>
+  <td>API, autorización, migraciones, archivos, outbox y procesadores.</td>
+  <td>Código adaptado, contratos, SQS/Lambda/DynamoDB y tests de negocio/idempotencia.</td>
+</tr>
+<tr>
+  <td>C: entrega y operación</td>
+  <td>Pipeline, publicación web, edge, observabilidad y coordinación de pruebas.</td>
+  <td>Workflows, releases, S3/CloudFront de frontend, dashboard/alarmas y reportes de integración/carga.</td>
+</tr>
+</tbody>
+</table>
+<p>Cada integrante escribe pruebas de su parte y prepara su explicación. C coordina la verificación del recorrido completo; no queda a cargo de encontrar todos los errores de los demás.</p>
+<p>Distribución más precisa para evitar depender de una sola persona:</p>
+<table>
+<thead>
+<tr>
+  <th>Trabajo</th>
+  <th>Lidera</th>
+  <th>Revisa/colabora</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Contratos de rutas/eventos/Outputs</td>
+  <td>Los tres.</td>
+  <td>Acuerdo inicial antes de separar ramas.</td>
+</tr>
+<tr>
+  <td>Red e IAM/roles disponibles</td>
+  <td>A.</td>
+  <td>C valida que CI pueda operar; B valida permisos runtime.</td>
+</tr>
+<tr>
+  <td>RDS y migraciones</td>
+  <td>A: infraestructura; B: esquema.</td>
+  <td>Revisión conjunta.</td>
+</tr>
+<tr>
+  <td>Servicio ECS y release</td>
+  <td>A: capacidad; C: despliegue; B: imagen/health.</td>
+  <td>Primera integración juntos.</td>
+</tr>
+<tr>
+  <td>S3 privado y fotos</td>
+  <td>B: código; A: permisos.</td>
+  <td>C comprueba acceso desde frontend.</td>
+</tr>
+<tr>
+  <td>Cola, outbox, Lambda y DynamoDB</td>
+  <td>B.</td>
+  <td>A revisa IAM/red; C alarma y evidencia.</td>
+</tr>
+<tr>
+  <td>Frontend/CloudFront</td>
+  <td>C.</td>
+  <td>B revisa rutas/auth; A origen/red.</td>
+</tr>
+<tr>
+  <td>Carga, fallos y rollback</td>
+  <td>C coordina.</td>
+  <td>A y B ejecutan y explican sus componentes.</td>
+</tr>
+<tr>
+  <td>Segunda región</td>
+  <td>A coordina.</td>
+  <td>B reconcilia datos/trabajos; C tráfico y runbook.</td>
+</tr>
+<tr>
+  <td>Informe y defensa</td>
+  <td>Los tres.</td>
+  <td>Una revisión final conjunta.</td>
+</tr>
+</tbody>
+</table>
+<p>El reparto es por responsabilidad, no por cuentas AWS. Dividir la API, la base y las colas entre tres cuentas para repartir trabajo agrega permisos y redes entre cuentas y sesiones; no es necesario para colaborar.</p>
+<h3>17.2 Hitos y ritmo</h3>
+<p>Plan orientativo desde el 26 de octubre:</p>
+<table>
+<thead>
+<tr>
+  <th>Fecha</th>
+  <th>Hito compartido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>26 oct</td>
+  <td>Cuenta, permisos, presupuesto y contratos; recorrido local identificado.</td>
+</tr>
+<tr>
+  <td>27–29 oct</td>
+  <td>Primera versión funcional en una región; plantillas y pipeline inicial.</td>
+</tr>
+<tr>
+  <td>30 oct–1 nov</td>
+  <td>Outbox, cola, worker, archivos privados y release reproducible.</td>
+</tr>
+<tr>
+  <td>2–4 nov</td>
+  <td>Autorización, carga, escalado, recuperación y alarmas.</td>
+</tr>
+<tr>
+  <td>5–6 nov</td>
+  <td>Extensiones que entren en tiempo/presupuesto; borrador del informe.</td>
+</tr>
+<tr>
+  <td>7–8 nov</td>
+  <td>Congelar alcance, corregir fallos, revisar evidencias y ensayar defensa.</td>
+</tr>
+<tr>
+  <td>9 nov</td>
+  <td>Entregar informe.</td>
+</tr>
+<tr>
+  <td>11 o 16 nov</td>
+  <td>Defensa según fecha que confirme el docente.</td>
+</tr>
+</tbody>
+</table>
+<p>Hagan una integración breve cada día de trabajo: qué cambió, qué necesita otro componente y qué prueba conjunta queda pendiente. No esperen a terminar todos los módulos para desplegar un recorrido pequeño.</p>
+<p>El operador de la cuenta de integración puede rotar si existe acceso individual autorizado. Si solo el titular puede operar el lab, los otros preparan PR y participan en las sesiones; documenten contribuciones por commits, revisiones, pruebas y explicación.</p>
+<h3>17.3 Informe de diez páginas</h3>
+<p>Distribución orientativa, ajustando formato exigido:</p>
+<ol>
+<li>Problema, usuarios y objetivos: una página.</li>
+<li>Arquitectura y recorrido de una solicitud: dos páginas.</li>
+<li>Decisiones, seguridad y alternativas: dos páginas.</li>
+<li>Infraestructura y pipeline: una página.</li>
+<li>Pruebas de carga/fallos con resultados: dos páginas.</li>
+<li>Costos, limitaciones, recuperación regional y conclusiones: dos páginas.</li>
+</ol>
+<p>La guía, las plantillas, los workflows, los tests y las evidencias pueden estar enlazados en el repositorio. El informe debe argumentar el diseño y mostrar resultados; no necesita repetir todos los comandos.</p>
+<p>Preguntas que deberían poder responder los tres:</p>
+<ul>
+<li>¿Por qué PostgreSQL sigue siendo la fuente clínica y para qué usan DynamoDB?</li>
+<li>¿Qué pasa si se guarda el pataporte y falla SQS?</li>
+<li>¿Qué pasa si el proveedor aceptó el correo pero el worker cae?</li>
+<li>¿Cómo escalan tareas y hosts sin que compitan sus políticas?</li>
+<li>¿Qué falla con la pérdida de una AZ o región?</li>
+<li>¿Qué parte del pipeline depende de credenciales temporales de Academy?</li>
+<li>¿Qué evidencia prueba los resultados y qué limitaciones siguen abiertas?</li>
+</ul>
+<h3>17.4 Secuencia de defensa</h3>
+<p>Muestren un commit y su release, recorran registro/mascota/certificado, sigan el correlation ID, generen un fallo controlado de procesamiento y expliquen recuperación/DLQ. Presenten resultados previamente medidos de carga y recuperación, con una demostración corta si el tiempo y el lab lo permiten.</p>
+<p>Repartan la exposición: A explica topología y disponibilidad; B explica transacción y procesamiento; C explica pipeline y pruebas. Cada uno debe poder describir el recorrido completo y responder al menos una pregunta fuera de su área.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="17" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="17">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-18" data-number="18" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">18</span><span class="chapter-heading"><span class="chapter-title">Diagnosticar problemas frecuentes</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>2 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><table>
+<thead>
+<tr>
+  <th>Síntoma</th>
+  <th>Revisar primero</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>La web sigue llamando a localhost</td>
+  <td>Config pública, orden de scripts, llamada directa de registrarTutor y caché CloudFront.</td>
+</tr>
+<tr>
+  <td><code>/api/...</code> devuelve 404</td>
+  <td>Prefijos FastAPI, behavior, OriginPath y URL enviada al ALB.</td>
+</tr>
+<tr>
+  <td>Login funciona pero llamadas autenticadas dan 401</td>
+  <td>Reenvío de Authorization, expiración/rol del JWT y configuración compartida de firma.</td>
+</tr>
+<tr>
+  <td>CloudFront da 403 para estáticos</td>
+  <td>Endpoint REST de S3, OAC, ARN en bucket policy y key exacta.</td>
+</tr>
+<tr>
+  <td>ALB sin targets saludables</td>
+  <td>Puerto/SG, ruta ready, período de gracia y conexión a DB.</td>
+</tr>
+<tr>
+  <td>Tareas se quedan PENDING</td>
+  <td>Capacidad, CPU/memoria reservadas, ENI/IP, cuotas y capacity provider.</td>
+</tr>
+<tr>
+  <td>No se puede obtener la imagen</td>
+  <td>URI/digest, arquitectura, permisos del host/ejecución y red ECR/S3.</td>
+</tr>
+<tr>
+  <td>Error <code>exec format</code></td>
+  <td>Imagen ARM en host x86 o arquitectura incompatible.</td>
+</tr>
+<tr>
+  <td>Error SSL con PostgreSQL</td>
+  <td>Bundle CA, hostname real, modo de validación y archivo dentro de la imagen.</td>
+</tr>
+<tr>
+  <td>API escala pero latencia empeora</td>
+  <td>Pool/conexiones RDS, consultas lentas y límite real del sistema.</td>
+</tr>
+<tr>
+  <td>Certificado existe pero no llega correo</td>
+  <td>Outbox, logs del publicador, cola, handler y estado DynamoDB.</td>
+</tr>
+<tr>
+  <td>Lambda marca éxito aunque no envió</td>
+  <td>Helpers que capturan errores sin propagarlos.</td>
+</tr>
+<tr>
+  <td>Evento queda bloqueado como en proceso</td>
+  <td>Lease/idempotencia, expiración y recuperación tras timeout.</td>
+</tr>
+<tr>
+  <td>Lambda repite trabajos exitosos</td>
+  <td>Fallos de lote sin respuesta parcial o key de idempotencia incorrecta.</td>
+</tr>
+<tr>
+  <td>AWS devuelve <code>ExpiredToken</code></td>
+  <td>Vigencia de credenciales del lab/secretos del workflow.</td>
+</tr>
+<tr>
+  <td>CloudFormation devuelve AccessDenied/PassRole</td>
+  <td>Permisos, trust policy y restricciones vigentes del laboratorio.</td>
+</tr>
+<tr>
+  <td>Rollback termina pero tests ven otra release</td>
+  <td>Digest real, versión Lambda, frontend y caché.</td>
+</tr>
+<tr>
+  <td>Alarma SNS no llega</td>
+  <td>Suscripción confirmada, política y estado de la alarma.</td>
+</tr>
+<tr>
+  <td>Miniaturas crecen sin parar</td>
+  <td>Evento también observa el prefijo de salida.</td>
+</tr>
+<tr>
+  <td>RDS restaurado existe pero app usa datos viejos</td>
+  <td>Endpoint/configuración de tareas y release posterior a la restauración.</td>
+</tr>
+</tbody>
+</table>
+<p>Cuando investiguen, comiencen por una solicitud o evento y su identificador. Revisen la primera capa que falló antes de cambiar varias configuraciones a la vez.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="18" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="18">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-19" data-number="19" data-roles="AC"><details class="chapter-details"><summary><span class="chapter-num">19</span><span class="chapter-heading"><span class="chapter-title">Apagar el laboratorio y conservar lo necesario</span><span class="chapter-meta"><span class="owner-pill">A + C</span><span>1 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><p>La limpieza también forma parte de un despliegue reproducible. No asuman que End Lab borra todos los recursos o que detener una sesión elimina cualquier costo: comprueben el comportamiento de su entorno.</p>
+<p>Procedimiento:</p>
+<ol>
+<li>Guardar commit, manifiesto de release, evidencias y configuración no secreta.</li>
+<li>Confirmar qué datos o snapshots deben conservar y por cuánto tiempo.</li>
+<li>Desactivar Scheduler y nuevos productores.</li>
+<li>Decidir si procesar o conservar trabajos pendientes; no purgar colas sin esa decisión.</li>
+<li>Reducir/detener servicios según el plan y desmontar stacks en orden inverso de dependencias.</li>
+<li>Revisar DeletionProtection, políticas Retain/Snapshot y recursos retenidos.</li>
+<li>Vaciar solamente buckets descartables cuando sea necesario; con versionado, contemplar versiones y delete markers.</li>
+<li>Revisar NAT, EIP, ALB, endpoints, discos EBS, snapshots, logs, imágenes y copias regionales que sigan generando costo.</li>
+<li>Revocar/retirar secretos temporales de CI y dejar un registro del estado final.</li>
+</ol>
+<p>No incluyan un <code>delete-stack</code> automático al final de cada pipeline de despliegue sobre el entorno de integración. Si preparan un workflow de destrucción, delimiten entorno, datos retenidos y operación explícita.</p>
+<p><strong>Etapa terminada:</strong> existe una lista de recursos conservados y su motivo; el entorno puede reconstruirse desde código y artefactos identificados.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="19" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="19">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article>
+<article class="chapter" id="etapa-20" data-number="20" data-roles="ABC"><details class="chapter-details"><summary><span class="chapter-num">20</span><span class="chapter-heading"><span class="chapter-title">Referencias y relación con el curso</span><span class="chapter-meta"><span class="owner-pill">Equipo</span><span>2 min de lectura</span><span class="done-label">Completada</span></span></span><span class="chapter-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 7 7-7 7"/></svg></span></summary><div class="chapter-content prose"><h3>20.1 Material local utilizado</h3>
+<p>Rutas relativas a la carpeta del curso AWS, que contiene este repositorio en <code>Proyecto/pataporte-aws</code>:</p>
+<table>
+<thead>
+<tr>
+  <th>Carpeta</th>
+  <th>Material</th>
+  <th>Aplicación en la guía</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>02_10 de agosto - 16 de agosto</td>
+  <td><code>3_Clases1y2.pdf</code>, <code>1_1-vpc.xxx</code>, <code>2_1-vpc-with-NAT.yaml</code>.</td>
+  <td>CloudFormation, red, etiquetas y presupuesto. El PDF indica CloudFormation para el proyecto.</td>
+</tr>
+<tr>
+  <td>03_17 de agosto - 23 de agosto</td>
+  <td><code>3_Clases3y4.pdf</code>, <code>1_4-ASGTemplate.xxx</code>, <code>2_4-cpu.sh</code>.</td>
+  <td>EC2, SSM, CloudWatch, Launch Template y ASG.</td>
+</tr>
+<tr>
+  <td>04_24 de agosto - 30 de agosto</td>
+  <td><code>3_Clase6.pdf</code>, <code>1_5-AsgAlbTemplate.xxx</code>, <code>2_5-ASGTemplate.xxx</code>.</td>
+  <td>ALB, listeners, Target Groups y pruebas de escalado.</td>
+</tr>
+<tr>
+  <td>05_31 de agosto - 6 de septiembre</td>
+  <td><code>4_Clase7y8.pdf</code>, <code>1_7-ec2-rds.xxx</code>, <code>2_7-rds-postgres.xxx</code>, <code>3_7-rds-mysql.xxx</code>.</td>
+  <td>RDS, contraste de alternativas y DynamoDB. Las plantillas RDS son demos que requieren adaptación.</td>
+</tr>
+<tr>
+  <td>06_7 de septiembre - 13 de septiembre</td>
+  <td>Presentación DynamoDB; <code>1_dynamoTable_2.xxx</code>; <code>2_9-create_users.xxx</code>; <code>4_AWS_Lambda_Outline.docx</code>.</td>
+  <td>Modelado por patrones, GSI, escrituras condicionales, Lambda, concurrencia y tipos de invocación.</td>
+</tr>
+<tr>
+  <td>07_14 de septiembre - 20 de septiembre</td>
+  <td><code>1_Clases11y12.pdf</code> y presentación S3.</td>
+  <td>SQS, EventBridge, endpoints, S3 privado, URLs temporales, eventos y replicación.</td>
+</tr>
+<tr>
+  <td>08_21 de septiembre - 27 de septiembre</td>
+  <td><code>1_preguntas_modelo_parcial.docx</code>, <code>2_ECS-101_to_ninja_in_60_minutes.pptx</code>.</td>
+  <td>OAC, idempotencia, roles ECS y capacity providers.</td>
+</tr>
+<tr>
+  <td>10_12 de octubre - 18 de octubre</td>
+  <td><code>1_AWS_Architecture_Use_Cases.docx</code>, <code>2_AWS_Architecture_Reference_Solutions.docx</code>.</td>
+  <td>Recorrido web/API/RDS, outbox, colas, procesamiento, seguridad y recuperación.</td>
+</tr>
+</tbody>
+</table>
+<p>Los ejemplos se usan como base conceptual. Algunas configuraciones son deliberadamente simples para clase. Para la entrega justificamos cada diferencia: DB privada, backups, cifrado, dos zonas, imágenes versionadas y controles de acceso.</p>
+<h3>20.2 Lecturas oficiales para implementar</h3>
+<p>Los enlaces de documentación incluidos en cada sección sirven para verificar detalles específicos. Además:</p>
+<ul>
+<li><a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-auto-scaling.html">ECS: cluster auto scaling</a>.</li>
+<li><a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/security-network.html">ECS: seguridad de red</a>.</li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/restrict-access-to-load-balancer.html">CloudFront: restringir acceso al ALB</a>.</li>
+</ul>
+<p>Consulten la documentación vigente y la ficha de restricciones del laboratorio al implementar. Esta guía propone una arquitectura y verificaciones; completar una etapa requiere ejecutar sus pruebas y conservar el resultado.</p>
+</div><div class="chapter-actions"><button type="button" class="complete-button" data-complete="20" aria-pressed="false"><span aria-hidden="true">○</span> Marcar como completada</button><button type="button" class="next-chapter" data-next="20">Siguiente etapa <span aria-hidden="true">→</span></button></div></details></article></div>
+    </section>
+    <footer class="closing"><div><b>Construir. Entender. Poder explicarlo.</b><span>PATAPORTE · AWS · Universidad de Montevideo · Octubre 2026</span></div><div>Documento local, sin dependencias de red.<br><a href="guia-despliegue-aws.md">Consultar el texto fuente</a></div></footer>
+  </main>
+</div>
+<button type="button" class="back-top" id="back-top" aria-label="Volver al comienzo">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="application/json" id="service-data">{"cloudfront": {"name": "CloudFront", "label": "Distribución global", "owner": "C", "stage": 8, "text": "Entrega la web cerca de los usuarios. Las rutas /api/* viajan al ALB sin cachear respuestas privadas. Acceso global y recuperación de una región son objetivos distintos."}, "s3": {"name": "S3", "label": "Frontend privado", "owner": "C", "stage": 8, "text": "La web vive en un bucket privado accesible desde CloudFront mediante OAC. Las fotos y los certificados usan otro bucket y autorización con enlaces temporales."}, "alb": {"name": "ALB", "label": "Entrada de la API", "owner": "A", "stage": 6, "text": "Recibe /api/* desde CloudFront y distribuye las solicitudes a tareas saludables. Su Target Group es de tipo ip cuando las tareas usan awsvpc."}, "ecs": {"name": "ECS + EC2", "label": "FastAPI en 2 zonas", "owner": "A", "stage": 9, "text": "ECS mantiene las tareas de la API. Un capacity provider administra los hosts EC2 del Auto Scaling Group. Tareas y servidores tienen mecanismos de escalado distintos."}, "rds": {"name": "RDS", "label": "PostgreSQL Multi-AZ", "owner": "A + B", "stage": 7, "text": "Es la fuente de datos clínicos. Multi-AZ permite recuperación ante fallos zonales; migraciones, backups y pruebas de restauración completan el diseño."}, "outbox": {"name": "Outbox", "label": "Publicador en ECS", "owner": "B", "stage": 10, "text": "El cambio de negocio y su evento se guardan en la misma transacción PostgreSQL. El publicador entrega los pendientes a SQS y puede reintentar sin perder eventos."}, "sqs": {"name": "SQS", "label": "Trabajos + DLQ", "owner": "B", "stage": 10, "text": "Amortigua picos y desacopla la API del procesamiento. Los trabajos pueden repetirse. Después de los intentos previstos, los fallidos terminan en una cola de errores."}, "lambda": {"name": "Lambda", "label": "PDF y correo", "owner": "B", "stage": 11, "text": "Procesa trabajos acotados, guarda el PDF en S3 y envía el correo. Debe propagar fallos, limitar concurrencia y gestionar duplicados; SMTP no garantiza entrega exactamente una vez."}, "dynamo": {"name": "DynamoDB", "label": "Estado e idempotencia", "owner": "B", "stage": 11, "text": "Coordina ejecuciones repetidas y guarda el estado operativo. No reemplaza PostgreSQL como historia clínica. Sus claves e índices responden a consultas concretas."}}</script>
+<script>
+(function(){
+  'use strict';
+  var key = 'pataporte-aws-guide-v1';
+  var chapters = Array.from(document.querySelectorAll('.chapter'));
+  var navLinks = Array.from(document.querySelectorAll('[data-nav]'));
+  var search = document.getElementById('guide-search');
+  var roleButtons = Array.from(document.querySelectorAll('.role-filter'));
+  var activeRole = 'all', done = new Set(), searchTimer, beforeSearch = null, printing = false;
+  var sidebar = document.querySelector('.sidebar'), backdrop = document.querySelector('.backdrop');
+  var menu = document.getElementById('menu-toggle'), mobile = window.matchMedia('(max-width:760px)');
+  var lastFocus;
+  var storageOK = true;
+  try{
+    var stored = JSON.parse(localStorage.getItem(key) || '{}');
+    if(Array.isArray(stored.completed)) stored.completed.forEach(function(n){ if(n >= 1 && n <= 20) done.add(Number(n)); });
+  }catch(e){ storageOK = false; }
+  function save(){
+    try{ localStorage.setItem(key, JSON.stringify({completed:Array.from(done),updatedAt:new Date().toISOString()})); }
+    catch(e){ storageOK = false; }
+    if(!storageOK) document.querySelector('.progress-note').textContent = 'Progreso disponible durante esta sesión. El navegador no permite guardarlo.';
+  }
+  function toast(message){
+    var el = document.getElementById('toast');
+    el.textContent = message; el.classList.add('show');
+    clearTimeout(toast.timer); toast.timer = setTimeout(function(){el.classList.remove('show');},2800);
+  }
+  function updateProgress(){
+    chapters.forEach(function(ch){
+      var n = Number(ch.dataset.number), completed = done.has(n);
+      ch.classList.toggle('completed',completed);
+      var button = ch.querySelector('[data-complete]');
+      button.setAttribute('aria-pressed',String(completed));
+      button.innerHTML = completed ? '<span aria-hidden="true">✓</span> Etapa completada' : '<span aria-hidden="true">○</span> Marcar como completada';
+    });
+    navLinks.forEach(function(a){a.classList.toggle('completed',done.has(Number(a.dataset.nav)));});
+    document.getElementById('progress-text').textContent = done.size + ' / 20';
+    document.querySelector('.progress-fill').style.width = (done.size * 5) + '%';
+    document.getElementById('progress-meter').setAttribute('aria-valuenow',String(done.size));
+  }
+  function normalize(value){ return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+  chapters.forEach(function(ch){ch.searchText=normalize(ch.textContent);});
+  function removeHighlights(){
+    document.querySelectorAll('mark[data-search-hit]').forEach(function(mark){
+      var parent=mark.parentNode; mark.replaceWith(document.createTextNode(mark.textContent)); parent.normalize();
+    });
+  }
+  function highlightMatches(root,query){
+    var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+      acceptNode:function(node){
+        if(!node.nodeValue.trim() || node.parentElement.closest('pre,code,button,svg,mark')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes=[], count=0;
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(node){
+      if(count>80) return;
+      var text=node.nodeValue, norm=normalize(text), index=0, cursor=0, fragment=document.createDocumentFragment(), hit=false;
+      while((index=norm.indexOf(query,cursor)) !== -1 && count<80){
+        fragment.appendChild(document.createTextNode(text.slice(cursor,index)));
+        var mark=document.createElement('mark'); mark.dataset.searchHit='true'; mark.textContent=text.slice(index,index+query.length);
+        fragment.appendChild(mark); cursor=index+query.length; count++; hit=true;
+      }
+      if(hit){fragment.appendChild(document.createTextNode(text.slice(cursor)));node.replaceWith(fragment);}
+    });
+  }
+  function applyFilters(){
+    var query=normalize(search.value.trim());
+    removeHighlights();
+    if(query && beforeSearch===null) beforeSearch = new Set(chapters.filter(function(ch){return ch.querySelector('details').open;}).map(function(ch){return ch.dataset.number;}));
+    var visible=0;
+    chapters.forEach(function(ch){
+      var matchRole=activeRole==='all'||ch.dataset.roles.indexOf(activeRole)!==-1;
+      var matchQuery=!query||ch.searchText.indexOf(query)!==-1;
+      ch.hidden=!(matchRole&&matchQuery);
+      var link=document.querySelector('[data-nav="'+ch.dataset.number+'"]');
+      link.hidden=ch.hidden;
+      if(!ch.hidden){visible++; if(query){ch.querySelector('details').open=true;highlightMatches(ch.querySelector('.chapter-content'),query);}}
+      if(!query && beforeSearch!==null) ch.querySelector('details').open=beforeSearch.has(ch.dataset.number);
+    });
+    if(!query) beforeSearch=null;
+    document.getElementById('search-count').textContent=visible+' / 20';
+    document.getElementById('empty-state').hidden=visible!==0;
+    document.getElementById('clear-search').hidden=!search.value;
+    document.getElementById('filter-note').textContent=activeRole==='all' ? 'Abrí una etapa para leerla. Tu avance se guarda en este navegador.' : 'Se muestran las etapas de '+activeRole+' y las compartidas con el equipo.';
+    document.querySelectorAll('.nav-group').forEach(function(group){
+      var next=group.nextElementSibling, hasVisible=false;
+      while(next && !next.classList.contains('nav-group')){if(!next.hidden)hasVisible=true;next=next.nextElementSibling;}
+      group.hidden=!hasVisible;
+    });
+  }
+  function setActive(n){
+    navLinks.forEach(function(a){
+      var active=Number(a.dataset.nav)===Number(n);
+      a.classList.toggle('active',active);
+      if(active) a.setAttribute('aria-current','location'); else a.removeAttribute('aria-current');
+    });
+    var target=document.querySelector('[data-nav="'+n+'"]');
+    if(target) document.getElementById('current-chapter').textContent=target.children[1].textContent;
+  }
+  function closeMenu(){
+    sidebar.classList.remove('open');backdrop.classList.remove('open');menu.setAttribute('aria-expanded','false');
+    document.body.style.overflow=''; sidebar.inert=mobile.matches;
+  }
+  function jump(n){
+    var ch=chapters.find(function(item){return Number(item.dataset.number)===Number(n);});
+    if(!ch)return;
+    if(ch.hidden){
+      search.value='';activeRole='all';roleButtons.forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.role==='all'));});applyFilters();
+    }
+    closeMenu();ch.querySelector('details').open=true;setActive(n);
+    history.replaceState(null,'','#'+ch.id);
+    ch.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'start'});
+  }
+  search.addEventListener('input',function(){clearTimeout(searchTimer);searchTimer=setTimeout(applyFilters,140);});
+  document.getElementById('clear-search').addEventListener('click',function(){search.value='';applyFilters();search.focus();});
+  roleButtons.forEach(function(button){button.addEventListener('click',function(){
+    activeRole=button.dataset.role;
+    roleButtons.forEach(function(b){b.setAttribute('aria-pressed',String(b===button));});
+    applyFilters();
+  });});
+  document.getElementById('reset-filters').addEventListener('click',function(){
+    search.value='';activeRole='all';roleButtons.forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.role==='all'));});applyFilters();
+  });
+  navLinks.forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();jump(link.dataset.nav);});});
+  document.querySelectorAll('[data-jump]').forEach(function(button){button.addEventListener('click',function(){jump(button.dataset.jump);});});
+  document.querySelectorAll('[data-complete]').forEach(function(button){button.addEventListener('click',function(){
+    var n=Number(button.dataset.complete); if(done.has(n))done.delete(n);else done.add(n);save();updateProgress();
+    if(done.size===20) toast('Las 20 etapas están marcadas como completadas.');
+  });});
+  document.querySelectorAll('[data-next]').forEach(function(button){button.addEventListener('click',function(){
+    var next=chapters.find(function(ch){return !ch.hidden&&Number(ch.dataset.number)>Number(button.dataset.next);});
+    if(next)jump(next.dataset.number);else toast('Llegaste al final de las etapas visibles.');
+  });});
+  document.getElementById('reset-progress').addEventListener('click',function(){
+    if(window.confirm('¿Reiniciar las etapas completadas en este navegador?')){done.clear();save();updateProgress();toast('Progreso reiniciado.');}
+  });
+  document.getElementById('expand-all').addEventListener('click',function(){chapters.filter(function(ch){return !ch.hidden;}).forEach(function(ch){ch.querySelector('details').open=true;});});
+  document.getElementById('collapse-all').addEventListener('click',function(){chapters.forEach(function(ch){ch.querySelector('details').open=false;});});
+  chapters.forEach(function(ch){ch.querySelector('details').addEventListener('toggle',function(){if(this.open&&!printing)setActive(ch.dataset.number);});});
+  document.querySelectorAll('.prose table').forEach(function(table){
+    var wrapper=document.createElement('div');wrapper.className='table-scroll';wrapper.tabIndex=0;
+    wrapper.setAttribute('role','region');wrapper.setAttribute('aria-label','Tabla de referencia; desplazamiento horizontal disponible');
+    table.parentNode.insertBefore(wrapper,table);wrapper.appendChild(table);
+  });
+  document.querySelectorAll('.prose p').forEach(function(p){if(p.textContent.trim().indexOf('Etapa terminada:')===0)p.classList.add('milestone');});
+  document.querySelectorAll('.prose a[href^="https://"]').forEach(function(a){a.target='_blank';a.rel='noopener noreferrer';});
+  function fallbackCopy(text){
+    var input=document.createElement('textarea');input.value=text;input.style.position='fixed';input.style.left='-9999px';document.body.appendChild(input);input.select();
+    var success=document.execCommand('copy');input.remove();return success;
+  }
+  document.querySelectorAll('.copy-code').forEach(function(button){button.addEventListener('click',async function(){
+    var text=button.closest('.code-wrap').querySelector('code').textContent, success=false;
+    try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);success=true;}else success=fallbackCopy(text);}catch(e){success=fallbackCopy(text);}
+    var original=button.textContent;button.textContent=success?'Copiado ✓':'Seleccioná el código';
+    setTimeout(function(){button.textContent=original;},1800);
+  });});
+  var serviceInfo=JSON.parse(document.getElementById('service-data').textContent);
+  document.querySelectorAll('[data-service]').forEach(function(button){button.addEventListener('click',function(){
+    document.querySelectorAll('[data-service]').forEach(function(b){b.setAttribute('aria-pressed',String(b===button));});
+    var item=serviceInfo[button.dataset.service], panel=document.getElementById('service-detail');
+    panel.replaceChildren();
+    var eyebrow=document.createElement('span');eyebrow.className='eyebrow';eyebrow.textContent='RESPONSABLE '+item.owner+' · ETAPA '+String(item.stage).padStart(2,'0');
+    var title=document.createElement('strong');title.textContent=item.name;title.style.display='block';title.style.marginTop='7px';
+    var description=document.createElement('p');description.textContent=item.text;
+    var go=document.createElement('button');go.type='button';go.textContent='Ir a la implementación →';go.addEventListener('click',function(){jump(item.stage);});
+    panel.append(eyebrow,title,description,go);
+  });});
+  var printState;
+  window.addEventListener('beforeprint',function(){
+    if(printing)return;printing=true;
+    printState=chapters.map(function(ch){return {open:ch.querySelector('details').open,hidden:ch.hidden};});
+    chapters.forEach(function(ch){ch.hidden=false;ch.querySelector('details').open=true;});
+  });
+  window.addEventListener('afterprint',function(){
+    if(!printState)return;
+    chapters.forEach(function(ch,i){ch.hidden=printState[i].hidden;ch.querySelector('details').open=printState[i].open;});
+    setTimeout(function(){printing=false;},0);
+  });
+  document.getElementById('print-guide').addEventListener('click',function(){window.print();});
+  menu.addEventListener('click',function(){
+    lastFocus=document.activeElement;sidebar.inert=false;sidebar.classList.add('open');backdrop.classList.add('open');menu.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';document.getElementById('close-sidebar').focus();
+  });
+  document.getElementById('close-sidebar').addEventListener('click',function(){closeMenu();if(lastFocus)lastFocus.focus();});
+  backdrop.addEventListener('click',function(){closeMenu();menu.focus();});
+  mobile.addEventListener('change',function(){closeMenu();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&sidebar.classList.contains('open')){closeMenu();menu.focus();}
+    if((e.key==='k'&&(e.metaKey||e.ctrlKey)) || (e.key==='/'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName))){e.preventDefault();search.focus();}
+    if(e.key==='Tab'&&mobile.matches&&sidebar.classList.contains('open')){
+      var focusable=Array.from(sidebar.querySelectorAll('a[href],button:not([disabled])')).filter(function(el){return !el.hidden&&el.offsetParent!==null;});
+      var first=focusable[0],last=focusable[focusable.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+    }
+  });
+  document.getElementById('back-top').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
+  window.addEventListener('hashchange',function(){var match=location.hash.match(/^#etapa-(\d+)$/);if(match)jump(Number(match[1]));});
+  updateProgress();applyFilters();closeMenu();
+  var match=location.hash.match(/^#etapa-(\d+)$/);
+  if(match)setTimeout(function(){jump(Number(match[1]));},80);
+  else document.getElementById('current-chapter').textContent='Tu hoja de ruta';
+  window.addEventListener('scroll',function(){
+    if(printing)return;
+    var closest=null;
+    chapters.forEach(function(ch){if(!ch.hidden&&ch.getBoundingClientRect().top<230)closest=ch;});
+    if(closest)setActive(closest.dataset.number);
+  },{passive:true});
+})();
+</script>
+</body>
+</html>

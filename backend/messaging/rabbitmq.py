@@ -1,32 +1,25 @@
+import time
 import pika
 from config.settings import settings
 
-import time
 
 def obtener_canal():
-    last_error = None
-
-    for i in range(20):  # intenta por ~1 minuto
+    for attempt in range(20):
         try:
-            connection = pika.BlockingConnection(
-                pika.ConnectionParameters(
-                    host="rabbitmq",
-                    heartbeat=600,
-                    blocked_connection_timeout=300
-                )
-            )
-
+            connection = pika.BlockingConnection(pika.ConnectionParameters(
+                host=settings.RABBITMQ_HOST, port=settings.RABBITMQ_PORT,
+                credentials=pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASSWORD),
+                heartbeat=60, blocked_connection_timeout=10, socket_timeout=5,
+            ))
             channel = connection.channel()
-
-            channel.queue_declare(queue="emails", durable=True)
-
-
-            print("Conectado a RabbitMQ ✔")
+            channel.queue_declare(queue="emails.failed", durable=True)
+            channel.queue_declare(queue="emails", durable=True, arguments={
+                "x-dead-letter-exchange": "",
+                "x-dead-letter-routing-key": "emails.failed",
+            })
+            channel.confirm_delivery()
             return channel, connection
-
-        except Exception as e:
-            last_error = e
-            print(f"RabbitMQ no listo... intento {i+1}/20")
+        except pika.exceptions.AMQPError:
+            if attempt == 19:
+                raise
             time.sleep(3)
-
-    raise Exception(f"No se pudo conectar a RabbitMQ: {last_error}")

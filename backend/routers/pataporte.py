@@ -1,6 +1,4 @@
-import jwt
-import os
-from jwt import PyJWTError
+from utils.auth import get_current_user, get_current_vet, get_current_tutor, require_tutor, require_pet_access
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,24 +6,8 @@ from config.database import get_db
 from services import pataporte_service
 from utils import password_utils
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
 
 router = APIRouter()
-
-
-def get_current_user(token: str = Depends(password_utils.oauth2_scheme)) -> str:
-    """Extrae el id_veterinario o id_tutor del token JWT."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail="No autorizado")
-    sub = payload.get("sub")
-    rol = payload.get("rol")
-    
-    if not sub or rol not in ("veterinario", "tutor"):
-        raise HTTPException(status_code=401, detail="Token inválido")
-    return {"id": sub, "rol": rol}
 
 
 @router.post(
@@ -44,13 +26,14 @@ def generar_pataporte(
     db: Session = Depends(get_db),
     usuario: dict = Depends(get_current_user),
 ):
+    require_pet_access(db, id_mascota, usuario)
     pataporte = pataporte_service.generar_pataporte(db = db, id_mascota = id_mascota, emitido_por_rol = usuario["rol"], emitido_por_id = usuario["id"])
     return {
         "id_pataporte":      pataporte.id_pataporte,
         "hash_verificacion": pataporte.hash_verificacion,
         "estado":            pataporte.estado,
         "fecha_emision":     pataporte.fecha_emision.isoformat(),
-        "mensaje":           "Pataporte generado y enviado por email al tutor registrado."
+        "mensaje":           "Pataporte generado; envío por correo solicitado."
     }
 
 
@@ -59,8 +42,13 @@ def generar_pataporte(
     summary="Verificar autenticidad de un pataporte",
     description=(
         "Dado el hash impreso en el PDF, devuelve el estado "
-        "y los datos del pataporte. No requiere autenticación."
+        "y los datos del pataporte. Requiere autenticación y acceso a la mascota."
     ),
 )
-def verificar_pataporte(hash_verificacion: str, db: Session = Depends(get_db), _: dict = Depends(get_current_user)):
+def verificar_pataporte(hash_verificacion: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    from config.database import Pataporte
+    record = db.query(Pataporte).filter_by(hash_verificacion=hash_verificacion).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Pataporte no encontrado")
+    require_pet_access(db, record.id_mascota, user)
     return pataporte_service.verificar_pataporte(db, hash_verificacion)

@@ -1,4 +1,5 @@
-from datetime import datetime
+from utils.auth import get_current_vet, get_current_user, require_pet_access
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -10,11 +11,12 @@ from schemas.tratamiento import (
 )
 from services import tratamiento_service
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.post(
-    "/{id_mascota}",
+    dependencies=[Depends(get_current_vet)],
+    path="/{id_mascota}",
     response_model=TratamientoResponse,
     status_code=201,
     summary="Crear tratamiento para una mascota",
@@ -28,7 +30,8 @@ def crear_tratamiento(id_mascota: str, data: TratamientoCreate, db: Session = De
     response_model=list[TratamientoResponse],
     summary="Ver tratamientos activos de una mascota",
 )
-def ver_tratamientos_activos(id_mascota: str, db: Session = Depends(get_db)):
+def ver_tratamientos_activos(id_mascota: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    require_pet_access(db, id_mascota, user)
     return tratamiento_service.ver_tratamientos_activos(db, id_mascota)
 
 
@@ -37,12 +40,14 @@ def ver_tratamientos_activos(id_mascota: str, db: Session = Depends(get_db)):
     response_model=list[TratamientoResponse],
     summary="Listar todos los tratamientos de una mascota",
 )
-def listar_tratamientos(id_mascota: str, db: Session = Depends(get_db)):
+def listar_tratamientos(id_mascota: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+    require_pet_access(db, id_mascota, user)
     return tratamiento_service.listar_por_mascota(db, id_mascota)
 
 
 @router.patch(
-    "/{id_tratamiento}",
+    dependencies=[Depends(get_current_vet)],
+    path="/{id_tratamiento}",
     response_model=TratamientoResponse,
     summary="Editar un tratamiento existente",
     description="Modifica nombre, descripción o fecha de finalización. "
@@ -56,7 +61,8 @@ def actualizar_tratamiento(
 
 
 @router.patch(
-    "/{id_tratamiento}/finalizar",
+    dependencies=[Depends(get_current_vet)],
+    path="/{id_tratamiento}/finalizar",
     response_model=TratamientoResponse,
     summary="Marcar un tratamiento como finalizado",
 )

@@ -15,7 +15,9 @@ from routers import (
     auth,
 )
 
-from config.database import create_tables
+from config.database import create_tables, engine
+from sqlalchemy import text
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 
@@ -67,3 +69,18 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 @app.get("/", tags=["Health"])
 def health_check():
     return {"status": "ok", "app": "Pataporte API v1.0.0"}
+
+
+@app.get("/health/live", tags=["Health"])
+def live():
+    return {"status": "ok"}
+
+
+@app.get("/health/ready", tags=["Health"])
+def ready():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "unavailable"})
+    return {"status": "ready"}

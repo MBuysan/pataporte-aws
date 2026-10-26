@@ -1,6 +1,6 @@
+from utils.email import enviar_email
 import secrets
 import string
-import smtplib
 import os
 from io import BytesIO
 from datetime import date, datetime, timedelta, timezone
@@ -356,9 +356,7 @@ Equipo Pataporte
     mensaje.attach(adjunto)
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            servidor.sendmail(settings.MAIL_FROM, tutor.email, mensaje.as_string())
+        enviar_email(tutor.email, mensaje)
 
     except Exception as e:
         raise HTTPException(

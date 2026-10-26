@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from typing import List, Optional
 from datetime import datetime
+from utils.password_utils import validar_password
 
 
 class VeterinarioCreate(BaseModel):
@@ -9,6 +10,12 @@ class VeterinarioCreate(BaseModel):
     nombre: str
     email: EmailStr
     password: str
+
+    @field_validator("password")
+    @classmethod
+    def validar_clave(cls, value: str) -> str:
+        validar_password(value)
+        return value
 
     @field_validator("rut_organizacion")
     @classmethod
