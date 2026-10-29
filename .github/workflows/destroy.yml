@@ -1,0 +1,62 @@
+name: destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "destroy" to confirm
+        required: true
+        type: string
+      include_persistent:
+        description: Also delete storage and network (buckets, ECR, queues, secret, audit table)
+        type: boolean
+        default: false
+
+concurrency:
+  group: pataporte-aws
+  cancel-in-progress: false
+
+jobs:
+  destroy:
+    if: inputs.confirm == 'destroy'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Delete ephemeral stacks (edge, app, database, nat)
+        run: |
+          for stack in pataporte-edge pataporte-app pataporte-database pataporte-nat; do
+            echo "deleting $stack"
+            aws cloudformation delete-stack --stack-name "$stack"
+            aws cloudformation wait stack-delete-complete --stack-name "$stack"
+          done
+
+      # ECR images go with the repository (EmptyOnDelete: true); buckets must be emptied first.
+      - name: Delete persistent stacks (storage, network)
+        if: inputs.include_persistent
+        run: |
+          out() { aws cloudformation describe-stacks --stack-name pataporte-storage --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text 2>/dev/null || true; }
+          for key in UploadsBucketName FrontendBucketName; do
+            bucket=$(out "$key")
+            if [ -n "$bucket" ] && [ "$bucket" != "None" ]; then
+              aws s3 rm "s3://$bucket" --recursive
+            fi
+          done
+          for stack in pataporte-storage pataporte-network; do
+            echo "deleting $stack"
+            aws cloudformation delete-stack --stack-name "$stack"
+            aws cloudformation wait stack-delete-complete --stack-name "$stack"
+          done
+
+  rejected:
+    if: inputs.confirm != 'destroy'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Confirmation must be exactly 'destroy'. Nothing was deleted."
+          exit 1

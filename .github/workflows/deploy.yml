@@ -1,0 +1,115 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: dev (single NAT, single-AZ RDS) or demo (HA + autoscaling)
+        type: choice
+        options: [dev, demo]
+        default: dev
+  # on main only redeploys when the environment is already up (see the gate step)
+  push:
+    branches: [main]
+
+concurrency:
+  group: pataporte-aws
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  IAC_VERSION: ${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # push to main: only if pataporte-app exists, keeping its current Environment
+      - name: Gate
+        id: gate
+        env:
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            environment=$INPUT_ENVIRONMENT
+          elif environment=$(aws cloudformation describe-stacks --stack-name pataporte-app \
+              --query "Stacks[0].Parameters[?ParameterKey=='Environment'].ParameterValue" --output text 2>/dev/null); then
+            echo "pataporte-app exists ($environment): redeploying"
+          else
+            echo "::notice::pataporte-app does not exist; skipping deploy. Run the deploy workflow manually to create it."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "ENVIRONMENT=$environment" >> "$GITHUB_ENV"
+
+      - name: Persistent stacks (network, storage)
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          infra/deploy-stack.sh pataporte-network infra/01-network.yml
+          infra/deploy-stack.sh pataporte-storage infra/02-storage.yml
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        if: steps.gate.outputs.run == 'true'
+
+      - name: Build and push image
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          image="$(aws cloudformation describe-stacks --stack-name pataporte-storage \
+            --query "Stacks[0].Outputs[?OutputKey=='RepositoryUri'].OutputValue" --output text):$GITHUB_SHA"
+          docker build -t "$image" backend
+          docker push "$image"
+
+      - name: Ephemeral stacks (nat, database, app, edge)
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          infra/deploy-stack.sh pataporte-nat infra/10-nat.yml Environment="$ENVIRONMENT"
+          infra/deploy-stack.sh pataporte-database infra/11-database.yml Environment="$ENVIRONMENT"
+          infra/deploy-stack.sh pataporte-app infra/12-app.yml Environment="$ENVIRONMENT" ImageTag="$GITHUB_SHA"
+          infra/deploy-stack.sh pataporte-edge infra/13-edge.yml
+
+      # ponytail: init_db runs after the new image is live; fine while it only creates
+      # missing tables + seed. Move it before the app update if real migrations appear.
+      - name: Run init_db task
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          out() { aws cloudformation describe-stacks --stack-name "$1" --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text; }
+          cluster=$(out pataporte-app ClusterName)
+          subnets="$(out pataporte-network PrivateSubnet1),$(out pataporte-network PrivateSubnet2)"
+          sg=$(out pataporte-network AppSecurityGroup)
+          task=$(aws ecs run-task --cluster "$cluster" --launch-type FARGATE \
+            --task-definition "$(out pataporte-app InitTaskDefinitionArn)" \
+            --network-configuration "awsvpcConfiguration={subnets=[$subnets],securityGroups=[$sg],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          echo "init task: $task"
+          aws ecs wait tasks-stopped --cluster "$cluster" --tasks "$task"
+          code=$(aws ecs describe-tasks --cluster "$cluster" --tasks "$task" --query 'tasks[0].containers[0].exitCode' --output text)
+          if [ "$code" != "0" ]; then
+            aws ecs describe-tasks --cluster "$cluster" --tasks "$task" --query 'tasks[0].[stoppedReason,containers[0].reason]' --output text
+            echo "::error::init_db failed (exit code $code). Logs: CloudWatch /ecs/pataporte, stream prefix init/"
+            exit 1
+          fi
+
+      - name: Wait for services
+        if: steps.gate.outputs.run == 'true'
+        run: aws ecs wait services-stable --cluster pataporte --services api worker
+
+      - name: Publish frontend
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          out() { aws cloudformation describe-stacks --stack-name "$1" --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text; }
+          aws s3 sync frontend/ "s3://$(out pataporte-storage FrontendBucketName)" --delete \
+            --exclude Dockerfile --exclude nginx.conf --exclude '.*'
+          aws cloudfront create-invalidation --distribution-id "$(out pataporte-edge DistributionId)" --paths '/*' >/dev/null
+          url=$(out pataporte-edge Url)
+          echo "### Pataporte ($ENVIRONMENT) deployed: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pataporte: $url"
