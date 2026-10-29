@@ -75,7 +75,8 @@ pataporte/
 │   ├── js/             # Módulos JavaScript
 │   ├── index.html
 │   └── Dockerfile
-├── .env_example        # Plantilla de variables de entorno
+├── localstack/        # Init de LocalStack (S3 + SQS locales)
+├── .env.example        # Plantilla de variables de entorno
 └── docker-compose.yml
 ```
 
@@ -100,15 +101,23 @@ pataporte/
 2. Crear el archivo de entorno a partir de la plantilla:
 
    ```bash
-   cp .env_example .env
+   cp .env.example .env
    ```
 
 3. Editar `.env` con los valores correspondientes (ver sección [Variables de entorno](#variables-de-entorno)).
 
-4. Levantar los servicios:
+4. Levantar los servicios (LocalStack hace de S3/SQS; el servicio `init-db` crea tablas y seed antes del backend):
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
+   ```
+
+   Para re-inicializar la base a mano: `docker compose run --rm init-db` (equivale a `python -m scripts.init_db`).
+
+5. Tests del backend:
+
+   ```bash
+   cd backend && pip install -r requirements-dev.txt && pytest
    ```
 
 Una vez levantados:
@@ -116,8 +125,8 @@ Una vez levantados:
 | Servicio      | URL                        |
 | ------------- | -------------------------- |
 | Frontend      | http://localhost           |
-| Backend       | http://localhost:8000      |
-| API Docs      | http://localhost:8000/docs |
+| API           | http://localhost/api       |
+| API Docs      | http://localhost/api/docs  |
 | Base de datos | localhost:5432             |
 
 ---
@@ -136,6 +145,14 @@ Una vez levantados:
 | `MAIL_USERNAME`               | Usuario del correo para envío de emails           |
 | `MAIL_PASSWORD`               | Contraseña de aplicación del correo               |
 | `MAIL_FROM`                   | Dirección remitente de los correos                |
+| `DB_HOST` / `DB_PORT`         | Host y puerto de PostgreSQL (si no hay `DATABASE_URL`) |
+| `CORS_ORIGINS`                | Orígenes permitidos, separados por coma           |
+| `SMTP_HOST` / `SMTP_PORT`     | Servidor SMTP (por defecto `smtp.gmail.com:587`)  |
+| `AWS_REGION`                  | Región AWS (por defecto `us-east-1`)              |
+| `UPLOADS_BUCKET`              | Bucket S3 para fotos y PDFs                       |
+| `QUEUE_URL`                   | Cola SQS que consume el worker                    |
+| `EVENT_BUS_NAME`              | Opcional: bus de EventBridge para publicar eventos |
+| `LOG_LEVEL`                   | Nivel de logs (por defecto `INFO`)                |
 | `ENVIRONMENT`                 | Entorno de ejecución (`development`/`production`) |
 
 ---
@@ -144,5 +161,5 @@ Una vez levantados:
 
 FastAPI genera documentación interactiva automáticamente:
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost/api/docs
+- **ReDoc**: http://localhost/api/redoc

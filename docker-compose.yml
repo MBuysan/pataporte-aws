@@ -1,52 +1,74 @@
+x-aws-local: &aws-local
+  # LocalStack en vez de AWS. El alias localhost.localstack.cloud resuelve a LocalStack dentro de la red
+  # y a 127.0.0.1 desde el navegador, así las URLs firmadas de S3 también abren desde el host.
+  AWS_ENDPOINT_URL: http://localhost.localstack.cloud:4566
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  AWS_REGION: us-east-1
+  UPLOADS_BUCKET: pataporte-uploads
+  QUEUE_URL: http://localhost.localstack.cloud:4566/000000000000/pataporte-eventos
+  EVENT_BUS_NAME: ""
+  # la URL se arma con DB_* apuntando al contenedor db (pisa un DATABASE_URL viejo del .env)
+  DATABASE_URL: ""
+  DB_HOST: db
+
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
+  localstack:
+    image: localstack/localstack:3.8.1
+    environment:
+      SERVICES: s3,sqs
     ports:
-      - "5672:5672"
-      - "15672:15672"  
+      - "4566:4566"
+    volumes:
+      - ./localstack/init/ready.d:/etc/localstack/init/ready.d
+    healthcheck:
+      test: ["CMD", "awslocal", "sqs", "get-queue-url", "--queue-name", "pataporte-eventos"]
+      interval: 5s
+      retries: 20
+    networks:
+      default:
+        aliases:
+          - localhost.localstack.cloud
+
+  init-db:
+    build: ./backend
+    command: python -m scripts.init_db
+    env_file:
+      - .env
+    environment: *aws-local
+    depends_on:
+      db:
+        condition: service_healthy
+
   backend:
     build: ./backend
+    # en desarrollo: recarga en caliente sobre el código montado
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     env_file:
       - .env
-    environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      SECRET_KEY: ${SECRET_KEY}
+    environment: *aws-local
     volumes:
       - ./backend:/app
-      - uploads_data:/app/uploads
     depends_on:
-      db:
+      init-db:
+        condition: service_completed_successfully
+      localstack:
         condition: service_healthy
     restart: unless-stopped
 
   worker:
-    build:
-      context: ./backend
-
-    container_name: pataporte-worker
-
+    build: ./backend
     command: python -m messaging.consumer
-
-    working_dir: /app
-
+    env_file:
+      - .env
+    environment: *aws-local
     volumes:
       - ./backend:/app
-
-    env_file:
-      - ./.env
-
-    environment:
-      PYTHONUNBUFFERED: "1"
-      PYTHONPATH: "/app"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-
     depends_on:
-      rabbitmq:
-        condition: service_started
-
+      localstack:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -55,6 +77,8 @@ services:
       - "80:80"
     volumes:
       - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - backend
     restart: unless-stopped
 
   db:
@@ -75,4 +99,3 @@ services:
 
 volumes:
   db_data:
-  uploads_data:

@@ -1,7 +1,5 @@
 import random
 import string
-import smtplib
-import traceback
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
@@ -21,7 +19,8 @@ import jwt
 from sqlalchemy import or_
 from config.settings import settings
 
-from messaging.publisher import publicar_email
+from messaging.publisher import publicar_evento
+from services import email_service
 
 """
 configuracion de hashing 
@@ -51,13 +50,11 @@ def _hashear(texto: str) -> str:
     return pwd_context.hash(texto)
 
 
-def _enviar_email_recuperacion(email: str, codigo: str):
+def enviar_email_recuperacion(email: str, codigo: str):
     """
     envía código de recuperacion al email del usuario
 
-    implementacion con smtp , es el protocolo estandar para enviar emails entre servidores
-
-    smtplib.SMTP_SSL abre una conexión cifrada al servidor de gmail en el puerto 465.
+    la llama el worker (messaging/consumer.py); el envio SMTP vive en email_service.
 
     gmail requiere una "contraseña de aplicación" (no la contraseña de la cuenta).
       se genera en: google account → seguridad → verificación en dos pasos → contraseñas de app.
@@ -116,22 +113,11 @@ Equipo Pataporte
     mensaje.attach(MIMEText(cuerpo_texto, "plain", "utf-8"))
     mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
-    try:
-        # SMTP_SSL abre una conexión cifrada directamente en el puerto 465.
-        # "with" garantiza que la conexión se cierre aunque ocurra un error.
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            # sendmail(remitente, [destinatarios], mensaje_serializado_como_texto)
-            servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
-
-    except Exception as e:
-        # si el email falla, se registra pero no se interrumpe el flujo.
-        # el código ya fue guardado en la BD — el usuario puede pedir otro.
-        traceback.print_exc()
-        print(f"[ERROR EMAIL] No se pudo enviar email a {email}: {e}")
+    # si falla, la excepción sube y el worker deja el mensaje en la cola para reintentar
+    email_service.enviar(mensaje)
 
 
-def _enviar_email_verificacion(email: str, codigo: str):
+def enviar_email_verificacion(email: str, codigo: str):
     """
     Envía el código de activación de 6 dígitos tras el registro del usuario.
     Utiliza la estética azul y gris característica de la aplicación.
@@ -186,14 +172,7 @@ Equipo Pataporte
     mensaje.attach(MIMEText(cuerpo_texto, "plain", "utf-8"))
     mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            servidor.sendmail(settings.MAIL_FROM, email, mensaje.as_string())
-
-    except Exception as e:
-        traceback.print_exc()
-        print(f"[ERROR EMAIL] No se pudo enviar email de verificacion a {email}: {e}")
+    email_service.enviar(mensaje)
 
 
 #  funciones publicas (las llaman los routers)
@@ -241,8 +220,7 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     db.add(recuperacion)
     db.commit()
 
-    publicar_email({
-        "tipo": "verificacion_email",
+    publicar_evento("RecuperacionPasswordSolicitada", {
         "email": tutor.email,
         "codigo": codigo_plano
     })
@@ -346,8 +324,7 @@ def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: 
     db.add(nueva_verificacion)
     db.commit()
 
-    publicar_email({
-        "tipo": "verificacion_email",
+    publicar_evento("VerificacionEmailSolicitada", {
         "email": email,
         "codigo": codigo_plano
     })

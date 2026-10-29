@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import Optional
-import uuid, os, shutil
+import uuid, os
 import jwt
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
@@ -13,12 +13,8 @@ from schemas.mascota import (
     EspecieEnum,
     SexoEnum
 )
-from services import mascota_service
+from services import mascota_service, storage_service
 from utils import password_utils
-
-UPLOAD_DIR = "uploads/mascotas"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 # todos las etiquetas get,post etc de mas abajo se registran sobre este objeto
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -30,7 +26,6 @@ parametros dentro del endpoint
 3er parametro: summary (resumen) o description usualmente
 """
 def get_current_tutor(token: str = Depends(password_utils.oauth2_scheme)):
-    print("TOKEN RAW:", token)
     try:
         payload = jwt.decode(
             token,
@@ -93,14 +88,9 @@ async def registrar_mascota( #por como se reciben los datos, se debe usar async 
         if extension not in ["jpg", "jpeg", "png", "webp"]:
             raise HTTPException(status_code=400, detail="Formato de imagen no permitido")
 
-        nombre_archivo = f"{uuid.uuid4()}.{extension}"
-        ruta_guardado = f"{UPLOAD_DIR}/{nombre_archivo}"
-
-        with open(ruta_guardado, "wb") as buffer:
-            shutil.copyfileobj(foto.file, buffer)
-
-        # url pública que queda guardada en postgres
-        foto_url = f"/uploads/mascotas/{nombre_archivo}"
+        # en postgres queda la key de S3; los schemas de respuesta la convierten en URL firmada
+        foto_url = f"mascotas/{uuid.uuid4()}.{extension}"
+        storage_service.subir(foto_url, await foto.read(), foto.content_type or "application/octet-stream")
 
 
     data = MascotaCreate(

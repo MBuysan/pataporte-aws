@@ -1,9 +1,9 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-import os
 
-
+from config.settings import settings
 from routers import (
     mascotas,
     tutores,
@@ -15,55 +15,44 @@ from routers import (
     auth,
 )
 
-from config.database import create_tables
-from contextlib import asynccontextmanager
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_tables()
-    os.makedirs("uploads/mascotas", exist_ok=True)
-    yield
-
+logging.basicConfig(level=settings.LOG_LEVEL)
 
 # crea la instancia principal aplicacion, lo de adentro es mera documentacion
+# las tablas y el seed los crea scripts/init_db.py (se corre antes de cada deploy)
 app = FastAPI(
     title="Pataporte API",
     description="API REST para la gestión de salud de mascotas en Uruguay.",
     version="1.0.0",
-    lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
 )
 
 # agrega permisos de donde se ppuede acceder a la api y demas configuraciones
-# allow_origins se debe cambiar para produccion
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost",
-        "http://localhost:3000",
-        "http://127.0.0.1",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# se monta la carpeta de uploads para servir archivos estaticos, en este caso las fotos de mascotas
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# se agregan prefijos a los router y se vinculan a la aplicación
-app.include_router(mascotas.router, prefix="/mascotas", tags=["Mascotas"])
-app.include_router(tutores.router, prefix="/tutores", tags=["Tutores"])
-app.include_router(veterinarios.router, prefix="/veterinarios", tags=["Veterinarios"])
-app.include_router(historial.router, prefix="/historial", tags=["Historial"])
-app.include_router(tratamientos.router, prefix="/tratamientos", tags=["Tratamientos"])
-app.include_router(vacunas.router, prefix="/vacunas", tags=["Vacunas"])
-app.include_router(pataporte.router, prefix="/pataporte", tags=["Pataporte"])  
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+# todo cuelga de /api para que CloudFront enrute /api/* al ALB
+api = APIRouter(prefix="/api")
+api.include_router(mascotas.router, prefix="/mascotas", tags=["Mascotas"])
+api.include_router(tutores.router, prefix="/tutores", tags=["Tutores"])
+api.include_router(veterinarios.router, prefix="/veterinarios", tags=["Veterinarios"])
+api.include_router(historial.router, prefix="/historial", tags=["Historial"])
+api.include_router(tratamientos.router, prefix="/tratamientos", tags=["Tratamientos"])
+api.include_router(vacunas.router, prefix="/vacunas", tags=["Vacunas"])
+api.include_router(pataporte.router, prefix="/pataporte", tags=["Pataporte"])
+api.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
 
-# endpoint health check de verificación, convencion para verificar que el servidor esta vivo
-@app.get("/", tags=["Health"])
+# health check para el ALB: no toca la base de datos
+@api.get("/health", tags=["Health"])
 def health_check():
-    return {"status": "ok", "app": "Pataporte API v1.0.0"}
+    return {"status": "ok"}
+
+
+app.include_router(api)

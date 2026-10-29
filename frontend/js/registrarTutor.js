@@ -44,7 +44,7 @@ form.addEventListener("submit", async (e) => {
     };
 
     try {
-        const response = await fetch("http://localhost:8000/tutores/", {
+        const response = await fetch("/api/tutores/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
