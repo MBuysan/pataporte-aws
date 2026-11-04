@@ -13,7 +13,8 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from config.settings import settings
 
 # ── Motor y sesion ────────────────────────────────────────────────────────────
-engine = create_engine(settings.DATABASE_URL)
+_ssl = {"sslmode": settings.DB_SSLMODE, "sslrootcert": settings.DB_SSLROOTCERT} if settings.DB_SSLMODE else {}
+engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True, connect_args=_ssl)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):

@@ -81,6 +81,7 @@ jobs:
 
       # ponytail: init_db (alembic upgrade head) runs after the new image is live, so only
       # additive migrations are safe. Move it before the app update for breaking ones.
+      # On a fresh database the API/worker cannot use the DB until this creates pataporte_app.
       - name: Run init_db task
         if: steps.gate.outputs.run == 'true'
         run: |

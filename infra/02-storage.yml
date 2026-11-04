@@ -232,6 +232,18 @@ Resources:
         PasswordLength: 64
         ExcludePunctuation: true
 
+  # Password of the least-privilege DB user (pataporte_app, DML only) used by the API and the worker.
+  # The init task (master credentials) creates/updates the role with this password.
+  AppDbSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Pataporte runtime database user (pataporte_app) password
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "pataporte_app"}'
+        GenerateStringKey: password
+        PasswordLength: 40
+        ExcludePunctuation: true
+
 Outputs:
   UploadsBucketName:
     Value: !Ref UploadsBucket
@@ -283,6 +295,10 @@ Outputs:
     Value: !Ref DeliveriesTable
     Export:
       Name: !Sub ${ProjectName}-DeliveriesTableName
+  AppDbSecretArn:
+    Value: !Ref AppDbSecret
+    Export:
+      Name: !Sub ${ProjectName}-AppDbSecretArn
   AppSecretArn:
     Value: !Ref AppSecret
     Export:

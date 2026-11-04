@@ -43,6 +43,13 @@ aws ecs update-service --cluster pataporte --service api --force-new-deployment
 
 Las tareas leen el secreto al arrancar, por eso hay que forzar un nuevo despliegue. No modificar `GenerateSecretString` en `02-storage.yml`: hacerlo regenera el secreto y pisa estos valores.
 
+## Base de datos: TLS y usuario de la app
+
+- Todas las tareas se conectan a RDS con `DB_SSLMODE=verify-full` contra el bundle de CA de RDS incluido en la imagen (`backend/certs/us-east-1-bundle.pem`).
+- La API y el worker usan `pataporte_app`, que solo puede leer y escribir datos (sin DDL). Su contraseña la genera el secreto `AppDbSecret` de `02-storage.yml` (clave `password`).
+- La tarea `init_db` usa el usuario maestro (secreto gestionado por RDS): corre `alembic upgrade head` y crea/actualiza `pataporte_app` con esa contraseña. Hasta que corre por primera vez sobre una base nueva, la API no puede leer ni escribir en la base.
+- En local (`docker compose`) se usa un solo usuario y sin TLS.
+
 ## Despliegue manual (sin GitHub)
 
 ```bash

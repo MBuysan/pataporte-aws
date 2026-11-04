@@ -112,6 +112,8 @@ pataporte/
    docker compose up --build
    ```
 
+   En local todo usa el usuario de `.env` y sin TLS; en AWS la API y el worker usan un usuario solo DML (ver `infra/README.md`).
+
    Para re-inicializar la base a mano: `docker compose run --rm init-db` (equivale a `python -m scripts.init_db`, que corre `alembic upgrade head`).
    Para un cambio de modelo: `docker compose run --rm -v ./backend:/app init-db alembic revision --autogenerate -m "descripcion"`, revisar el archivo generado en `backend/alembic/versions/` y commitearlo.
 
