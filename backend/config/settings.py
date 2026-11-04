@@ -1,12 +1,18 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from config.db_connection import DatabaseSettings
 
 
-class Settings(BaseSettings):
-    DATABASE_URL: str
+class Settings(DatabaseSettings):
+    AWS_REGION: str = "us-east-1"
+    STORAGE_BACKEND: str = "local"
+    ASSETS_BUCKET: str = ""
+    PHOTO_MAX_BYTES: int = 5 * 1024 * 1024
+    MESSAGE_TRANSPORT: str = "rabbitmq"
+    SQS_QUEUE_URL: str = ""
+    IDEMPOTENCY_TABLE: str = ""
+    MAIL_DELIVERY_ENABLED: bool = True
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    ENVIRONMENT: str = "development"
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
     MAIL_FROM: str
@@ -20,8 +26,5 @@ class Settings(BaseSettings):
     RABBITMQ_PORT: int = 5672
     RABBITMQ_USER: str = "guest"
     RABBITMQ_PASSWORD: str = "guest"
-
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
 
 settings = Settings()

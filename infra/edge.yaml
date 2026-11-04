@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PATAPORTE HTTPS frontend with private S3 OAC; same-origin API requests through CloudFront.
+Parameters:
+  ComputeStackName:
+    Type: String
+    Default: pataporte-dev-compute
+  AsyncStackName:
+    Type: String
+    Default: pataporte-dev-async
+  ReleaseId:
+    Type: String
+    Default: initial
+    AllowedPattern: '[a-zA-Z0-9-]{1,64}'
+    Description: Objects must exist under releases/ReleaseId before publishing this release.
+  ApiOriginHostName:
+    Type: String
+    Default: ''
+    Description: Owned DNS hostname pointing to ALB and matching its ACM certificate.
+  ApiOriginProtocol:
+    Type: String
+    Default: http-only
+    AllowedValues: [http-only, https-only]
+Conditions:
+  CustomApiHost: !Not [!Equals [!Ref ApiOriginHostName, '']]
+Rules:
+  HttpsRequiresOwnedHost:
+    RuleCondition: !Equals [!Ref ApiOriginProtocol, https-only]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref ApiOriginHostName, '']]
+        AssertDescription: HTTPS origin requires an owned hostname matching the ALB certificate.
+Resources:
+  Web:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: {SSEAlgorithm: AES256}
+      OwnershipControls:
+        Rules: [{ObjectOwnership: BucketOwnerEnforced}]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration: {Status: Enabled}
+  OriginAccess:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-s3'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  StripApiPrefix:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub '${AWS::StackName}-api-prefix'
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Route /api to FastAPI paths; no authentication or personal data in edge code.
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          request.uri = request.uri.slice(4) || '/';
+          return request;
+        }
+  SecurityHeaders:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub '${AWS::StackName}-headers'
+        SecurityHeadersConfig:
+          ContentTypeOptions: {Override: true}
+          FrameOptions: {FrameOption: DENY, Override: true}
+          ReferrerPolicy: {ReferrerPolicy: strict-origin-when-cross-origin, Override: true}
+          StrictTransportSecurity: {AccessControlMaxAgeSec: 31536000, IncludeSubdomains: true, Override: true}
+  StaticCache:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub '${AWS::StackName}-static'
+        DefaultTTL: 300
+        MaxTTL: 86400
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          CookiesConfig: {CookieBehavior: none}
+          HeadersConfig: {HeaderBehavior: none}
+          QueryStringsConfig: {QueryStringBehavior: none}
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: PATAPORTE Academy demonstration
+        PriceClass: PriceClass_100
+        HttpVersion: http2and3
+        DefaultRootObject: index.html
+        ViewerCertificate: {CloudFrontDefaultCertificate: true}
+        Origins:
+          - Id: web
+            DomainName: !GetAtt Web.RegionalDomainName
+            OriginPath: !Sub '/releases/${ReleaseId}'
+            OriginAccessControlId: !Ref OriginAccess
+            S3OriginConfig: {OriginAccessIdentity: ''}
+          - Id: api
+            DomainName: !If [CustomApiHost, !Ref ApiOriginHostName, !ImportValue {'Fn::Sub': '${ComputeStackName}-LoadBalancerDnsName'}]
+            OriginCustomHeaders:
+              - HeaderName: X-Pataporte-Origin
+                HeaderValue: !Sub
+                  - '{{resolve:secretsmanager:${SecretArn}:SecretString:token}}'
+                  - SecretArn:
+                      Fn::ImportValue: !Sub '${AsyncStackName}-OriginSecretArn'
+            CustomOriginConfig:
+              # Default ALB DNS cannot obtain a certificate owned by this team.
+              # Viewer HTTPS is valid; end-to-end HTTPS needs an owned domain + ACM.
+              OriginProtocolPolicy: !Ref ApiOriginProtocol
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols: [TLSv1.2]
+              OriginReadTimeout: 30
+        DefaultCacheBehavior:
+          TargetOriginId: web
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: !Ref StaticCache
+          ResponseHeadersPolicyId: !Ref SecurityHeaders
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            ResponseHeadersPolicyId: !Ref SecurityHeaders
+            FunctionAssociations:
+              - EventType: viewer-request
+                FunctionARN: !GetAtt StripApiPrefix.FunctionARN
+  WebPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Web
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: cloudfront.amazonaws.com}
+            Action: s3:GetObject
+            Resource: !Sub '${Web.Arn}/releases/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+          - Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource: [!GetAtt Web.Arn, !Sub '${Web.Arn}/*']
+            Condition:
+              Bool: {aws:SecureTransport: 'false'}
+Outputs:
+  WebBucketName:
+    Value: !Ref Web
+  DistributionId:
+    Value: !Ref Distribution
+  Url:
+    Value: !Sub 'https://${Distribution.DomainName}'
+  ReleaseId:
+    Value: !Ref ReleaseId

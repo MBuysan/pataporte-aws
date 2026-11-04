@@ -1,14 +1,18 @@
 # PATAPORTE en AWS: guía de implementación y defensa
 
-Fecha de preparación: 25 de octubre de 2026.
+Fecha de preparación: 25 de octubre de 2026. Estado actualizado: 4 de noviembre de 2026.
 
 Esta guía explica cómo llevar la aplicación actual a una arquitectura reproducible, escalable y observable, utilizando los principales bloques trabajados en el curso. Incluye decisiones, orden de implementación, ejemplos y criterios para comprobar cada etapa.
 
-**Estado:** es una guía de trabajo para la arquitectura completa, no un despliegue AWS ya realizado. El primer hito local (Compose, buzón de pruebas, controles iniciales, CI y plantilla de red) está implementado; consultar [estado y ejecución del primer hito](primer-hito.md). El resto de los archivos y cambios propuestos deben implementarse por etapas. Los fragmentos identificados como ejemplos no constituyen plantillas completas. No se han comprobado permisos, cuotas ni presupuesto de una cuenta AWS.
+**Estado al 04/11:** pasaron **61 pruebas locales** y las **seis plantillas CloudFormation**. En AWS se publicó la imagen nueva de API y worker, se aplicó **0003_transactional_outbox** con 16 tablas, cinco vacunas y TLS real, y compute terminó en **UPDATE_COMPLETE** con la nueva revisión de API; falta su verificación final independiente. **S3/SQS/Lambda/DynamoDB ya se comprobaron con un evento real de prueba y una repetición sin duplicar el objeto**; el consumidor quedó pausado y correo apagado. La copia privada cifrada de RDS está disponible y pasó los controles de aislamiento; falta comparar SQL. **CloudFront terminó en rollback y se investiga su causa; la web remota no está lista.** La sesión Academy venció antes de esas verificaciones finales. Continúan pendientes SMTP real, dominio/certificado del origen, configuración/ejecución remota de GitHub y ensayos de carga/escalado/fallo zonal. La carga local completó 80 solicitudes autenticadas sin errores (p95 29,506 ms), sin demostrar capacidad AWS. Ver [bitácora](bitacora.html) y [avance AWS](evidencias/aws-progress-2026-11-04.json).
 
 ## Cómo usar esta guía
 
+**Bitácora y decisiones:** [abrir el registro interactivo](bitacora.html). Reúne el historial, las razones de cada cambio, las pruebas realizadas y los límites pendientes. La fuente editable es `docs/bitacora.md`; al modificarla ejecutar `python3 scripts/build_bitacora.py` y conservar sus evidencias junto al código.
+
 **Punto de partida disponible:** ver [primer hito local](primer-hito.md) para iniciar la aplicación y sus pruebas, conocer los cambios y revisar lo pendiente.
+
+**Acceso a Academy:** Modules → Launch AWS Academy Learner Lab → Start Lab → esperar Ready → AWS. Se verificaron identidad, región Virginia y `LabRole` usando CloudShell. El panel mostraba USD 0,10 usados de USD 50 al comenzar; su actualización puede retrasarse. `scripts/check_aws.py` comprueba el acceso inicial y `scripts/verify_network.py` verifica la red desplegada; instrucciones en el [primer hito](primer-hito.md#comprobación-de-aws-academy).
 
 Trabajen por etapas. En cada una se indica qué construir, por qué y qué evidencia permite darla por terminada. Primero consigan un recorrido funcional completo; luego agreguen elasticidad y recuperación; finalmente incorporen las extensiones.
 
@@ -17,10 +21,10 @@ La entrega del informe es el **9 de noviembre de 2026** y las fechas comunicadas
 Convenciones:
 
 - Los comandos se ejecutan desde la raíz de `pataporte-aws`, salvo que se indique otro lugar.
-- `infra/`, `scripts/`, `workers/` y los workflows nombrados son **archivos a crear**, no archivos que ya existen.
+- Existen las plantillas `network`, `data`, `bootstrap`, `compute`, `async` y `edge`, las migraciones Alembic, workers y workflows de CI/entrega de API. La existencia de código o una validación local no equivale a un despliegue: el estado inicial distingue ambos.
 - Las variables y los dominios con `example.com` son ejemplos que deben reemplazar.
 - Los valores de CPU, memoria, concurrencia y alarmas son puntos de partida propuestos; deben ajustarse con mediciones.
-- Los comandos de AWS incluidos son instrucciones para el equipo. La preparación de esta guía no los ejecutó.
+- Los comandos de AWS sirven como procedimiento para el equipo. La red inicial del 26/10 y el despliegue de NAT, ECS/ALB y SQL del 27/10 están identificados y tienen evidencia. Los comandos de las etapas restantes son procedimientos por ejecutar.
 
 Lectura sugerida: todos leen las secciones 1 a 4; después cada responsable trabaja sus componentes. Los tres participan en las secciones 13 a 17.
 
@@ -75,6 +79,8 @@ Hay dos decisiones de escalado diferentes: cuántas tareas requiere la API y cu�
 El objetivo es cubrir tecnologías con una razón verificable. PostgreSQL y MySQL son alternativas de motor; para esta aplicación elegimos PostgreSQL. ALB atiende el tráfico HTTP de la API. Lambda ejecuta trabajos acotados; ECS aloja la API y procesos persistentes.
 
 ## 2. Comprobar cuenta, permisos, herramientas y presupuesto
+
+**Comprobado en este laboratorio (26/10):** acceso por Academy, cuenta identificada con STS, `us-east-1`, seis AZ disponibles, existencia de `LabRole`, creación inicial de 27 recursos de red y cuatro del stack RDS. El 27/10 se agregaron cuatro recursos de NAT/rutas, tres de bootstrap y 16 de ECS/ALB, y se ejecutaron tareas con los roles existentes. Se verificaron las opciones de PostgreSQL 15.19/db.t3.micro/gp2 y el secreto administrado de la instancia. Según el instructivo recibido, las regiones admitidas son `us-east-1`/`us-west-2`, no se pueden crear usuarios o roles IAM comunes y ECS debe reutilizar `LabRole` en sus roles de tarea/ejecución. La existencia del rol no demuestra todavía que todas las operaciones futuras estén permitidas. CloudFront, identidad de GitHub y permisos de los otros stacks se validarán al implementarlos.
 
 ### 2.1 Organización de cuentas para tres personas
 
@@ -246,6 +252,8 @@ En SQLAlchemy consideren `pool_pre_ping=True`, tiempos de conexión acotados y u
 
 ### 4.5 Separar salud, esquema y trabajos
 
+**Implementado:** Compose ejecuta `python -m config.migrate` como tarea única antes de iniciar la API. Las réplicas comprueban la versión del esquema, sin ejecutar DDL ni seed durante su arranque.
+
 - `live`: confirma que el proceso responde, sin depender de servicios externos.
 - `ready`: hace una comprobación breve y acotada de PostgreSQL; devuelve 503 si no puede atender.
 - Migraciones: paso independiente y único por despliegue.
@@ -309,6 +317,10 @@ Antes de actualizar datos persistentes, revisen un change set. Busquen reemplazo
 
 ## 6. Construir la red y los permisos
 
+**Hito ya desplegado:** `pataporte-dev-network` en `us-east-1`, VPC `10.20.0.0/16`, AZ `us-east-1a`/`us-east-1b`, seis subredes, cinco tablas explícitas, cuatro grupos de seguridad y Gateway Endpoints de S3/DynamoDB. Se revisó el change set y solo se agregaron 27 recursos. **13/13 verificaciones aprobaron**; ver [informe JSON](evidencias/network-verification-2026-10-26.json) y [captura de CREATE_COMPLETE](evidencias/network-create-complete-2026-10-26.png).
+
+Desde el **27/10**, la configuración activa usa `NatMode=single`: una NAT y dos rutas de salida app, **31 recursos de red** en `UPDATE_COMPLETE`. Las subredes de datos siguen sin ruta general a Internet. ECS y el ALB ya están desplegados. `infra/parameters/network-dev.json` conserva la etapa inicial sin NAT; `network-ecs-dev.json` describe la configuración actual. La [verificación actual](evidencias/network-active-2026-10-27.json) aprobó 13/13 comprobaciones. Una NAT introduce dependencia de la AZ A; el ensayo zonal y la configuración de producción se completan después.
+
 ### 6.1 Distribuir la VPC
 
 Usen dos AZ de la región habilitada y planifiquen, como ejemplo, una VPC `10.20.0.0/16`:
@@ -362,6 +374,12 @@ En Academy podrían quedar varios usos cubiertos por roles preexistentes más am
 
 ## 7. Preparar PostgreSQL en RDS y las migraciones
 
+**Hito desplegado:** `pataporte-dev-data` terminó en `CREATE_COMPLETE` y aprobó **16/16 comprobaciones de configuración**. La instancia `pataporte-dev-postgres` usa PostgreSQL **15.19**, clase `db.t3.micro`, **20 GB gp2 cifrados**, endpoint privado y `rds.force_ssl=1`. Secrets Manager administra la contraseña maestra. Backups automáticos: un día; logs PostgreSQL: siete días; protección de borrado y política de snapshot habilitadas.
+
+La instancia es **Single-AZ** para esta primera prueba de bajo consumo. El DB Subnet Group abarca dos AZ y `EnableMultiAZ` permite preparar la prueba de alta disponibilidad después de revisar su costo. El **27/10 se ejecutó SQL real desde una tarea privada de ECS**, con TLS verificado: Alembic quedó en `0002_seed_vaccines`, con 15 tablas y cinco vacunas. Se creó `pataporte_app` y pasó una prueba CRUD con rollback. **La restauración sigue pendiente**. Ver [resultado de la migración](evidencias/migration-2026-10-27.json) y [configuración actual de RDS](evidencias/data-active-2026-10-27.json).
+
+Ver [informe de RDS](evidencias/data-verification-2026-10-26.json), [captura de CloudFormation](evidencias/data-create-complete-2026-10-26.png), [evidencia de Alembic local](evidencias/migrations-local-2026-10-26.json) y los [comandos operativos](primer-hito.md#segundo-hito-rds-y-migraciones).
+
 ### 7.1 Adaptar la plantilla de clase
 
 La plantilla `2_7-rds-postgres.xxx` sirve como punto de partida didáctico. Configuren para la entrega:
@@ -385,21 +403,27 @@ Guarden las credenciales en un secreto y pasen su ARN a las tareas. Construyan c
 
 Para verificar TLS usen el endpoint real de RDS y el certificado CA correspondiente, con `sslmode=verify-full` y `sslrootcert`. Incluyan el bundle en la imagen y manténganlo actualizado. Cifrar sin verificar el servidor ofrece menos protección. [AWS: certificados PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/ssl-certificate-rotation-postgresql.html).
 
-Separar usuario de migraciones y usuario de aplicación permite que el segundo tenga solo permisos DML. Si lo simplifican en el laboratorio, registren esa decisión.
+**Implementado:** la tarea de migración recibe el secreto maestro y crea `pataporte_app`. La API recibe únicamente el secreto de esa cuenta, con permisos DML. La cuenta no puede crear tablas ni bases ni modificar `alembic_version`; conserva SELECT para verificar el esquema al iniciar.
 
 ### 7.3 Crear y ensayar migraciones
 
-Inicialicen Alembic, vinculen sus metadatos con los modelos y creen una migración inicial. Revisen manualmente el resultado, especialmente enums, restricciones y claves. Prueben una base vacía y una actualización desde la versión anterior.
+**Implementado y probado localmente y contra RDS:** `backend/alembic/` contiene `0001_initial_schema` (15 tablas y seis tipos enum congelados) y `0002_seed_vaccines` (catálogo de cinco vacunas). La migración inicial se generó y revisó; los enums compartidos se crean una vez y se eliminan en orden al revertir una base de prueba. Las revisiones no dependen de los modelos futuros para reconstruir el esquema inicial.
 
-Si la base ya tiene tablas, preparen una estrategia de baseline: comparen esquema real y migración antes de usar `stamp`. Marcar una versión no modifica ni verifica tablas por sí solo.
+Los modelos viven en `config/models.py`, sin abrir conexiones ni exigir secretos de correo/JWT. `config/database.py` mantiene las importaciones que usa la API. Alembic y la aplicación comparten la configuración PostgreSQL de `config/db_connection.py`.
+
+Si la base ya tiene tablas, `python -m config.migrate` compara sus tablas y metadatos antes de adoptar el baseline. Si hay diferencias, falla sin marcar una versión. Si coincide, registra `0001_initial_schema` y aplica el seed por nombre sin reemplazar IDs o registros previos. Un advisory lock de PostgreSQL impide dos tareas migrando simultáneamente. No usar `stamp` a ciegas.
 
 Migren en una tarea ECS puntual, con la misma imagen candidata, subredes privadas y SG que permiten llegar a RDS:
 
 ```text
-alembic upgrade head
+python -m config.migrate
 ```
 
 Un runner público de GitHub no puede conectarse directamente al RDS privado solo por tener credenciales AWS. El pipeline debe ejecutar la tarea en la VPC, esperar su terminación y comprobar su exit code. No ejecutar migraciones simultáneas desde cada réplica.
+
+En Compose, `migrate` termina con código 0 antes de habilitar la API. Si faltan revisiones, la API rechaza el arranque con un mensaje de migración pendiente. Para verificar la entrega local se ejecutaron **25 pruebas**: seis de mensajería, cuatro de configuración/TLS, cinco de migración real y permisos en bases efímeras y diez del recorrido funcional. Incluyen creación desde vacío, downgrade y repetición, conservación de datos previos, rechazo de un esquema distinto y exclusión concurrente. El CI incorpora ese mismo comando.
+
+La configuración admite `DATABASE_URL` o campos `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`. Los campos separados construyen la URL con `URL.create`, conservando caracteres especiales de la contraseña. Fuera de `development`/`test` se exige `verify-full` y una CA existente; la imagen incluye el [bundle oficial de RDS para us-east-1](https://truststore.pki.rds.amazonaws.com/us-east-1/us-east-1-bundle.pem), en `/app/certs/us-east-1-bundle.pem`. Al cambiar de región se debe revisar también el bundle.
 
 ### 7.4 Probar respaldo y restauración
 
@@ -407,7 +431,59 @@ Creen un registro ficticio, tomen snapshot o usen PITR, restauren en **otra inst
 
 **Etapa terminada:** la aplicación conecta desde la VPC, TLS se verifica, el esquema lo administra Alembic y existe una restauración ensayada.
 
+### 7.5 Verificar y operar lo que ya está desplegado
+
+Desde el checkout y con AWS CLI autenticado, reemplazar el ID por el de la cuenta del laboratorio:
+
+```bash
+python3 scripts/verify_data.py \
+  --region us-east-1 \
+  --expected-account ID_CUENTA_DEL_LAB \
+  --report /tmp/pataporte-data-verification.json
+```
+
+El script hace las 16 comprobaciones de configuración sin leer contraseñas. El informe cubre configuración; la migración SQL y la conexión real se verificaron por separado en la tarea ECS del 27/10. La restauración sigue pendiente.
+
+Para reproducir la creación en una cuenta donde ese stack no exista, después de desplegar la red:
+
+```bash
+aws cloudformation validate-template \
+  --region us-east-1 --template-body file://infra/data.yaml
+aws cloudformation create-change-set \
+  --region us-east-1 \
+  --stack-name pataporte-dev-data \
+  --change-set-name data-inicial \
+  --change-set-type CREATE \
+  --template-body file://infra/data.yaml \
+  --parameters file://infra/parameters/data-dev.json \
+  --tags Key=project,Value=pataporte Key=environment,Value=dev Key=managed-by,Value=cloudformation
+aws cloudformation wait change-set-create-complete \
+  --region us-east-1 --stack-name pataporte-dev-data --change-set-name data-inicial
+aws cloudformation describe-change-set \
+  --region us-east-1 --stack-name pataporte-dev-data --change-set-name data-inicial
+```
+
+Después de revisar el plan, ejecutar el conjunto y esperar `stack-create-complete`. Para modificar la base existente se usa `UPDATE`, otro nombre de conjunto y el waiter `stack-update-complete`. La protección de borrado, los snapshots conservados y los logs retenidos necesitan una revisión explícita al retirar el entorno.
+
+La instancia quedó encendida. Para pausar el cómputo durante un período sin trabajo:
+
+```bash
+aws rds stop-db-instance --region us-east-1 --db-instance-identifier pataporte-dev-postgres
+```
+
+Para retomarlo:
+
+```bash
+aws rds start-db-instance --region us-east-1 --db-instance-identifier pataporte-dev-postgres
+```
+
+El almacenamiento y otros recursos conservados siguen consumiendo presupuesto. RDS puede reiniciar una instancia detenida después de siete días; finalizar la sesión de Academy no garantiza que la base se detenga. En esta entrega se mantuvo encendida para la siguiente integración.
+
 ## 8. Mover archivos a S3 y distribuir el frontend
+
+**Implementado y probado localmente el 03/11:** `config/storage.py` valida el contenido real de JPEG/PNG/WebP, limita tamaño y píxeles, vuelve a codificar para quitar metadatos y guarda referencias `s3://bucket/key`. Las respuestas autorizadas generan una URL firmada de cinco minutos; esa URL no se guarda en PostgreSQL. Si falla la escritura SQL, se intenta compensar únicamente la foto recién creada. El frontend acepta tanto estas URLs como los archivos del entorno local. Las plantillas `async.yaml` y `edge.yaml` están validadas y todavía no desplegadas.
+
+**Límite de la plantilla de laboratorio:** CloudFront usa HTTPS para el navegador y OAC hacia el bucket privado. El origen ALB propuesto usa HTTP y un encabezado secreto para habilitar la API, porque el equipo aún no tiene un dominio propio con certificado ACM. Esto **no ofrece cifrado de extremo a extremo**. No cargar datos reales con esa configuración; antes de publicar una versión definitiva se debe configurar un dominio/certificado para el ALB y cambiar el protocolo de origen a HTTPS. `EnableEdgeApi` permanece desactivado por defecto.
 
 ### 8.1 Separar buckets por propósito
 
@@ -451,7 +527,7 @@ Publiquen HTML y configuración con caché corta; usen nombres versionados para 
 
 ### 9.1 Crear repositorios y publicar
 
-Creen ECR mediante bootstrap, con tags inmutables, análisis de imágenes y una retención que no borre versiones todavía desplegadas. Para arquitectura x86 de los hosts, construyan `linux/amd64`, especialmente si desarrollan en Mac Apple Silicon.
+El bootstrap implementado crea ECR privado con tags inmutables, análisis al publicar y conservación del repositorio al eliminar el stack. No se configuró caducidad automática de imágenes: primero debe definirse cómo proteger los digests en uso y las versiones de rollback. Para arquitectura x86 de los hosts, construyan `linux/amd64`, especialmente si desarrollan en Mac Apple Silicon.
 
 Ejemplo, después de crear el repositorio y completar los valores:
 
@@ -494,43 +570,162 @@ Habiliten deployment circuit breaker con rollback para el servicio. Necesita una
 
 **Etapa terminada:** dos réplicas atienden detrás del ALB, un contenedor detenido se reemplaza y la imagen ejecutada coincide con la release registrada.
 
+### 9.5 Hito real: ECR, ECS y migración RDS verificados
+
+**Completado el 26/10:** `pataporte-dev-bootstrap` está en `CREATE_COMPLETE`. Contiene el repositorio privado `pataporte-dev-backend`, una clave JWT generada por Secrets Manager y un secreto independiente para la cuenta SQL de aplicación. No se copiaron claves AWS ni contraseñas al repositorio o a las evidencias.
+
+La imagen `linux/amd64` se construyó y publicó desde CloudShell. Tag: `source-8dc1b227edaac905`. Digest:
+
+```text
+sha256:4187b5c4f19d206ed2258bf58a4a81ad0e8f8980a96d3ee71b651e73e83a4c0d
+```
+
+El [manifiesto del código empaquetado](evidencias/ecs-source-manifest-2026-10-26.json) registra los hashes de los archivos enviados. Representa el contenido del workspace al construir, incluidos cambios aún sin commit; no equivale a un release ya publicado en Git. El [informe de ECR](evidencias/image-2026-10-26.json) registra tag, digest y tamaño. Además de las 25 pruebas locales, se ejecutaron las diez pruebas sin base de datos dentro de esa imagen Linux: diez aprobadas y cinco de migración omitidas por no tener PostgreSQL en ese contenedor aislado.
+
+**Escaneo:** ECR completó el análisis y reportó tres hallazgos altos, nueve medios y tres bajos. No se afirma que la imagen esté libre de vulnerabilidades ni que se haya aprobado para producción; ver [resultado del escaneo](evidencias/image_scan-2026-10-26.json). La consulta a los repositorios Debian confirmó que `glibc` instalada y candidata coinciden en `2.41-12+deb13u4`; una actualización normal no resuelve esos dos hallazgos. El hallazgo alto restante corresponde a zlib. Esto no determina por sí solo la explotabilidad en esta aplicación.
+
+**Configuración aplicada y verificada el 27/10:**
+
+| Componente | Cambio concreto | Motivo y límite |
+|---|---|---|
+| Red | Una NAT en la subred pública A y dos rutas de salida app | Permite alcanzar ECR, ECS, logs y Secrets Manager. Las subredes de datos siguen sin salida general. Una sola NAT ahorra en el laboratorio, pero introduce dependencia de una AZ. |
+| Hosts | Dos `t3.micro`, máximo tres, en app A/B | AMI ECS-optimized AL2023 obtenida por SSM, EBS cifrado, IMDSv2, sin SSH ni IP pública. El capacity provider administra capacidad; el servicio aún no tiene una política de autoescalado por carga. |
+| Acceso AWS | `LabInstanceProfile` en hosts y `LabRole` como execution role | Restricción de Academy. No se crean roles IAM ni se cambian sus políticas. Las tareas no tienen TaskRole y se bloquea el acceso de los contenedores a IMDS. Para producción se necesitan roles específicos y mínimos. |
+| Migración | Tarea puntual `python -m config.deploy_database` | ECS inyecta el secreto maestro únicamente en esta tarea. Aplica Alembic y crea `pataporte_app`, con DML pero sin administración ni DDL. |
+| API | Dos réplicas tras la migración exitosa; una por AZ | Usa solo el secreto SQL limitado y el JWT. Imagen fijada por digest, logs siete días, circuit breaker y reparto entre AZ/hosts. |
+| ALB | Público, HTTP 80 limitado a `/health/live` y `/health/ready` | Permite verificar conectividad sin publicar autenticación ni datos. Las demás rutas devuelven 404. La publicación funcional HTTPS se completa con la siguiente etapa de frontend, almacenamiento y eventos. |
+
+Se aprobaron y ejecutaron `nat-single-20261026` (**cuatro altas**) y `compute-initial-20261026` (**16 altas**). Después de la migración exitosa se aplicó `api-two-20261027`, que modificó únicamente `ApiService`, sin reemplazarlo. Los stacks de red y cómputo están en `UPDATE_COMPLETE`; datos y bootstrap, en `CREATE_COMPLETE`.
+
+| Evidencia real | Resultado |
+|---|---|
+| Red y RDS | 13/13 y 16/16 comprobaciones aprobadas; datos sin Internet y base privada. |
+| Tarea de migración | Exit code 0, revisión `0002_seed_vaccines`, 15 tablas, cinco vacunas. |
+| Conexión SQL | `verify-full` con CA regional; servidor confirma TLS 1.2 y `ECDHE-RSA-AES256-GCM-SHA384`. |
+| Cuenta SQL limitada | CRUD aprobado y rollback completo; CREATE de esquema/base y UPDATE de Alembic denegados. |
+| Réplicas | Dos tareas RUNNING en `us-east-1a`/`us-east-1b`, dos targets healthy, mismo digest ECR. |
+| Acceso | Hosts sin IP pública, IMDSv2, tareas privadas y sin TaskRole; secreto maestro ausente de la API. |
+| ALB | `/health/live` y `/health/ready`: 200. `/` y `/docs`: 404. |
+| Recuperación | Se detuvo una tarea; ECS creó su reemplazo y regresó a dos targets healthy. El ciclo de prueba duró 91 segundos. |
+
+Endpoint operativo de salud: [comprobar preparación de API y DB](http://pataporte-dev-alb-789635094.us-east-1.elb.amazonaws.com/health/ready). La verificación HTTP se ejecutó desde CloudShell. La herramienta de navegador bloqueó la apertura de esa URL HTTP con `ERR_BLOCKED_BY_CLIENT`; no se alteró esa protección. El endpoint de salud no es el frontend de PATAPORTE.
+
+Evidencias: [ECS/ALB](evidencias/compute-verification-2026-10-27.json), [migración](evidencias/migration-2026-10-27.json), [reemplazo de tarea](evidencias/task-replacement-2026-10-27.json), [estados de stacks](evidencias/stack-statuses-2026-10-27.json) y [captura final](evidencias/ecs-rds-verified-2026-10-27.png). El ensayo de reposición de una tarea no sustituye las pruebas de caída de host, AZ o región.
+
+
+### 9.6 Reproducir y verificar este despliegue
+
+Estos comandos se ejecutan en CloudShell, dentro del código transferido a `~/pataporte-ecs-20261026`. `scripts/deploy_ecs.py` comprueba cuenta y región, mantiene los secretos fuera de su salida y guarda resultados sin credenciales en `deployment-results/`. No ejecutar dos migraciones simultáneas.
+
+1. Revisar y aprobar los planes y el escaneo. La imagen se identifica por digest; no usar `latest`. Las plantillas están en `infra/bootstrap.yaml` y `infra/compute.yaml`.
+2. Aplicar NAT y esperar `UPDATE_COMPLETE`. Después crear ECS con cero réplicas de API:
+
+```bash
+python3 scripts/deploy_ecs.py apply --component network --change-set nat-single-20261026
+python3 scripts/deploy_ecs.py apply --component compute --change-set compute-initial-20261026
+```
+
+3. Verificar dos hosts registrados en el clúster `pataporte-dev`; ejecutar la tarea privada de migración:
+
+```bash
+python3 scripts/deploy_ecs.py migrate
+```
+
+La tarea debe terminar con **exit code 0** y emitir `PATAPORTE_MIGRATION_RESULT`: revisión `0002_seed_vaccines`, 15 tablas de aplicación, catálogo inicial, TLS real y prueba CRUD con rollback. La cuenta de aplicación conserva SELECT sobre `alembic_version` para comprobar el arranque, pero no puede actualizarla. Si falla, revisar el log de la tarea y mantener la API en cero. Nunca ejecutar downgrade sobre RDS como ensayo.
+
+4. Solo después del resultado correcto, preparar un UPDATE del servicio a dos réplicas, revisar el plan y aplicarlo:
+
+```bash
+python3 scripts/deploy_ecs.py plan --component compute --change-set api-two-20261027 \
+  --image 476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend@sha256:4187b5c4f19d206ed2258bf58a4a81ad0e8f8980a96d3ee71b651e73e83a4c0d \
+  --api-count 2
+python3 scripts/deploy_ecs.py apply --component compute --change-set api-two-20261027
+python3 scripts/deploy_ecs.py verify
+```
+
+5. El verificador exige dos tareas en dos AZ, dos targets healthy, ambos endpoints de salud en 200 y rutas `/` y `/docs` en 404. También contrasta el digest ECR y comprueba hosts privados/IMDSv2 y ausencia de TaskRole/secreto maestro en la API. `compute-initial-dev.json` conserva la configuración inicial en cero; `compute-active-dev.json` representa las dos réplicas activas. Para revisar la red después de activar esta etapa:
+
+```bash
+python3 scripts/verify_network.py --region us-east-1 --expected-account 476855088538 \
+  --nat-mode single --health-http --report deployment-results/network-active.json
+```
+
+**Costos y operación:** NAT y ALB generan cargos mientras existen, aunque no haya usuarios. Las instancias EC2 consumen cuando están encendidas; almacenamiento, imágenes, secretos, logs y RDS tienen sus cargos propios. No dejen esta demostración encendida hasta la entrega sin revisar el saldo y organizar pausas. Finalizar Academy no elimina NAT, ALB ni RDS. Poner solo la API en cero tampoco apaga los hosts: el ASG tiene mínimo dos. La pausa requiere bajar servicio/ASG con un cambio explícito y planificar también los recursos de red; conserven base y secretos para no perder datos. [Precios NAT](https://aws.amazon.com/vpc/pricing/) · [Precios ALB](https://aws.amazon.com/elasticloadbalancing/pricing/).
+
+**Alcance de este hito:** todavía faltan frontend por HTTPS, fotos en S3, reemplazo de RabbitMQ, pipeline AWS y pruebas de carga, fallo de host/AZ y restauración. Tener salud en 200 no demuestra esos flujos de negocio.
+
+### 9.7 Próxima entrega preparada el 03/11: orden de ejecución
+
+Procedimiento reproducible: API/migración y async ya se aplicaron según el estado del 04/11; no repetir planes existentes sin revisar el estado actual. Requieren la cuenta `476855088538`, `us-east-1`, saldo revisado, Docker y Boto3. Desde una terminal local usar el perfil temporal `pataporte-lab`; dentro de CloudShell usar su sesión actual y omitir `AWS_PROFILE`. Antes de cualquier operación, comprobar STS y detenerse si la cuenta no coincide.
+
+```bash
+export AWS_SHARED_CREDENTIALS_FILE="$PWD/.local/aws/credentials"
+export AWS_PROFILE=pataporte-lab
+export AWS_DEFAULT_REGION=us-east-1
+aws sts get-caller-identity --query Account --output text
+```
+
+**Primero: entregar la API con migración compatible.** En la raíz del repositorio, con la sesión correcta disponible:
+
+```bash
+python3 scripts/release_academy.py snapshot
+python3 scripts/deploy_ecs.py build
+python3 scripts/release_academy.py plan-stage
+python3 scripts/release_academy.py summary
+```
+
+Revisar `deployment-results/stage-plan.json`, el digest y el resumen. `snapshot` exige dos tareas estables y guarda la versión anterior. **Después de revisar el plan**, `python3 scripts/release_academy.py deploy` actualiza la definición de migración manteniendo la API actual, ejecuta `0003`, actualiza el servicio y verifica salud. Ante fallo de migración no se inicia la release nueva. Este coordinador se limita a la base inicial; todavía no opera la arquitectura conjunta con dispatcher. En GitHub, el workflow manual reproduce estos pasos con el environment protegido.
+
+**Segundo: preparar y revisar async.** Construir la imagen Lambda con `python3 scripts/deploy_ecs.py build --kind worker`; su digest queda en `deployment-results/worker-image.json`. Crear un archivo de parámetros CloudFormation con `WorkerImageUri=<digest real>` y `EnableQueueConsumer=false`. No usar tags flotantes ni poner contraseñas en parámetros. Luego:
+
+```bash
+python3 scripts/deploy_ecs.py plan --component async --change-set async-revisar-20261103 \
+  --parameters-file deployment-results/async-parameters.json
+```
+
+Solo después de revisar recursos, permisos Academy y consumo, aplicar ese change set. La plantilla reutiliza un rol existente; no crea IAM. **Que la cola exista no significa que el correo funcione.** La suscripción permanece apagada hasta una prueba controlada; Lambda tiene correo deshabilitado. El evento interno de comprobación lleva `schema_version=1`, un UUID nuevo y `payload={"tipo":"probe"}`; debe producir `DONE` en DynamoDB y un objeto privado `probes/<uuid>.json` en S3, sin correo. Conservar los resultados reales de esa prueba antes de dar el hito por cerrado.
+
+**Tercero: integrar la API con S3 y el dispatcher.** Tras confirmar la migración y crear async, preparar un plan compute con la imagen nueva, `EnableCloudFeatures=true`, un `ApplicationRoleArn` aprobado y `DispatcherDesiredCount=1`. Para Academy puede proponerse `LabRole`, con el límite de permisos amplios documentado; para producción crear roles separados de mínimo privilegio. Mantener `EnableEdgeApi=false`. Revisar que solo aparezcan las revisiones de tarea, el publicador, las alarmas y los cambios esperados. La API conserva credenciales SQL DML; el dispatcher necesita SQL/SQS, sin el secreto JWT. El modo `full` del pipeline integra esta etapa; falta su ejecución y verificación en nube.
+
+**Cuarto: publicar el frontend por versiones.** Crear/revisar el stack edge con la API aún cerrada. Subir los archivos con `python3 scripts/publish_frontend.py --release web-20261103`; se verifican los metadatos de cada archivo y se rechaza reutilizar un ID con contenido diferente. Preparar un change set edge con `ReleaseId=web-20261103`, revisar/aplicar y después invalidar `/*` en esa distribución. Los archivos viven bajo `releases/<id>/`; volver a una release anterior no exige sobrescribirlos. El estado inicial sin archivos puede devolver 403: no es una publicación terminada.
+
+**Antes de abrir recorridos de usuarios:** resolver el HTTPS del origen ALB, configurar y probar el proveedor de correo, renovar secretos temporales de GitHub, recuperar presupuesto/estado y ejecutar pruebas con datos ficticios. Los ejemplos anteriores preparan una entrega verificable; no sustituyen esas comprobaciones.
+
 ## 10. Sustituir RabbitMQ con un flujo confiable de eventos
+
+**Implementado el 03/11:** migración `0003_transactional_outbox`, productor sin conexión al broker y proceso `python -m messaging.dispatcher`. Compose usa RabbitMQ para conservar una prueba real sin AWS; ECS puede usar SQS mediante configuración. Las pruebas con PostgreSQL real comprobaron rollback, caída del broker, reintento tras fallo del commit y coordinación de dos publicadores mediante `SKIP LOCKED`. Falta ejecutar ese recorrido contra SQS real.
 
 ### 10.1 Entender el problema que estamos resolviendo
 
-Actualmente varios servicios hacen `commit()` y después publican en RabbitMQ. Si el proceso cae en medio, el registro queda guardado pero el mensaje puede perderse. Cambiar RabbitMQ por SQS conservando esa secuencia deja el mismo problema.
+La versión anterior hacía `commit()` y después publicaba en RabbitMQ. Si el proceso caía en medio, el registro quedaba guardado pero el mensaje podía perderse. Cambiar RabbitMQ por SQS conservando esa secuencia dejaba el mismo problema.
 
 Usaremos **transactional outbox**: dentro de una sola transacción PostgreSQL se guarda el cambio de negocio y un registro que representa el trabajo pendiente. Un proceso independiente publica los pendientes. La outbox aporta durabilidad entre la base y la cola; el consumidor debe tolerar duplicados. Este patrón está incluido en la solución de referencia del caso de entradas. [AWS: transactional outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html).
 
 ### 10.2 Crear tabla y contrato de mensaje
 
-Campos propuestos para `outbox_events`:
+Campos implementados en `outbox_events`:
 
 | Campo | Propósito |
 |---|---|
-| event_id, UUID y PK | Identidad estable del evento en todos los reintentos. |
-| event_type, schema_version | Elegir handler y validar contrato. |
-| aggregate_id | Mascota, pataporte o entidad asociada. |
+| id, UUID y PK | Se publica como `event_id`; permanece igual en cada reintento. |
+| event_type | Tipo de aviso; el sobre lleva `schema_version=1`. |
 | payload, JSONB | Datos o referencias necesarias para ejecutar. |
 | created_at, available_at | Cuándo se creó y desde cuándo puede publicarse. |
-| published_at | Confirmación de publicación en la cola. |
+| dispatched_at | Confirmación de publicación en la cola. |
 | attempts, last_error | Operación y diagnóstico sin información secreta. |
-| lease_owner, lease_until | Solo si implementan publicación con leases en lugar de bloqueo transaccional. |
 
 Ejemplo de contrato, con datos ficticios:
 
 ```json
 {
   "event_id": "62e3bffe-303e-4ba0-8f7c-e572bc9ce305",
-  "event_type": "pataporte.pdf_email.requested",
   "schema_version": 1,
-  "occurred_at": "2026-10-25T15:00:00Z",
-  "correlation_id": "request-ejemplo",
   "payload": {
-    "pataporte_id": "id-de-ejemplo",
-    "recipient": "tutor@example.com",
-    "credential": {},
-    "verification_hash": "hash-de-ejemplo"
+    "tipo": "pdf_email",
+    "email": "tutor@example.com",
+    "nombre_mascota": "Luna",
+    "credencial": {},
+    "hash_verificacion": "hash-de-ejemplo"
   }
 }
 ```
@@ -539,10 +734,12 @@ La credencial de emisión debe representar un snapshot, para que el PDF no cambi
 
 Separar tipos de correo:
 
-- `auth.email_verification.requested`.
-- `auth.password_recovery.requested`.
-- `pataporte.pdf_email.requested`.
-- `vaccination.reminder.requested`.
+- `verificacion_email`: código de activación con vencimiento.
+- `recuperacion_password`: plantilla diferente y código con vencimiento.
+- `pdf_email`: instantánea del certificado y su hash.
+- `raw_email`: respaldo clínico generado antes de eliminar una mascota.
+
+Los recordatorios son una extensión todavía pendiente. El productor rechaza avisos que superen 180 KB. Tras el acuse durable del broker, el publicador vacía el payload de la outbox y conserva ID, fechas e intentos para diagnóstico. La cola y sus permisos siguen requiriendo protección porque conservan el aviso completo durante su retención.
 
 Los códigos sensibles deben tener vencimiento, retención mínima y acceso limitado. El worker debe descartar de forma registrada un código ya vencido, en lugar de enviarlo horas después de restaurar una cola.
 
@@ -568,11 +765,11 @@ También definan idempotencia de la solicitud HTTP de emisión: un reintento del
 1. Seleccionar un lote pequeño de eventos disponibles.
 2. Coordinar publicadores con `FOR UPDATE SKIP LOCKED` o leases con vencimiento.
 3. Publicar usando Boto3 y el mismo `event_id`.
-4. Marcar `published_at` únicamente después de la confirmación de SQS.
-5. Ante fallos, registrar el intento y reintentar con espera incremental y variación aleatoria.
+4. Marcar `dispatched_at` únicamente después de la confirmación de SQS.
+5. Ante fallos, registrar el intento y reintentar con espera exponencial acotada. La versión inicial no agrega jitter; incorporarlo si varias réplicas se sincronizan bajo fallos.
 6. Medir cantidad y antigüedad del evento más viejo sin publicar.
 
-Para empezar, un publicador con transacciones cortas, lotes pequeños y tiempos de red acotados es suficiente. Un fallo después de publicar pero antes de guardar `published_at` puede duplicar el mensaje. Es una situación esperada que el consumidor debe resolver.
+El publicador usa lotes de hasta diez mensajes y bloquea esas filas durante la publicación. Es una implementación inicial; midan la duración real de la transacción. Un fallo después de publicar pero antes de guardar `dispatched_at` puede duplicar el mensaje: las pruebas reproducen ese caso y mantienen el mismo `event_id`.
 
 No borren eventos apenas publicados: definan una retención corta para diagnóstico y una limpieza controlada de payloads sensibles.
 
@@ -587,6 +784,8 @@ Mantengan misma región para cola y función. Cifren mensajes, limiten SendMessa
 **Etapa terminada:** al detener el publicador se acumulan eventos en PostgreSQL; al reiniciarlo llegan a SQS sin perder cambios de negocio.
 
 ## 11. Implementar Lambda y DynamoDB
+
+**Implementado y probado localmente el 03/11:** `messaging/delivery.py` reúne plantillas y PDF sin conexión SQL; `messaging/lambda_handler.py` procesa SQS y usa operaciones condicionales de DynamoDB. La imagen específica usa Python 3.12 sobre la base oficial Amazon Linux 2023, mientras la API continúa en Python 3.11. Se comprobó la construcción amd64 y la importación del handler sin `SECRET_KEY` ni datos de PostgreSQL. Las pruebas de DynamoDB usan respuestas simuladas del SDK: falta la comprobación en AWS. [AWS: bases de imágenes Python](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html).
 
 ### 11.1 Extraer lógica reutilizable
 
@@ -614,18 +813,20 @@ Para estos trabajos, Lambda puede funcionar fuera de la VPC del proyecto si solo
 
 ### 11.3 Usar DynamoDB con un modelo explícito
 
-Para reducir errores, separen dos responsabilidades:
+La versión inicial implementa una tabla de coordinación, sin guardar destinatarios, códigos o historia clínica:
 
-| Tabla propuesta | Clave y contenido |
+| Campo | Contenido |
 |---|---|
-| NotificationIdempotency | Esquema requerido por la librería de idempotencia: identificador, estado interno, expiración y coordinación de ejecuciones. |
-| NotificationJobs | `pk=EVENT#<id>`, `sk=META`; tipo, resultado, intentos, fechas, usuario autorizado y key del PDF. |
+| event_id | Clave primaria del evento. |
+| status, fingerprint | `PROCESSING`/`DONE` y hash del contenido para detectar reutilización incorrecta de un ID. |
+| token, lease_until | Propietario y vencimiento de 120 segundos; el timeout de Lambda es de 60 segundos. |
+| expires_at | Retención de coordinación de treinta días; DynamoDB TTL hace la limpieza eventual. |
 
-Usen capacidad on-demand al inicio si el entorno lo admite. Para listar trabajos por usuario y fecha, agreguen un GSI con `USER#<id>` y `created_at#event_id`. Consulten mediante Query en lugar de escanear toda la tabla.
+La plantilla usa capacidad on-demand, cifrado y recuperación a un punto en el tiempo. Una entrega completada con la misma huella se omite; una ejecución activa se reintenta después; una ejecución abandonada puede recuperarse al vencer su lease. La confirmación y liberación comprueban el token del propietario. Todavía no existe una pantalla ni una tabla de historial de trabajos por usuario; si se necesita, debe agregarse con controles de propiedad y consultas específicas.
 
 La tabla de estado no es el historial clínico: ese dato sigue en PostgreSQL. Tampoco es la fuente que determina si un certificado continúa vigente. La API debe verificar propiedad antes de exponer estados o URLs de descarga.
 
-Pueden utilizar Powertools para la coordinación de idempotencia, respetando su esquema y comportamiento de expiración, en lugar de improvisar un único `attribute_not_exists` que bloquee para siempre trabajos fallidos. El registro necesita distinguir ejecución en curso y completada, y permitir recuperación de una ejecución abandonada. [AWS Powertools: idempotencia](https://docs.aws.amazon.com/powertools/python/latest/utilities/idempotency/).
+La coordinación actual está implementada con el SDK y tiene pruebas de duplicado, lease activo, fallo de entrega y lotes parciales. Powertools sigue siendo una alternativa si amplían el flujo; no se usa su esquema en esta versión. [AWS Powertools: idempotencia](https://docs.aws.amazon.com/powertools/python/latest/utilities/idempotency/).
 
 TTL sirve para limpiar registros antiguos; no los elimina exactamente en el segundo de vencimiento. Comprueben la expiración en la lógica cuando tenga significado funcional. La retención de idempotencia debe cubrir la ventana de reintentos y redrive; por ejemplo, treinta días como punto de partida si conserva sentido para el negocio. [AWS: TTL](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html).
 
@@ -642,6 +843,8 @@ Habiliten `ReportBatchItemFailures` y devuelvan únicamente los ID de mensajes f
 Limiten la concurrencia del event source mapping y coordínenla con la concurrencia reservada de la función y la capacidad del correo. Concurrencia reservada no mantiene funciones calientes; provisioned concurrency es otro mecanismo. Empiecen con pocos consumidores y midan.
 
 ### 11.6 Elegir proveedor de correo
+
+**Pendiente real:** en AWS todavía no hay proveedor ni secreto SMTP configurado. `async.yaml` crea Lambda con `MAIL_DELIVERY_ENABLED=false` y la suscripción SQS desactivada. El tipo interno `probe` permite comprobar SQS → Lambda → DynamoDB/S3 sin enviar correos. No se afirma que lleguen correos reales desde AWS. El flujo local sí usa Mailpit y se probó completo. Antes de activar la suscripción para usuarios, la lectura del secreto SMTP ya está implementada con caché de cinco minutos; falta configurar proveedor/remitente, guardar el secreto fuera del código y probar con un destinatario autorizado.
 
 Para una primera demostración pueden mantener SMTP con contraseña de aplicación en Secrets Manager, si está permitido. Amazon SES es una opción integrada; requiere configurar/verificar identidades y revisar sandbox y cuotas. No asuman que Academy permite SES o sacar una cuenta de sandbox. Mientras exista esa restricción, prueben con destinatarios autorizados o un modo simulado claramente identificado. [AWS: sandbox de SES](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html).
 
@@ -685,6 +888,10 @@ No hace falta introducir un bus en el recorrido principal para afirmar que usan 
 **Etapa terminada:** un aviso programado se produce una sola vez por regla de negocio, y una foto genera miniatura sin disparar un bucle.
 
 ## 13. Crear el pipeline de GitHub Actions
+
+**Preparado el 03/11, pendiente de ejecución remota:** `.github/workflows/deploy-academy.yml` reutiliza CI y ofrece `scope=api` para la base inicial y `scope=full` para la entrega conjunta. `release_full.py` integra migración, API, dispatcher, async, worker y frontend por versión; comprueba salud y un evento interno sin enviar correo. Impide entregar en otra cuenta, rechaza reemplazos de datos y se detiene si falla la migración. El modo completo exige las variables `PATAPORTE_API_DOMAIN`, `PATAPORTE_ALB_CERTIFICATE_ARN`, `PATAPORTE_SMTP_SECRET_ARN` y `PATAPORTE_TASK_ROLE_ARN`, con dominio/DNS, certificado y proveedor realmente configurados. Exige HTTPS hacia el ALB. No considera probado SMTP, carga ni restauración solo porque el pipeline termine.
+
+Configuración de GitHub que falta realizar: crear el environment `academy`, configurar un revisor obligatorio y las ramas permitidas, y guardar allí `ACADEMY_AWS_ACCESS_KEY_ID`, `ACADEMY_AWS_SECRET_ACCESS_KEY` y `ACADEMY_AWS_SESSION_TOKEN` de la sesión temporal. No usar claves permanentes ni secretos del repositorio para este flujo. Al vencer la sesión, renovar los tres valores. La declaración `environment: academy` en YAML **no configura por sí sola las revisiones**: deben comprobarlas en GitHub. Hay una autorización para usar la sesión durante el plan y otra para ejecutar el plan revisado. Ningún workflow se ejecuta automáticamente por un PR con credenciales de AWS.
 
 ### 13.1 Definir quién puede desplegar y con qué identidad
 
@@ -776,6 +983,8 @@ Una reversión de imagen no revierte datos ni recupera una columna eliminada. Ut
 **Etapa terminada:** un commit revisado produce un despliegue verificable, y una release defectuosa puede detectarse y revertirse sin reconstruir manualmente todo.
 
 ## 14. Configurar observabilidad, seguridad y costos
+
+**Preparado en plantillas el 03/11:** alarmas de targets no saludables, errores 5xx y memoria ECS en `compute.yaml`; DLQ y antigüedad de mensajes en `async.yaml`. Tienen parámetros iniciales y no envían mensajes a personas. Falta desplegarlas, comprobar sus estados con una prueba controlada y configurar el canal de aviso autorizado si el equipo lo necesita.
 
 ### 14.1 Hacer que cada recorrido pueda investigarse
 
@@ -973,6 +1182,8 @@ Si las cuotas o el saldo impiden mantener la secundaria, pueden ensayar un despl
 **Etapa terminada:** existe un procedimiento probado con RTO/RPO medidos, o la extensión figura explícitamente como diseño sin validar.
 
 ## 17. Organizar el trabajo, el informe y la defensa
+
+**Desde el 03/11:** distribuir los pendientes sobre una sola infraestructura de integración: plataforma se ocupa de acceso, presupuesto, planes y roles; aplicación/eventos verifica S3/SQS/Lambda/SMTP reales; calidad/entrega integra el pipeline conjunto y realiza carga/restauración/evidencias. Cada uno prepara su PR y otro lo revisa. El operador de Academy ejecuta los planes del equipo; no hace falta compartir la contraseña. Registrar cada sesión y decisión en la [bitácora interactiva](bitacora.html).
 
 ### 17.1 Reparto para tres personas
 

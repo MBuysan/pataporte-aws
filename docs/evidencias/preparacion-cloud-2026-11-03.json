@@ -1,0 +1,219 @@
+{
+  "project_date": "2026-11-03",
+  "recorded_at_utc": "2026-11-04T02:42:11.248827+00:00",
+  "branch": "feature/preparacion-despliegue-aws",
+  "suites": {
+    "backend": {
+      "tests": 35,
+      "status": "passed",
+      "log": "backend-local-2026-11-03.txt"
+    },
+    "integration": {
+      "tests": 10,
+      "status": "passed",
+      "log": "integration-local-2026-11-03.txt"
+    },
+    "deployment": {
+      "tests": 16,
+      "status": "passed",
+      "log": "deployment-tests-2026-11-03.txt"
+    }
+  },
+  "total_tests_passed": 61,
+  "cloudformation": {
+    "templates": [
+      "async.yaml",
+      "bootstrap.yaml",
+      "compute.yaml",
+      "data.yaml",
+      "edge.yaml",
+      "network.yaml"
+    ],
+    "cfn_lint_version": "1.20.0",
+    "status": "passed"
+  },
+  "lambda_container": {
+    "architecture": "linux/amd64",
+    "runtime": "Python 3.12 / Amazon Linux 2023",
+    "build": "passed",
+    "import_and_empty_batch_without_database_or_jwt": "passed"
+  },
+  "application_database": {
+    "local_revision": "0003_transactional_outbox",
+    "cloud_last_verified_revision": "0003_transactional_outbox"
+  },
+  "aws": {
+    "expected_account": "476855088538",
+    "region": "us-east-1",
+    "last_verified_cloud_date": "2026-11-04",
+    "new_stacks_applied_this_session": true,
+    "current_budget_verified": false,
+    "blocker": "Session expired after API update; async probe passed, restore copy configuration passed, edge rollback diagnosis and SQL verification pending.",
+    "identity_verified_this_session": true,
+    "baseline_hosts_recovered": true,
+    "baseline_alb_healthy_targets": 2,
+    "new_async_stack_status": "UPDATE_COMPLETE",
+    "api_image_scan": {
+      "HIGH": 3,
+      "MEDIUM": 9,
+      "LOW": 3,
+      "status": "COMPLETE"
+    }
+  },
+  "limitations": [
+    "SMTP secret loading and full pipeline are implemented locally; provider/domain/certificate and remote execution remain pending.",
+    "Local load: 80 authenticated requests, zero errors, p95 29.506 ms; AWS capacity/scaling remains unverified.",
+    "Restore helper is prepared; no restored SQL/RTO evidence yet.",
+    "CloudFront HTTPS origin is configurable and required by full release; owned domain/certificate are still absent."
+  ],
+  "source_sha256": {
+    "backend/.dockerignore": "bc7fbe98ba6b2fb5c8334c91d870866afb57adaa9ceafe61056a09b6f9848fd7",
+    "backend/Dockerfile": "39393132ab998bfd91a7d4e24ebff442ef750ba2a809e9e73f41729fa1453c76",
+    "backend/Dockerfile.lambda": "b42c4314f4678a7e4f72e36c7c035426d81a0ccc2ca171d56d77671e6b51c783",
+    "backend/alembic/env.py": "d72bd576918eb20ddc32059e985eca0eea9c492d55586a253a369127a88e3548",
+    "backend/alembic/script.py.mako": "116d035db5d6b4abe2f7e00e60d547bf8396983c741d09af902b184ccc6e0a35",
+    "backend/alembic/versions/0001_initial_schema_initial_frozen_schema.py": "389574e46f5a55331c9a1ea1ea330fe4344254dedc2642861948eead1ad5f219",
+    "backend/alembic/versions/0002_seed_vaccines.py": "2308d95a60d2a956e8734abf7baf456a0984eb41cedb726adfe57dfbb6a9193d",
+    "backend/alembic/versions/0003_transactional_outbox.py": "f49598f8369eb01ccc9c7ff733283cfc0db0f48d2e0bc67331513fcb76ff61db",
+    "backend/alembic.ini": "6901f304d51c906918fecac393d72840314b63cd43889d62f0874308f450cbe8",
+    "backend/certs/us-east-1-bundle.pem": "b1711d12bae51838581281e23b6cb97b1074016873b4dafc80ed14002462dd77",
+    "backend/config/database.py": "4b0ca2e73c79de406f6355a6376f3b78d23bcf927887f85fb5542f975d4ffa05",
+    "backend/config/db_connection.py": "869a20d4162f5ebc7abc5a364e36a751c5a64ff3288d2dd43ed5e753ed690aff",
+    "backend/config/deploy_database.py": "99fb1137613668d1864583b54d243be1a536665326487cbef3110c940b14cdcf",
+    "backend/config/mail.py": "563387e6756fffc98e9af603be51f16f4455a982df974e9ed26358dc98f7e19c",
+    "backend/config/messaging.py": "dfbed63422ec3c896edc4b4d022c48fedb3c2c6dcb9a20561a93b5eaed59bf81",
+    "backend/config/migrate.py": "d10205daffd6db8dbfc5025b4acebfc322041173316f157144319405d80beabb",
+    "backend/config/models.py": "c2e2e7266ff6d65afecba2b78dffc178fcf0bca86de544073ba9bfb36020b417",
+    "backend/config/settings.py": "ee62d5bbe3299879791435115424a1e1c5975b47d17eeb1b538b14c8da7d68b8",
+    "backend/config/storage.py": "c485585606829a05db62585c8b7648e60b5d991cb97e5d4beb177bc3fd44e8e4",
+    "backend/main.py": "3c3838661f99801ff56f4b4e5abbeb81f5466d87b83b92e35f7bd048cebf7f37",
+    "backend/messaging/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/messaging/consumer.py": "534a0cd1f4295778aa1c3508bbc21620a34e1f94d513e41d7a3992ee030fbfcd",
+    "backend/messaging/delivery.py": "96a5441908e606500ea0b079ec3473bb98464ffc3bc9c5e8291b5431efb0c0c8",
+    "backend/messaging/dispatcher.py": "ba74a0786a14fd99f21837b190c60948585298e0cb54b029f92ae81f9c8402ea",
+    "backend/messaging/lambda_handler.py": "83bd54bdba74cf6d5a3946a7bc5251efb6c20adf7aba1bd9d8062fab9360d0d8",
+    "backend/messaging/publisher.py": "5d52d020383535a57f598cf9cfc4e7452beaacc22ee202a0c48f8e968a0c7b48",
+    "backend/messaging/rabbitmq.py": "8821b38866484de60521777c016286616d2c0e51e40442522f2f4996a79f813b",
+    "backend/requirements-lambda.txt": "a2658c9a7a64f2bbf4e6856490ddc41901468de43e87d0b6a9a4636acd149f17",
+    "backend/requirements.txt": "b09354074b17f376a00aca438a1babf018c68a2a2145a380f7bb7a75dd412210",
+    "backend/routers/auth.py": "49de88f984e9eba00a0f6d226109918a82cb140eab4dc5175a3b25d50c38a56f",
+    "backend/routers/historial.py": "7d5d381a537f26dc0f33dfa597a811846c59bf28289d2562cd3f2e922c223d85",
+    "backend/routers/mascotas.py": "b1ed976122cffe94c3cf18103697657998119d434f75a8fa7ecc39ca92210941",
+    "backend/routers/pataporte.py": "0e300b639d96c890cacf975fe1f40df419fa6e7aedfb7cdea8f77eb6f8d959f7",
+    "backend/routers/tratamientos.py": "37b3dbf40800b247f887781e5953a09837ce744da367aeb9a933d7134e58e17f",
+    "backend/routers/tutores.py": "6672ae984b8f7ee4ee06adf5f21f16130795dc041a5ffa5550ad0abb15fc9008",
+    "backend/routers/vacunas.py": "9974f716e4c8ea1782a5832eeda6462b7ddce85e4c914f0c5b3e2362e8c3d050",
+    "backend/routers/veterinarios.py": "d55ef9df95737848f2503b55444a44b352f10c1eba3284b6ab11d424e0874c41",
+    "backend/schemas/auth.py": "2c157680b2eec102f5a598d01b3b798ec8a4c8884ff408a5bb5d51fc64a756bf",
+    "backend/schemas/consulta.py": "991373d34723034910475c11960ee54eafcc6e9e4e63ae26da9e5cf6cedd359e",
+    "backend/schemas/historial.py": "9ea86b773357b21d015130e80b0d2bb56662eb4afc2452d77350fc88c235e439",
+    "backend/schemas/mascota.py": "a5df28e3b5516ed503753ea3aa6b735bba2a9e559e6416dfbda5246ea1cfa68c",
+    "backend/schemas/recuperacion_password.py": "5bfd3253b8a790853b2ec22eb3bac5a3c96848e9e526069c93d196946a794ef6",
+    "backend/schemas/tratamiento.py": "98cb876ad818874f90cb2b143a5b5206e1a6d0e49bb9dbbabd48e11b234cc8a9",
+    "backend/schemas/tutor.py": "fc2b70794dc16bbd26ad9717b4dcb3316fe8bab8f7032eea7deca047bd73cc0b",
+    "backend/schemas/vacuna.py": "a9d8bf24810fe302aecbcd146f33ca3d82840a49a259b068c60797097a08a934",
+    "backend/schemas/verificacion_email.py": "066790a4f5c5b506539bc77f706d7d75516a4d63be492a5dd796dc15acb6f9de",
+    "backend/schemas/veterinario.py": "4dc376af01a222b0509400d827151682ef9a0996a4b03b5bcebadbfed7174e4f",
+    "backend/services/auth_service.py": "98204f7ab9f4f6183d231a5bc67be9d932e79d4390564f88810b397e43183b96",
+    "backend/services/consulta_service.py": "096b6a5a722045da72a02962486249972105d47bbb030f69c8d07c60c978dd51",
+    "backend/services/historial_service.py": "580ff704fd8b44b7dc59308a1feaf9672698bb4c72bb8557f62ff12f8cdf959b",
+    "backend/services/mascota_service.py": "595409fac758dcaa9d42d66ec1b3ad4676f9072560141261eb5e93dc1da03b63",
+    "backend/services/pataporte_service.py": "b06778d9ed344e1609ae70045e5c836360d6256aa3cd689ea96b8a2c767af89d",
+    "backend/services/tratamiento_service.py": "2a8623d0fb0a5c07eb4de0c236177438978a36de36d673296391eeba94068eaf",
+    "backend/services/tutor_service.py": "eccf7abff14bd0c9ffe87a471d8719c53bb7919ed0f8a6f8c4be825c9c67ccd6",
+    "backend/services/vacuna_service.py": "174c76934a6b3968c5379ccd45a5d17905477fb8c368839bbacf1b5509e9aaba",
+    "backend/services/veterinario_service.py": "a61e3f23bcabf4f3b58f3dfc77290729999c38bdc61998c6dfd9a6b49325f6b8",
+    "backend/tests/test_database.py": "e9e4bbf04e81d639c9398a3a11b4a69a034fd7ed17dcada17263f45b3ce180a3",
+    "backend/tests/test_delivery.py": "6e721bfe6d8ccd7eeeab620e2ea383bf23e9564bedb0b489c84f1b84e2c712ef",
+    "backend/tests/test_lambda.py": "b343290e53249c92223a97683d4897310d0105457c1ef92befa00d7fe4388705",
+    "backend/tests/test_mail_secret.py": "b9a627a4b681102f4556492698fe80ae82163c8d45c982bf93d0d264032e9aec",
+    "backend/tests/test_messaging.py": "ab06742ca28daa501e46b940fb316cf6a27ee958cc41a8dc3684398b1d34db37",
+    "backend/tests/test_outbox.py": "a5bb03f9cb5d07f75cfc081f2d9660c36768ffed061cb9b0ce83dcb2a3d56904",
+    "backend/tests/test_photo_request.py": "3cff442f3ee3993ba06fbf26201df9bc6bf1d4a2f498c778fdb0d275a99d93d2",
+    "backend/tests/test_storage.py": "017e7737781b23b84d4ca3b88a60ab831ce88ab17cfd4a2acbc6765442c9f121",
+    "backend/utils/auth.py": "11f78c72af4c3156c0803fc4dd5aeceef9309baa5f277ef8efd82717e010498b",
+    "backend/utils/email.py": "a3b213fc78a7807bcdd466cfdf25f0d58c658a9bf6eed2ef8f4f2961372d2564",
+    "backend/utils/password_utils.py": "5a6efce27c05ccd0b6fff531d86e5d740dbd48f34545e9559e0d7f70e39ef00a",
+    "infra/async.yaml": "b3774bc7448fce5d98c90e0954b512a0dffd10c8b338c59780a42839edf7f4bb",
+    "infra/bootstrap.yaml": "3d75650b259ff9e1d877e7b45e124e3716a9277d579f802c3ed0aeee5ea8e6ad",
+    "infra/compute.yaml": "a7395a15fb7918fa42cf8e71555bb76bbcd809343ae41298b6c9af1805052eca",
+    "infra/data.yaml": "18c9435f4c04a3ae8e56b97a7414bb4a8c5774a39f945cf5f07601820b9c7fde",
+    "infra/edge.yaml": "2cf8e2546ea71dfa4ccd62112184ac56f2339849a0e05320f7331615dfdd2c6b",
+    "infra/network.yaml": "066385c0c885fabeb59b9147ab835b0c6f73cd01a598fa008b87c5b1b6391ad7",
+    "infra/parameters/compute-active-dev.json": "f1786c163f638c4661b76e4473f442330f7938cc5252f73ffc01a9aa292c201d",
+    "infra/parameters/compute-initial-dev.json": "017b523373988964ea170861a93ce7899eb7f78a35d687dc40272323a327f1b1",
+    "infra/parameters/data-dev.json": "f73c49b77a1028048d6471fc4cd422bb46b0ce365ef1353a11537475a2b2be53",
+    "infra/parameters/network-dev.json": "a641dd18a7613df5701b5eba4af893d422f32fa5c4bb03ad75a13a3344829d3a",
+    "infra/parameters/network-ecs-dev.json": "a22457c25a2e0774ce46dc5e633244658b0899e3ce2cd836a2f9b2bbbfbcdb6c",
+    "scripts/build_aws_guide.py": "484e559e7c56c3985df2c791141250a9eb89fb676e6a871f231ea48a8d1a491b",
+    "scripts/build_bitacora.py": "3081a2194a78609bc1a728da014deba8782bf16a284c7f3e63a5520adcf5ae8b",
+    "scripts/check_async.py": "7d65926222aff70fd54709be5a9627c4e61dabb8fade34afb5ec6eae336b0832",
+    "scripts/check_aws.py": "eb70697c4b8a69389fea7b14352591e1032bdb23a1ce75a6b92701226d36fb90",
+    "scripts/check_local.py": "01ec009f7d8a1954569e235ddd7fea9723fc5896c7385344927a4630554d0e7a",
+    "scripts/configure_lab_profile.py": "52d63b003438964ad51ba1273f35ced94740ce812611e51d979ad6a4984abd9d",
+    "scripts/connect_lab.py": "0b1434539610727f2d6c42cac5ee8366aa47fb9d64e7d2c54d559c06c949f38f",
+    "scripts/deploy_ecs.py": "5515030a1c510b46f92eb5575f718a1500c2d3a585511a801969223a8781d6cb",
+    "scripts/init_local.py": "1627be66db6e434bbe7c2681709bcda13323f3c4834136c5aac5f536e7e96737",
+    "scripts/load_probe.py": "107f100d3b34803bbb26416738e82dbb5a630646f73b1b098e8023ad00a954dd",
+    "scripts/publish_frontend.py": "2fa58544bdd04dc5f6b7cc2b9c8491429a77960c1fae3e569e5439fd2b92f613",
+    "scripts/release_academy.py": "db27a4f7a1b31f8eaac163db8330be47c84e299ddbcb8ede4fd84dbb27d3c055",
+    "scripts/release_full.py": "998243a016660d7f63cafd37002488370f10c7ee82d886f652919340c7a310e3",
+    "scripts/restore_rds.py": "34c51ed42c2982ad2f09ca2bb4ae7e6c5fba90fca0f0282b0fd941a646b5705a",
+    "scripts/tests/test_delivery_operations.py": "89ae23145294d29708cf129c4381f299caf6bef46d94e3a4936034ae39ea7a88",
+    "scripts/tests/test_deployment.py": "4bab70a1f60efef1bbf28e04082e8dc979d3e236b07716c249163c14cccaeff6",
+    "scripts/tests/test_lab_connection.py": "9c81ef70d5f2c920e5ea60f747a915bf18a8cd458acd7859bd3c9786b83f8569",
+    "scripts/verify_data.py": "f325b5770ba3940399dd7dbd5650d341c46521f66d0d6f50869d6e2b8755079f",
+    "scripts/verify_network.py": "2c092e051a80b92f48cfc89efa1197953535d0525fc49f97187f8d29fe2c5ac5",
+    "scripts/verify_restore_sql.py": "c8f47f6b870871da5df2868e4ecc2ccd4d074568f90b3fd6271464dd9d0b1866",
+    ".github/workflows/ci.yml": "a648fc3995cb61cc9657f1d29ca6439826f56131122bec6cc6a4eaa34fee80ec",
+    ".github/workflows/deploy-academy.yml": "0532f01d0287fbab03679aab85e81497d737f6d5df21a630eff87b8c2991c8f2"
+  },
+  "documentation": [
+    {
+      "file": "guia-despliegue-aws.html",
+      "unique_ids": 44,
+      "links_checked": 80,
+      "inline_javascript_syntax": "passed"
+    },
+    {
+      "file": "bitacora.html",
+      "unique_ids": 18,
+      "links_checked": 27,
+      "inline_javascript_syntax": "passed"
+    }
+  ],
+  "local_images": {
+    "api": {
+      "image_id": "sha256:0e8c1b68287cc99a65dc99c04eba5e6a59298fb45dc0684299ee53d134a5e0d9",
+      "architecture": "amd64",
+      "pushed_to_aws": false
+    },
+    "lambda": {
+      "image_id": "sha256:0e362f1f75b5766a2061545250171372b97cfb380e2b5f57f9b5e72a22f68b9d",
+      "architecture": "amd64",
+      "pushed_to_aws": false
+    }
+  },
+  "published_images": {
+    "api": {
+      "repository": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend",
+      "tag": "api-dbd2c842bb825be4",
+      "digest": "sha256:b1f9ae355dae2651f7e03efbd92a64b45ae9fda9930a380ec1d4bd91995ba2c1",
+      "image": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend@sha256:b1f9ae355dae2651f7e03efbd92a64b45ae9fda9930a380ec1d4bd91995ba2c1",
+      "size_bytes": 112761895,
+      "source_manifest_sha256": "dbd2c842bb825be4b0da069d8664039c417e073e0523cfe22edefc20f046b39e",
+      "published_at": "2026-11-03 23:38:58.997000-03:00",
+      "verified_at": "2026-11-04T02:38:20.742297+00:00"
+    },
+    "worker": {
+      "repository": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend",
+      "tag": "worker-4e404f36bf293cfe",
+      "digest": "sha256:32a43ca5adca8edbca168bc87dec2c40e2665bc57eabc7f25ee1d996f49fdf65",
+      "image": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend@sha256:32a43ca5adca8edbca168bc87dec2c40e2665bc57eabc7f25ee1d996f49fdf65",
+      "size_bytes": 224018371,
+      "source_manifest_sha256": "4e404f36bf293cfe0de63588a6bc975dd94e9520866001886b7d0c62fd1c01ae",
+      "published_at": "2026-11-03 23:41:04.782000-03:00",
+      "verified_at": "2026-11-04T02:40:00.808001+00:00"
+    }
+  }
+}

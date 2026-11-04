@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PATAPORTE immutable private images and generated application secrets.
+Resources:
+  BackendRepository:
+    Type: AWS::ECR::Repository
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      RepositoryName: pataporte-dev-backend
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+  JwtSecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: pataporte/dev/jwt
+      Description: Generated JWT signing key; never stored in source control
+      GenerateSecretString:
+        SecretStringTemplate: '{}'
+        GenerateStringKey: jwt_secret
+        PasswordLength: 64
+        ExcludePunctuation: true
+  AppDatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: pataporte/dev/database-app
+      Description: Runtime SQL account; provisioned by the one-off migration task
+      GenerateSecretString:
+        SecretStringTemplate: '{"username":"pataporte_app"}'
+        GenerateStringKey: password
+        PasswordLength: 40
+        ExcludePunctuation: true
+Outputs:
+  RepositoryUri:
+    Value: !GetAtt BackendRepository.RepositoryUri
+    Export:
+      Name: !Sub '${AWS::StackName}-RepositoryUri'
+  RepositoryName:
+    Value: !Ref BackendRepository
+  JwtSecretArn:
+    Value: !Ref JwtSecret
+    Export:
+      Name: !Sub '${AWS::StackName}-JwtSecretArn'
+  AppDatabaseSecretArn:
+    Value: !Ref AppDatabaseSecret
+    Export:
+      Name: !Sub '${AWS::StackName}-AppDatabaseSecretArn'

@@ -355,11 +355,5 @@ Equipo Pataporte
 
     mensaje.attach(adjunto)
 
-    try:
-        enviar_email(tutor.email, mensaje)
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"No se pudo enviar el respaldo: {str(e)}"
-        )
+    from messaging.publisher import publicar_email
+    publicar_email({"tipo": "raw_email", "email": tutor.email, "mime": mensaje.as_string()}, db)

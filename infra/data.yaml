@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PATAPORTE private encrypted PostgreSQL. RDS manages the master secret.
+Parameters:
+  ProjectName:
+    Type: String
+    Default: pataporte
+    AllowedPattern: '[a-z][a-z0-9-]{1,24}'
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, test, prod]
+  NetworkStackName:
+    Type: String
+    Default: pataporte-dev-network
+  EngineVersion:
+    Type: String
+    Default: '15.19'
+    AllowedPattern: '15\.[0-9]+'
+  DatabaseName:
+    Type: String
+    Default: pataporte
+    AllowedPattern: '[a-z][a-z0-9_]{0,62}'
+  MasterUsername:
+    Type: String
+    Default: pataporte_admin
+    AllowedPattern: '[a-z][a-z0-9_]{0,62}'
+  InstanceClass:
+    Type: String
+    Default: db.t3.micro
+    AllowedValues: [db.t3.micro, db.t3.small]
+  AllocatedStorage:
+    Type: Number
+    Default: 20
+    MinValue: 20
+    MaxValue: 100
+  EnableMultiAZ:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: Single-AZ for the first lab; enable Multi-AZ for availability tests.
+  BackupRetentionDays:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 7
+  EnableDeletionProtection:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+Conditions:
+  MultiAZ: !Equals [!Ref EnableMultiAZ, 'true']
+  ProtectDatabase: !Equals [!Ref EnableDeletionProtection, 'true']
+Resources:
+  DatabaseLogs:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/aws/rds/instance/${ProjectName}-${EnvironmentName}-postgres/postgresql'
+      RetentionInDays: 7
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+        - Key: environment
+          Value: !Ref EnvironmentName
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: PATAPORTE data subnets in two availability zones
+      SubnetIds:
+        - Fn::ImportValue: !Sub '${NetworkStackName}-DataSubnetAId'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-DataSubnetBId'
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+        - Key: environment
+          Value: !Ref EnvironmentName
+  DatabaseParameters:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: Require TLS for all PostgreSQL client connections
+      Family: postgres15
+      Parameters:
+        rds.force_ssl: '1'
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+        - Key: environment
+          Value: !Ref EnvironmentName
+  Database:
+    Type: AWS::RDS::DBInstance
+    DependsOn: DatabaseLogs
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub '${ProjectName}-${EnvironmentName}-postgres'
+      DBName: !Ref DatabaseName
+      Engine: postgres
+      EngineVersion: !Ref EngineVersion
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      DBInstanceClass: !Ref InstanceClass
+      AllocatedStorage: !Ref AllocatedStorage
+      StorageType: gp2
+      StorageEncrypted: true
+      MasterUsername: !Ref MasterUsername
+      ManageMasterUserPassword: true
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      DBParameterGroupName: !Ref DatabaseParameters
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub '${NetworkStackName}-DatabaseSecurityGroupId'
+      PubliclyAccessible: false
+      Port: 5432
+      MultiAZ: !If [MultiAZ, true, false]
+      BackupRetentionPeriod: !Ref BackupRetentionDays
+      PreferredBackupWindow: '07:00-07:30'
+      PreferredMaintenanceWindow: 'sun:08:00-sun:08:30'
+      CopyTagsToSnapshot: true
+      DeleteAutomatedBackups: true
+      DeletionProtection: !If [ProtectDatabase, true, false]
+      MonitoringInterval: 0
+      EnablePerformanceInsights: false
+      EnableCloudwatchLogsExports: [postgresql]
+      EngineLifecycleSupport: open-source-rds-extended-support-disabled
+      Tags:
+        - Key: project
+          Value: !Ref ProjectName
+        - Key: environment
+          Value: !Ref EnvironmentName
+Outputs:
+  DatabaseIdentifier:
+    Value: !Ref Database
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseIdentifier'
+  DatabaseEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseEndpoint'
+  DatabasePort:
+    Value: !GetAtt Database.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabasePort'
+  DatabaseName:
+    Value: !Ref DatabaseName
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseName'
+  MasterSecretArn:
+    Value: !GetAtt Database.MasterUserSecret.SecretArn
+    Export:
+      Name: !Sub '${AWS::StackName}-MasterSecretArn'

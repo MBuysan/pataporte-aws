@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-27T01:14:06.530667+00:00",
+  "target": "local-compose-postgresql",
+  "revision": "0002_seed_vaccines",
+  "application_tables": 15,
+  "vaccines": 5,
+  "schema_check": "passed",
+  "rds_migrations": "pending-private-migration-task"
+}

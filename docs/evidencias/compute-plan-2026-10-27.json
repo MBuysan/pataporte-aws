@@ -1,0 +1,14 @@
+{
+  "stack": "pataporte-dev-compute",
+  "type": "UPDATE",
+  "change_set": "api-two-20261027",
+  "created_at": "2026-10-27T14:32:49.888055+00:00",
+  "changes": [
+    {
+      "Action": "Modify",
+      "LogicalResourceId": "ApiService",
+      "ResourceType": "AWS::ECS::Service",
+      "Replacement": "False"
+    }
+  ]
+}

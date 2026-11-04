@@ -1,0 +1,5 @@
+boto3==1.43.123
+pydantic==2.7.1
+pydantic-settings==2.2.1
+reportlab==4.2.2
+Pillow==13.0.0

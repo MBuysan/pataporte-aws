@@ -1,0 +1,86 @@
+{
+  "checked_at": "2026-10-27T01:12:47.500197+00:00",
+  "region": "us-east-1",
+  "account_suffix": "8538",
+  "stack": "pataporte-dev-data",
+  "status": "CREATE_COMPLETE",
+  "identifier": "pataporte-dev-postgres",
+  "database_name": "pataporte",
+  "endpoint": "pataporte-dev-postgres.co7cctydsbhn.us-east-1.rds.amazonaws.com",
+  "port": 5432,
+  "engine_version": "15.19",
+  "instance_class": "db.t3.micro",
+  "storage_type": "gp2",
+  "storage_gb": 20,
+  "multi_az": false,
+  "backup_retention_days": 1,
+  "latest_restorable_time": "2026-10-27T01:11:32.785000+00:00",
+  "ca_identifier": "rds-ca-rsa2048-g1",
+  "schema_migrations": "not_executed_in_rds",
+  "checks": [
+    {
+      "check": "Cuatro recursos completos en CloudFormation",
+      "passed": true
+    },
+    {
+      "check": "PostgreSQL 15 disponible",
+      "passed": true
+    },
+    {
+      "check": "Clase de instancia prevista",
+      "passed": true
+    },
+    {
+      "check": "Almacenamiento gp2 acotado al laboratorio",
+      "passed": true
+    },
+    {
+      "check": "Almacenamiento cifrado",
+      "passed": true
+    },
+    {
+      "check": "Base privada en la VPC de PATAPORTE",
+      "passed": true
+    },
+    {
+      "check": "DB Subnet Group en las dos subredes privadas de datos",
+      "passed": true
+    },
+    {
+      "check": "RDS utiliza solo el SG de base previsto",
+      "passed": true
+    },
+    {
+      "check": "Puerto PostgreSQL 5432",
+      "passed": true
+    },
+    {
+      "check": "TLS obligatorio en parámetros aplicados",
+      "passed": true
+    },
+    {
+      "check": "Contraseña maestra administrada y activa",
+      "passed": true
+    },
+    {
+      "check": "Backups automáticos configurados",
+      "passed": true
+    },
+    {
+      "check": "Protección de borrado habilitada",
+      "passed": true
+    },
+    {
+      "check": "Logs PostgreSQL con retención de siete días",
+      "passed": true
+    },
+    {
+      "check": "Multi-AZ coincide con la decisión del laboratorio",
+      "passed": true
+    },
+    {
+      "check": "Supervisión mejorada desactivada según Academy",
+      "passed": true
+    }
+  ]
+}

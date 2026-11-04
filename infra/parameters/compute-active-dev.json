@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "ImageUri",
+    "ParameterValue": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend@sha256:4187b5c4f19d206ed2258bf58a4a81ad0e8f8980a96d3ee71b651e73e83a4c0d"
+  },
+  {
+    "ParameterKey": "ApiDesiredCount",
+    "ParameterValue": "2"
+  }
+]

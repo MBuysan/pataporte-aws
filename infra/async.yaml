@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PATAPORTE private assets, SQS with DLQ, DynamoDB idempotency and optional Lambda worker.
+Parameters:
+  WorkerImageUri:
+    Type: String
+    Default: ''
+    AllowedPattern: '(^$)|(.+@sha256:[a-f0-9]{64})'
+  WorkerRoleArn:
+    Type: String
+    Default: arn:aws:iam::476855088538:role/LabRole
+    Description: Academy pre-existing role. Production requires a dedicated least-privilege role.
+  EnableQueueConsumer:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['false', 'true']
+    Description: Enable only after SMTP is configured, or temporarily for a controlled probe.
+  MailSecretArn:
+    Type: String
+    Default: ''
+    Description: Existing Secrets Manager JSON with MAIL_HOST, MAIL_FROM and provider credentials; no plaintext secrets.
+  EnableMailDelivery:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['false', 'true']
+Rules:
+  MailSecretRequired:
+    RuleCondition: !Equals [!Ref EnableMailDelivery, 'true']
+    Assertions:
+      - Assert: !Not [!Equals [!Ref MailSecretArn, '']]
+        AssertDescription: SMTP delivery requires a configured secret.
+Conditions:
+  HasWorker: !Not [!Equals [!Ref WorkerImageUri, '']]
+  ConsumeQueue: !Equals [!Ref EnableQueueConsumer, 'true']
+Resources:
+  Assets:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [{ObjectOwnership: BucketOwnerEnforced}]
+      VersioningConfiguration: {Status: Enabled}
+      LifecycleConfiguration:
+        Rules:
+          - Id: AbortIncompleteUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload: {DaysAfterInitiation: 1}
+          - Id: ExpireProbeArtifacts
+            Status: Enabled
+            Prefix: probes/
+            ExpirationInDays: 7
+            NoncurrentVersionExpiration: {NoncurrentDays: 7}
+          - Id: ExpireOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration: {NoncurrentDays: 30}
+  AssetsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Assets
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource: [!GetAtt Assets.Arn, !Sub '${Assets.Arn}/*']
+            Condition:
+              Bool: {aws:SecureTransport: 'false'}
+  OriginSecret:
+    Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Shared origin header between CloudFront and ALB; never render in evidence.
+      GenerateSecretString:
+        SecretStringTemplate: '{}'
+        GenerateStringKey: token
+        PasswordLength: 48
+        ExcludePunctuation: true
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 1209600
+      RedriveAllowPolicy:
+        redrivePermission: byQueue
+        sourceQueueArns: [!Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:pataporte-dev-events']
+  Events:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      QueueName: pataporte-dev-events
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 345600
+      ReceiveMessageWaitTimeSeconds: 20
+      VisibilityTimeout: 360
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
+  QueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref Events]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Deny
+            Principal: '*'
+            Action: sqs:*
+            Resource: !GetAtt Events.Arn
+            Condition:
+              Bool: {aws:SecureTransport: 'false'}
+  DeadLetterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref DeadLetterQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Deny
+            Principal: '*'
+            Action: sqs:*
+            Resource: !GetAtt DeadLetterQueue.Arn
+            Condition:
+              Bool: {aws:SecureTransport: 'false'}
+  Idempotency:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [{AttributeName: event_id, AttributeType: S}]
+      KeySchema: [{AttributeName: event_id, KeyType: HASH}]
+      SSESpecification: {SSEEnabled: true}
+      TimeToLiveSpecification: {AttributeName: expires_at, Enabled: true}
+      PointInTimeRecoverySpecification: {PointInTimeRecoveryEnabled: true}
+  WorkerLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/pataporte-dev-events
+      RetentionInDays: 7
+  Worker:
+    Type: AWS::Lambda::Function
+    Condition: HasWorker
+    DependsOn: WorkerLogs
+    Properties:
+      FunctionName: pataporte-dev-events
+      PackageType: Image
+      Architectures: [x86_64]
+      Code: {ImageUri: !Ref WorkerImageUri}
+      Role: !Ref WorkerRoleArn
+      MemorySize: 256
+      Timeout: 60
+      ReservedConcurrentExecutions: 2
+      Environment:
+        Variables:
+          ENVIRONMENT: production
+          ASSETS_BUCKET: !Ref Assets
+          IDEMPOTENCY_TABLE: !Ref Idempotency
+          MAIL_DELIVERY_ENABLED: !Ref EnableMailDelivery
+          MAIL_SECRET_ARN: !Ref MailSecretArn
+  Subscription:
+    Type: AWS::Lambda::EventSourceMapping
+    Condition: HasWorker
+    Properties:
+      EventSourceArn: !GetAtt Events.Arn
+      FunctionName: !Ref Worker
+      Enabled: !If [ConsumeQueue, true, false]
+      BatchSize: 1
+      FunctionResponseTypes: [ReportBatchItemFailures]
+      ScalingConfig: {MaximumConcurrency: 2}
+  DlqAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Failed notifications require inspection; never purge or redrive blindly.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions: [{Name: QueueName, Value: !GetAtt DeadLetterQueue.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+  BacklogAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Oldest notification is waiting more than five minutes.
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions: [{Name: QueueName, Value: !GetAtt Events.QueueName}]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 300
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+Outputs:
+  AssetsBucketName:
+    Value: !Ref Assets
+    Export: {Name: !Sub '${AWS::StackName}-AssetsBucketName'}
+  QueueUrl:
+    Value: !Ref Events
+    Export: {Name: !Sub '${AWS::StackName}-QueueUrl'}
+  QueueArn:
+    Value: !GetAtt Events.Arn
+    Export: {Name: !Sub '${AWS::StackName}-QueueArn'}
+  DeadLetterQueueUrl:
+    Value: !Ref DeadLetterQueue
+  IdempotencyTableName:
+    Value: !Ref Idempotency
+    Export: {Name: !Sub '${AWS::StackName}-IdempotencyTableName'}
+  OriginSecretArn:
+    Value: !Ref OriginSecret
+    Export: {Name: !Sub '${AWS::StackName}-OriginSecretArn'}
+  WorkerName:
+    Condition: HasWorker
+    Value: !Ref Worker

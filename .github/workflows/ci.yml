@@ -4,6 +4,7 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
 concurrency:
@@ -25,15 +26,20 @@ jobs:
           python -m compileall -q backend tests scripts
           python -m pip install cfn-lint==1.20.0
           cfn-lint infra/*.yaml
+          python -m unittest discover -s scripts/tests -v
       - name: Preparar entorno local sin secretos externos
         run: |
           python scripts/init_local.py
           docker compose config --quiet
       - name: Construir e iniciar todos los servicios
         run: docker compose up -d --build
-      - name: Registro, permisos, consulta, vacuna, PDF y recuperación
+      - name: Comprobar empaquetado Lambda sin base de datos ni secretos de la API
         run: |
-          docker compose exec -T backend python -m unittest discover -s tests -v
+          docker build --platform linux/amd64 -f backend/Dockerfile.lambda -t pataporte-worker-check backend
+          docker run --rm --platform linux/amd64 --entrypoint python pataporte-worker-check -c 'from messaging.lambda_handler import handler; from messaging.delivery import _generar_pdf; assert handler({"Records": []}, None) == {"batchItemFailures": []}'
+      - name: Migraciones, TLS y recorrido funcional completo
+        run: |
+          docker compose exec -T -e PATAPORTE_RUN_MIGRATION_TESTS=1 backend python -m unittest discover -s tests -v
           python scripts/check_local.py
       - name: Conservar logs del ensayo
         if: always()

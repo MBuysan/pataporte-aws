@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         .filter(Boolean).join(" | ");
 
       if (m.foto_url) {
-        fotoEl.outerHTML = `<img src="${API_URL}${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`;
+        fotoEl.outerHTML = `<img src="${petPhotoUrl(m.foto_url)}" alt="${m.nombre}" class="foto-mascota" />`;
       } else {
         fotoEl.textContent = m.nombre.charAt(0).toUpperCase();
       }

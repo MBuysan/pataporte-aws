@@ -1,0 +1,15 @@
+{
+  "stack": "pataporte-dev-compute",
+  "status": "UPDATE_COMPLETE",
+  "outputs": {
+    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:476855088538:targetgroup/patapo-Targe-LECPEBWGIYSM/9bfeeabbef709a0f",
+    "ServiceName": "pataporte-dev-api",
+    "AutoScalingGroupName": "pataporte-dev-compute-Hosts-9WYVgaLGZixm",
+    "ClusterName": "pataporte-dev",
+    "ApiTaskDefinitionArn": "arn:aws:ecs:us-east-1:476855088538:task-definition/pataporte-dev-api:1",
+    "CapacityProviderName": "pataporte-dev-compute-Capacity-sLdOLuunZhuO",
+    "MigrationTaskDefinitionArn": "arn:aws:ecs:us-east-1:476855088538:task-definition/pataporte-dev-migrate:1",
+    "LoadBalancerDnsName": "pataporte-dev-alb-789635094.us-east-1.elb.amazonaws.com"
+  },
+  "verified_at": "2026-10-27T14:35:07.757093+00:00"
+}

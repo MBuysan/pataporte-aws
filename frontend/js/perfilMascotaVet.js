@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     detalleEl.textContent = detalle;
     if (mascotaActual.foto_url) {
-      fotoEl.outerHTML = `<img src="${API_URL}${mascotaActual.foto_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
+      fotoEl.outerHTML = `<img src="${petPhotoUrl(mascotaActual.foto_url)}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">`;
     } else {
       fotoEl.textContent = mascotaActual.nombre.charAt(0).toUpperCase();
     }

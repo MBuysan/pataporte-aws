@@ -1,6 +1,6 @@
 import time
 import pika
-from config.settings import settings
+from config.messaging import messaging_settings as settings
 
 
 def obtener_canal():

@@ -1,15 +1,19 @@
 import json
 import logging
 import time
+from datetime import datetime, timezone
+from email.parser import Parser
 import pika
 from messaging.rabbitmq import obtener_canal
-from services.auth_service import _enviar_email_verificacion, _enviar_email_recuperacion
-from services.pataporte_service import _enviar_pdf_por_email, _generar_pdf
+from messaging.delivery import _enviar_email_verificacion, _enviar_email_recuperacion, _enviar_pdf_por_email, _generar_pdf
 
 logger = logging.getLogger(__name__)
 
 
 def procesar(data):
+    data = data.get("payload", data)
+    if data.get("expires_at") and datetime.fromisoformat(data["expires_at"]) <= datetime.now(timezone.utc):
+        return
     tipo = data["tipo"]
     if tipo == "verificacion_email":
         _enviar_email_verificacion(data["email"], data["codigo"])
@@ -18,6 +22,9 @@ def procesar(data):
     elif tipo == "pdf_email":
         pdf = _generar_pdf(data["credencial"], data["hash_verificacion"])
         _enviar_pdf_por_email(data["email"], data["nombre_mascota"], pdf)
+    elif tipo == "raw_email":
+        from utils.email import enviar_email
+        enviar_email(data["email"], Parser().parsestr(data["mime"]))
     else:
         raise ValueError("Tipo de mensaje no soportado")
 

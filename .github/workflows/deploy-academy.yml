@@ -1,0 +1,100 @@
+name: Deploy Academy
+on:
+  workflow_dispatch:
+    inputs:
+      account_confirmation:
+        description: 'Cuenta Academy destino: escribir 476855088538'
+        type: string
+        required: true
+      scope:
+        description: 'api: base existente; full: requiere SMTP y dominio/certificado configurados'
+        type: choice
+        options: [api, full]
+        default: api
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: pataporte-academy-deploy
+  cancel-in-progress: false
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+  plan:
+    needs: checks
+    if: inputs.account_confirmation == '476855088538'
+    runs-on: ubuntu-latest
+    environment: academy
+    timeout-minutes: 30
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.ACADEMY_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.ACADEMY_AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.ACADEMY_AWS_SESSION_TOKEN }}
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_EC2_METADATA_DISABLED: 'true'
+      PATAPORTE_API_DOMAIN: ${{ vars.PATAPORTE_API_DOMAIN }}
+      PATAPORTE_ALB_CERTIFICATE_ARN: ${{ vars.PATAPORTE_ALB_CERTIFICATE_ARN }}
+      PATAPORTE_SMTP_SECRET_ARN: ${{ vars.PATAPORTE_SMTP_SECRET_ARN }}
+      PATAPORTE_TASK_ROLE_ARN: ${{ vars.PATAPORTE_TASK_ROLE_ARN }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with: {python-version: '3.11'}
+      - run: python -m pip install boto3==1.43.123
+      - name: Comprobar cuenta y guardar versión actual
+        if: inputs.scope == 'api'
+        run: python scripts/release_academy.py snapshot
+      - name: Construir imagen amd64 y publicarla por digest
+        if: inputs.scope == 'api'
+        run: python scripts/deploy_ecs.py build
+      - name: Planear tarea de migración conservando la API actual
+        if: inputs.scope == 'api'
+        run: python scripts/release_academy.py plan-stage
+      - name: Publicar resumen revisable
+        if: inputs.scope == 'api'
+        run: python scripts/release_academy.py summary >> "$GITHUB_STEP_SUMMARY"
+      - name: Preparar entrega conjunta con HTTPS y SMTP
+        if: inputs.scope == 'full'
+        run: python scripts/release_full.py plan
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: academy-release-plan
+          path: deployment-results/
+          retention-days: 7
+  deploy:
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: academy
+    timeout-minutes: 45
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.ACADEMY_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.ACADEMY_AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.ACADEMY_AWS_SESSION_TOKEN }}
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_EC2_METADATA_DISABLED: 'true'
+      PATAPORTE_API_DOMAIN: ${{ vars.PATAPORTE_API_DOMAIN }}
+      PATAPORTE_ALB_CERTIFICATE_ARN: ${{ vars.PATAPORTE_ALB_CERTIFICATE_ARN }}
+      PATAPORTE_SMTP_SECRET_ARN: ${{ vars.PATAPORTE_SMTP_SECRET_ARN }}
+      PATAPORTE_TASK_ROLE_ARN: ${{ vars.PATAPORTE_TASK_ROLE_ARN }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with: {python-version: '3.11'}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with: {name: academy-release-plan, path: deployment-results}
+      - run: python -m pip install boto3==1.43.123
+      - name: Aplicar etapa, migrar y desplegar API
+        if: inputs.scope == 'api'
+        run: python scripts/release_academy.py deploy
+      - name: Desplegar API, dispatcher, Lambda, colas y frontend
+        if: inputs.scope == 'full'
+        run: python scripts/release_full.py deploy
+      - name: Conservar comprobaciones y versión anterior
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: academy-release-result
+          path: deployment-results/
+          retention-days: 7

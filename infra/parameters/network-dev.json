@@ -1,0 +1,12 @@
+[
+  {"ParameterKey": "ProjectName", "ParameterValue": "pataporte"},
+  {"ParameterKey": "EnvironmentName", "ParameterValue": "dev"},
+  {"ParameterKey": "VpcCidr", "ParameterValue": "10.20.0.0/16"},
+  {"ParameterKey": "NatMode", "ParameterValue": "none"},
+  {"ParameterKey": "PublicSubnetACidr", "ParameterValue": "10.20.0.0/24"},
+  {"ParameterKey": "PublicSubnetBCidr", "ParameterValue": "10.20.1.0/24"},
+  {"ParameterKey": "AppSubnetACidr", "ParameterValue": "10.20.10.0/24"},
+  {"ParameterKey": "AppSubnetBCidr", "ParameterValue": "10.20.11.0/24"},
+  {"ParameterKey": "DataSubnetACidr", "ParameterValue": "10.20.20.0/24"},
+  {"ParameterKey": "DataSubnetBCidr", "ParameterValue": "10.20.21.0/24"}
+]

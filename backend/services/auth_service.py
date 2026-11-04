@@ -1,8 +1,7 @@
+from messaging.delivery import _enviar_email_recuperacion, _enviar_email_verificacion
 from utils.email import enviar_email
 import secrets
 import string
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -50,138 +49,8 @@ def _hashear(texto: str) -> str:
     return pwd_context.hash(texto)
 
 
-def _enviar_email_recuperacion(email: str, codigo: str):
-    """
-    envía código de recuperacion al email del usuario
-
-    implementacion con smtp , es el protocolo estandar para enviar emails entre servidores
-
-    smtplib.SMTP_SSL abre una conexión cifrada al servidor de gmail en el puerto 465.
-
-    gmail requiere una "contraseña de aplicación" (no la contraseña de la cuenta).
-      se genera en: google account → seguridad → verificación en dos pasos → contraseñas de app.
 
 
-    estas variables se configuran en el .env:
-        MAIL_USERNAME=tucuenta@gmail.com
-        MAIL_PASSWORD=xxxx-xxxx-xxxx-xxxx
-        MAIL_FROM=tucuenta@gmail.com
-
-    """
-    # MIMEMultipart("alternative") crea un email con múltiples versiones del cuerpo.
-    # "alternative" significa que son versiones alternativas del mismo contenido
-    # (texto plano O html) — el cliente de email elige cuál mostrar dependiendo de sus capacidades.
-    mensaje = MIMEMultipart("alternative")
-    mensaje["Subject"] = "Recuperación de contraseña - Pataporte"
-    mensaje["From"] = settings.MAIL_FROM
-    mensaje["To"] = email
-
-    # versión texto plano: para clientes que no renderizan HTML
-    cuerpo_texto = f"""
-Hola,
- 
-Recibimos una solicitud para recuperar tu contraseña en Pataporte.
- 
-Tu código de recuperación es: {codigo}
- 
-Este código es válido por {EXPIRACION_MINUTOS} minutos.
-Si no solicitaste este cambio, podés ignorar este email.
- 
-Equipo Pataporte
-    """
-
-    # versión HTML: para clientes modernos
-    cuerpo_html = f"""
-    <html>
-      <body style="font-family: Arial, sans-serif; color: #333;">
-        <h2>Recuperación de contraseña</h2>
-        <p>Recibimos una solicitud para recuperar tu contraseña en <strong>Pataporte</strong>.</p>
-        <p>Tu código de recuperación es:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
-                    background: #f4f4f4; padding: 16px; display: inline-block;
-                    border-radius: 8px; margin: 12px 0;">
-          {codigo}
-        </div>
-        <p>Este código es válido por <strong>{EXPIRACION_MINUTOS} minutos</strong>.</p>
-        <p style="color: #888; font-size: 13px;">
-          Si no solicitaste este cambio, podés ignorar este email.
-        </p>
-      </body>
-    </html>
-    """
-
-    # MIMEText envuelve el texto con el tipo MIME correcto.
-    # se adjuntan ambas versiones — el cliente de email elige cuál mostrar.
-    mensaje.attach(MIMEText(cuerpo_texto, "plain", "utf-8"))
-    mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
-
-    try:
-        enviar_email(email, mensaje)
-
-    except Exception as e:
-        raise RuntimeError("No se pudo enviar el correo de recuperación") from e
-
-
-def _enviar_email_verificacion(email: str, codigo: str):
-    """
-    Envía el código de activación de 6 dígitos tras el registro del usuario.
-    Utiliza la estética azul y gris característica de la aplicación.
-    """
-    mensaje = MIMEMultipart("alternative")
-    mensaje["Subject"] = "Verificación de cuenta - Pataporte"
-    mensaje["From"] = settings.MAIL_FROM
-    mensaje["To"] = email
-
-    cuerpo_texto = f"""
-Hola,
- 
-¡Gracias por registrarte en Pataporte!
- 
-Para activar tu cuenta y comenzar a gestionar tus mascotas, utilizá el siguiente código:
- 
-Código de verificación: {codigo}
- 
-Este código expira en {EXPIRACION_MINUTOS} minutos.
- 
-Equipo Pataporte
-    """
-
-    cuerpo_html = f"""
-    <html>
-      <body style="font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 20px; margin: 0;">
-        <div style="max-width: 500px; background: #ffffff; border-radius: 12px; padding: 30px; margin: 0 auto; 
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee;">
-          <h2 style="color: #222; font-size: 22px; margin-top: 0;">Verificación de cuenta</h2>
-          <p style="font-size: 15px; line-height: 1.5; color: #555;">
-            ¡Gracias por registrarte en <strong>Pataporte</strong>! Para activar tu cuenta y acceder al sistema, ingresá el siguiente código:
-          </p>
-          <div style="text-align: center; margin: 24px 0;">
-            <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
-                        background: #dde8f8; color: #4a90e2; padding: 16px 24px; display: inline-block;
-                        border-radius: 8px; border: 1px dashed #4a90e2;">
-              {codigo}
-            </div>
-          </div>
-          <p style="font-size: 14px; color: #888;">
-            Este código es válido por <strong>{EXPIRACION_MINUTOS} minutos</strong>.
-          </p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="color: #aaa; font-size: 12px; text-align: center; margin-bottom: 0;">
-            Si no realizaste este registro en nuestro sitio, podés descartar este email tranquilamente.
-          </p>
-        </div>
-      </body>
-    </html>
-    """
-
-    mensaje.attach(MIMEText(cuerpo_texto, "plain", "utf-8"))
-    mensaje.attach(MIMEText(cuerpo_html, "html", "utf-8"))
-
-    try:
-        enviar_email(email, mensaje)
-
-    except Exception as e:
-        raise RuntimeError("No se pudo enviar el correo de verificación") from e
 
 
 #  funciones publicas (las llaman los routers)
@@ -227,13 +96,13 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     # db.add() → lo encola para insertar
     # db.commit() → ejecuta el INSERT en la BD
     db.add(recuperacion)
-    db.commit()
 
     publicar_email({
         "tipo": "recuperacion_password",
         "email": tutor.email,
         "codigo": codigo_plano
-    })
+    }, db)
+    db.commit()
 
     return {
         "mensaje": "Si el email está registrado, recibirás un código de recuperación"
@@ -307,7 +176,7 @@ def resetear_password(db: Session, data: ResetPasswordRequest):
     return {"mensaje": "Contraseña actualizada correctamente"}
 
 
-def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: str):
+def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: str, *, commit=True):
     """
     Genera un código de verificación de 6 dígitos para un nuevo registro (o reenvío),
     lo guarda hasheado e invalida códigos previos sin usar. Finalmente envía el mail.
@@ -332,13 +201,14 @@ def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: 
     )
 
     db.add(nueva_verificacion)
-    db.commit()
 
     publicar_email({
         "tipo": "verificacion_email",
         "email": email,
         "codigo": codigo_plano
-    })
+    }, db)
+    if commit:
+        db.commit()
 
 def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
     """

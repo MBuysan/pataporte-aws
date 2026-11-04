@@ -1,7 +1,8 @@
 from utils.auth import get_current_user, get_current_vet, get_current_tutor, require_tutor, require_pet_access
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import Optional
-import uuid, os, shutil
+import os
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from config.database import get_db
@@ -14,6 +15,8 @@ from schemas.mascota import (
 )
 from services import mascota_service
 from utils import password_utils
+from config.storage import save_photo, delete_new_photo
+from config.settings import settings
 
 UPLOAD_DIR = "uploads/mascotas"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -62,34 +65,26 @@ async def registrar_mascota( #por como se reciben los datos, se debe usar async 
 ):
     if id_tutor != user["id"]:
         raise HTTPException(status_code=403, detail="No autorizado")
+    try:
+        data = MascotaCreate(id_tutor=id_tutor, nombre=nombre, especie=especie,
+                             raza=raza or None, fecha_de_nacimiento=fecha_de_nacimiento or None, sexo=sexo)
+    except (ValueError, ValidationError):
+        raise HTTPException(422, "Revisá especie, sexo y fecha de nacimiento") from None
     foto_url = None
-
     if foto and foto.filename:
-        extension = foto.filename.split(".")[-1].lower()
-        if extension not in ["jpg", "jpeg", "png", "webp"]:
-            raise HTTPException(status_code=400, detail="Formato de imagen no permitido")
+        foto_url = save_photo(await foto.read(settings.PHOTO_MAX_BYTES + 1), user["id"])
+    data.foto_url = foto_url
 
-        nombre_archivo = f"{uuid.uuid4()}.{extension}"
-        ruta_guardado = f"{UPLOAD_DIR}/{nombre_archivo}"
-
-        with open(ruta_guardado, "wb") as buffer:
-            shutil.copyfileobj(foto.file, buffer)
-
-        # url pública que queda guardada en postgres
-        foto_url = f"/uploads/mascotas/{nombre_archivo}"
-
-
-    data = MascotaCreate(
-        id_tutor=id_tutor,
-        nombre=nombre,
-        especie=EspecieEnum(especie),
-        raza=raza or None,
-        fecha_de_nacimiento=fecha_de_nacimiento or None,
-        sexo=SexoEnum(sexo),
-        foto_url=foto_url,
-    )
-
-    return mascota_service.crear(db, data)
+    try:
+        return mascota_service.crear(db, data)
+    except Exception:
+        if foto_url:
+            try:
+                delete_new_photo(foto_url)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning("No se pudo compensar el archivo de una operación fallida")
+        raise
 
 
 

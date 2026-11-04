@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from datetime import date, datetime
 from typing import Optional
 from enum import Enum
@@ -61,6 +61,11 @@ class MascotaResponse(BaseModel):
     fecha_registro: datetime
     estado: EstadoEnum
 
+    @field_serializer("foto_url")
+    def serialize_photo(self, value):
+        from config.storage import photo_url
+        return photo_url(value)
+
     class Config:
         from_attributes = True  # permite convertir objetos SQLAlchemy a este schema
 
@@ -108,6 +113,11 @@ class MascotaResumen(BaseModel):
     especie:    EspecieEnum
     foto_url:   Optional[str]
     edad:       Optional[int]
+
+    @field_serializer("foto_url")
+    def serialize_photo(self, value):
+        from config.storage import photo_url
+        return photo_url(value)
  
     class Config:
         from_attributes = True

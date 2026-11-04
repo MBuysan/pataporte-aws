@@ -70,12 +70,12 @@ def registrar_veterinario(db: Session, vet_data: VeterinarioCreate) -> Veterinar
         estado="pendiente_verificacion"
     )
     db.add(nuevo_vet)
+    db.flush()
+    generar_y_enviar_codigo_verificacion(db, nuevo_vet.email, "veterinario", commit=False)
     db.commit()
     db.refresh(nuevo_vet)
 
 
-    # Generamos el código de verificación y lo enviamos por correo
-    generar_y_enviar_codigo_verificacion(db, nuevo_vet.email, "veterinario")
     
     return nuevo_vet
 

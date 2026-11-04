@@ -15,7 +15,8 @@ from routers import (
     auth,
 )
 
-from config.database import create_tables, engine
+from config.database import engine
+from config.migrate import assert_schema_current
 from sqlalchemy import text
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
@@ -23,7 +24,7 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    create_tables()
+    assert_schema_current(engine)
     os.makedirs("uploads/mascotas", exist_ok=True)
     yield
 

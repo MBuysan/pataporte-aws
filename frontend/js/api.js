@@ -132,3 +132,10 @@ const api = {
   postForm:  (endpoint, formData) => 
     apiFormRequest("POST", endpoint, formData),
 };
+// Local files use the API origin; S3 photos already have a short-lived HTTPS URL.
+function petPhotoUrl(value) {
+  if (!value) return "";
+  if (value.startsWith("https://")) return value;
+  if (value.startsWith("/uploads/mascotas/")) return API_URL + value;
+  return "";
+}

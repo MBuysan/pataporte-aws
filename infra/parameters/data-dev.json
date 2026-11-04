@@ -1,0 +1,13 @@
+[
+  {"ParameterKey": "ProjectName", "ParameterValue": "pataporte"},
+  {"ParameterKey": "EnvironmentName", "ParameterValue": "dev"},
+  {"ParameterKey": "NetworkStackName", "ParameterValue": "pataporte-dev-network"},
+  {"ParameterKey": "EngineVersion", "ParameterValue": "15.19"},
+  {"ParameterKey": "DatabaseName", "ParameterValue": "pataporte"},
+  {"ParameterKey": "MasterUsername", "ParameterValue": "pataporte_admin"},
+  {"ParameterKey": "InstanceClass", "ParameterValue": "db.t3.micro"},
+  {"ParameterKey": "AllocatedStorage", "ParameterValue": "20"},
+  {"ParameterKey": "EnableMultiAZ", "ParameterValue": "false"},
+  {"ParameterKey": "BackupRetentionDays", "ParameterValue": "1"},
+  {"ParameterKey": "EnableDeletionProtection", "ParameterValue": "true"}
+]

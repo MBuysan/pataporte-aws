@@ -78,6 +78,7 @@ class Renderer(mistune.HTMLRenderer):
 
 markdown = mistune.create_markdown(renderer=Renderer(escape=True), plugins=["table", "strikethrough"])
 source = SOURCE.read_text()
+current_status = re.search(r"^\*\*Estado[^*]*\*\*.*$", source, flags=re.M).group(0)
 parts = re.split(r"^## (.+)$", source, flags=re.M)
 intro = parts[2]
 chapters = []
@@ -393,6 +394,7 @@ __SYNTAX_CSS__</style>
     <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Abrir índice">__MENU__</button>
     <div class="breadcrumb"><span>Ingeniería · AWS</span><span class="slash">/</span><b id="current-chapter">Tu hoja de ruta</b></div>
     <div class="top-actions">
+      <a class="text-button" href="bitacora.html">Bitácora <span aria-hidden="true">↗</span></a>
       <button type="button" class="text-button" data-jump="17"><span>El equipo</span><span aria-hidden="true">↗</span></button>
       <button type="button" class="text-button" id="print-guide">__PRINT__<span>Imprimir guía</span></button>
     </div>
@@ -412,9 +414,10 @@ __SYNTAX_CSS__</style>
       <div class="meta-item"><span>Entrega del informe</span><b>09 noviembre 2026</b></div>
       <div class="meta-item"><span>Equipo</span><b>3 personas · 1 proyecto</b></div>
       <div class="meta-item"><span>Lectura completa</span><b>~__MINUTES__ min · a tu ritmo</b></div>
-      <div class="meta-item"><span>Estado del documento</span><b class="status">Plan de implementación</b></div>
+      <div class="meta-item"><span>Estado del documento</span><b class="status">Avances y evidencia · 03/11</b></div>
     </div>
-    <details class="usage"><summary>Antes de empezar · cómo usar esta guía</summary><div class="prose"><p><strong>Esta guía describe trabajo por implementar.</strong> No se creó infraestructura AWS al prepararla. Los comandos y archivos propuestos requieren los permisos y parámetros de su laboratorio.</p>__INTRO__</div></details>
+    <section class="prose" aria-label="Estado actual del proyecto">__CURRENT_STATUS__</section>
+    <details class="usage"><summary>Antes de empezar · cómo usar esta guía</summary><div class="prose"><p><strong>Esta guía combina hitos verificados y arquitectura por implementar.</strong> El estado al comienzo identifica lo que ya funciona y enlaza sus evidencias. Los pasos siguientes requieren los permisos y parámetros de su laboratorio.</p>__INTRO__</div></details>
     <div class="route-label"><span class="eyebrow">CUATRO MOMENTOS, UN MISMO RECORRIDO</span><span>Diseñar → construir → comprobar</span></div>
     <div class="roadmap" aria-label="Momentos de implementación">
       <button type="button" data-jump="1"><span class="step-dot">01</span><b>Preparar<small>Contexto y acuerdos</small></b></button>
@@ -451,7 +454,7 @@ __SYNTAX_CSS__</style>
 replacements = {
     "__CSS__": CSS, "__SYNTAX_CSS__": SYNTAX_CSS, "__JS__": JS,
     "__NAV__": "\n".join(nav), "__CHAPTERS__": "\n".join(articles),
-    "__INTRO__": markdown(intro), "__MINUTES__": str(read_minutes),
+    "__INTRO__": markdown(intro), "__CURRENT_STATUS__": markdown(current_status), "__MINUTES__": str(read_minutes),
     "__PAW__": PAW, "__MENU__": MENU, "__PRINT__": PRINT, "__SEARCH__": SEARCH,
     "__SERVICE_DATA__": json.dumps(SERVICES, ensure_ascii=False),
 }
