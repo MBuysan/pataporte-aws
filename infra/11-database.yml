@@ -14,9 +14,16 @@ Parameters:
     Type: String
     Default: dev
     AllowedValues: [dev, demo]
+  SnapshotIdentifier:
+    Type: String
+    Default: ''
+    Description: >-
+      Manual snapshot to restore on create (the deploy workflow picks the newest one of pataporte-db).
+      Never change it on an existing stack: a new value replaces the database.
 
 Conditions:
   IsDemo: !Equals [!Ref Environment, demo]
+  HasSnapshot: !Not [!Equals [!Ref SnapshotIdentifier, '']]
 
 Resources:
   DbSubnetGroup:
@@ -40,21 +47,24 @@ Resources:
           SourceSecurityGroupId:
             Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
 
-  # Ephemeral by design: the pipeline creates and destroys this stack, so the data
-  # is disposable (Delete, no final snapshot). Do not reuse this for real data.
+  # Ephemeral instance, persistent data: deleting the stack leaves a final manual snapshot
+  # (fixed identifier, so deploy can find it and restore it). destroy keeps the 2 newest.
   Database:
     Type: AWS::RDS::DBInstance
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
     Properties:
+      DBInstanceIdentifier: pataporte-db
+      DBSnapshotIdentifier: !If [HasSnapshot, !Ref SnapshotIdentifier, !Ref AWS::NoValue]
       Engine: postgres
       EngineVersion: '16.10'
       DBInstanceClass: db.t3.micro
       AllocatedStorage: '20'
       StorageType: gp3
-      StorageEncrypted: true
-      DBName: pataporte
-      MasterUsername: pataporte
+      # inherited from the snapshot when restoring (CloudFormation rejects them together)
+      StorageEncrypted: !If [HasSnapshot, !Ref AWS::NoValue, true]
+      DBName: !If [HasSnapshot, !Ref AWS::NoValue, pataporte]
+      MasterUsername: !If [HasSnapshot, !Ref AWS::NoValue, pataporte]
       ManageMasterUserPassword: true
       MultiAZ: !If [IsDemo, true, false]
       PubliclyAccessible: false

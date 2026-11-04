@@ -11,6 +11,10 @@ on:
         description: Also delete storage and network (buckets, ECR, queues, secret, audit table)
         type: boolean
         default: false
+      delete_snapshots:
+        description: Also delete every RDS snapshot of pataporte-db (next deploy starts with an empty database)
+        type: boolean
+        default: false
 
 concurrency:
   group: pataporte-aws
@@ -34,6 +38,25 @@ jobs:
             echo "deleting $stack"
             aws cloudformation delete-stack --stack-name "$stack"
             aws cloudformation wait stack-delete-complete --stack-name "$stack"
+          done
+
+      # The database stack leaves a final snapshot (DeletionPolicy: Snapshot); keep the 2 newest,
+      # or none with delete_snapshots. include_persistent alone keeps them (data backup).
+      - name: Prune RDS snapshots
+        env:
+          KEEP: ${{ inputs.delete_snapshots && '0' || '2' }}
+        run: |
+          snapshots=$(aws rds describe-db-snapshots --db-instance-identifier pataporte-db --snapshot-type manual \
+            --query "reverse(sort_by(DBSnapshots, &SnapshotCreateTime))[].DBSnapshotIdentifier" --output text)
+          i=0
+          for snapshot in $snapshots; do
+            i=$((i + 1))
+            if [ "$i" -le "$KEEP" ]; then
+              echo "keeping $snapshot" | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              echo "deleting $snapshot"
+              aws rds delete-db-snapshot --db-snapshot-identifier "$snapshot" >/dev/null
+            fi
           done
 
       # ECR images go with the repository (EmptyOnDelete: true); buckets must be emptied first.
