@@ -114,6 +114,10 @@ jobs:
           code=$(aws ecs describe-tasks --cluster "$cluster" --tasks "$task" --query 'tasks[0].containers[0].exitCode' --output text)
           if [ "$code" != "0" ]; then
             aws ecs describe-tasks --cluster "$cluster" --tasks "$task" --query 'tasks[0].[stoppedReason,containers[0].reason]' --output text
+            echo "::group::init_db logs"
+            aws logs get-log-events --log-group-name /ecs/pataporte \
+              --log-stream-name "init/init/${task##*/}" --query 'events[].message' --output text | tr '\t' '\n' | tail -40
+            echo "::endgroup::"
             echo "::error::init_db failed (exit code $code). Logs: CloudWatch /ecs/pataporte, stream prefix init/"
             exit 1
           fi
