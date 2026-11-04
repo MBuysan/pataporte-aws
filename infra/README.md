@@ -7,7 +7,7 @@ Plantillas CloudFormation para AWS Academy Learner Lab (us-east-1, 2 AZ). Todos 
 | Stack | Plantilla | Tipo | Contenido |
 |---|---|---|---|
 | `pataporte-network` | `01-network.yml` | persistente | VPC 10.20.0.0/16, subredes públicas/privadas/aisladas, endpoints gateway S3 y DynamoDB, SG de las tareas ECS |
-| `pataporte-storage` | `02-storage.yml` | persistente | buckets S3 (uploads; el de frontend quedó sin uso), ECR `pataporte-api` y `pataporte-frontend`, SQS + DLQ, bus EventBridge `pataporte`, Lambda `pataporte-audit`, DynamoDB `pataporte-auditoria`, secreto de la app |
+| `pataporte-storage` | `02-storage.yml` | persistente | buckets S3 (uploads; el de frontend quedó sin uso), ECR `pataporte-api` y `pataporte-frontend`, SQS + DLQ, bus EventBridge `pataporte`, Lambda `pataporte-audit`, DynamoDB `pataporte-auditoria` y `pataporte-entregas` (deduplicación del worker, TTL 7 días), secreto de la app |
 | `pataporte-nat` | `10-nat.yml` | efímero | NAT Gateway (1 en dev, 1 por AZ en demo) |
 | `pataporte-database` | `11-database.yml` | efímero | RDS PostgreSQL 16 (Multi-AZ en demo). **Los datos se borran al destruir** |
 | `pataporte-app` | `12-app.yml` | efímero | ALB, ECS Fargate (api, worker en Spot, tarea init), autoscaling, alarmas y dashboard |

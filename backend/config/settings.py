@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     UPLOADS_BUCKET: str = ""
     QUEUE_URL: str = ""
     EVENT_BUS_NAME: str = ""
+    # tabla DynamoDB de entregas ya procesadas por el worker (vacío = sin deduplicar)
+    DEDUP_TABLE: str = ""
 
     class Config:
         env_file = ".env"

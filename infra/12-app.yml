@@ -282,6 +282,9 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: worker
           Environment:
+            - Name: DEDUP_TABLE
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DeliveriesTableName
             - Name: DB_HOST
               Value:
                 Fn::ImportValue: !Sub ${ProjectName}-DbEndpoint

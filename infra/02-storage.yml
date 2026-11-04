@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Pataporte storage and messaging (persistent, near-zero idle cost): S3 buckets,
   ECR repository, SQS queue + DLQ, EventBridge bus and rules, audit Lambda,
-  DynamoDB audit table and the app secret.
+  DynamoDB audit and worker dedup tables and the app secret.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
 
@@ -139,6 +139,22 @@ Resources:
         - AttributeName: pk
           KeyType: HASH
 
+  # Worker idempotency: one item per processed event id (outbox id), expired by TTL.
+  DeliveriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: pataporte-entregas
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id_evento
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id_evento
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expira
+        Enabled: true
+
   AuditLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -263,6 +279,10 @@ Outputs:
     Value: !Ref AuditTable
     Export:
       Name: !Sub ${ProjectName}-AuditTableName
+  DeliveriesTableName:
+    Value: !Ref DeliveriesTable
+    Export:
+      Name: !Sub ${ProjectName}-DeliveriesTableName
   AppSecretArn:
     Value: !Ref AppSecret
     Export:

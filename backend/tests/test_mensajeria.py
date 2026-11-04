@@ -89,3 +89,41 @@ def test_detail_types_conocidos():
         "PataporteEmitido",
         "MascotaEliminada",
     }
+
+
+class DynamoFalso:
+    """put_item condicional (attribute_not_exists) y delete_item sobre un dict."""
+    def __init__(self):
+        self.items = {}
+
+    def put_item(self, TableName, Item, ConditionExpression):
+        from botocore.exceptions import ClientError
+        clave = Item["id_evento"]["S"]
+        if clave in self.items:
+            raise ClientError({"Error": {"Code": "ConditionalCheckFailedException"}}, "PutItem")
+        self.items[clave] = Item
+
+    def delete_item(self, TableName, Key):
+        self.items.pop(Key["id_evento"]["S"], None)
+
+
+def test_worker_deduplica_por_id_evento_y_libera_si_falla(monkeypatch):
+    dynamo = DynamoFalso()
+    monkeypatch.setattr(consumer, "_cliente", lambda servicio: dynamo)
+    monkeypatch.setattr(settings, "DEDUP_TABLE", "pataporte-entregas")
+    recibidos = []
+    monkeypatch.setitem(consumer.MANEJADORES, "VerificacionEmailSolicitada", recibidos.append)
+    sobre = lambda tipo, id_evento: json.dumps({"detail-type": tipo, "detail": {"id_evento": id_evento}})
+
+    sqs = ClienteFalso([
+        {"MessageId": "1", "ReceiptHandle": "a", "Body": sobre("VerificacionEmailSolicitada", "e1")},
+        {"MessageId": "2", "ReceiptHandle": "b", "Body": sobre("VerificacionEmailSolicitada", "e1")},
+        {"MessageId": "3", "ReceiptHandle": "c", "Body": sobre("TipoInexistente", "e2")},
+    ])
+    consumer.procesar_mensajes(sqs)
+
+    assert len(recibidos) == 1  # el duplicado no se procesa
+    borrados = [kw["ReceiptHandle"] for metodo, kw in sqs.llamadas if metodo == "delete_message"]
+    assert borrados == ["a", "b"]  # el duplicado sí se borra de la cola
+    assert set(dynamo.items) == {"e1"}  # e2 falló: se liberó para que el reintento corra
+    assert int(dynamo.items["e1"]["expira"]["N"]) > 0
