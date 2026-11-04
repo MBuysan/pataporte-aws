@@ -54,11 +54,9 @@ jobs:
 
       - name: Persistent stacks (network, storage)
         if: steps.gate.outputs.run == 'true'
-        env:
-          ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
         run: |
           infra/deploy-stack.sh pataporte-network infra/01-network.yml
-          infra/deploy-stack.sh pataporte-storage infra/02-storage.yml AlertEmail="$ALERT_EMAIL"
+          infra/deploy-stack.sh pataporte-storage infra/02-storage.yml
 
       - uses: aws-actions/amazon-ecr-login@v2
         if: steps.gate.outputs.run == 'true'
