@@ -17,4 +17,18 @@ if [ $# -gt 0 ]; then
   args+=(--parameter-overrides "$@")
 fi
 
-aws cloudformation deploy "${args[@]}"
+# A stack whose first create failed stays in ROLLBACK_COMPLETE and can only be deleted.
+status=$(aws cloudformation describe-stacks --stack-name "$stack" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || true)
+if [ "$status" = "ROLLBACK_COMPLETE" ]; then
+  echo "$stack is in ROLLBACK_COMPLETE, deleting it first"
+  aws cloudformation delete-stack --stack-name "$stack"
+  aws cloudformation wait stack-delete-complete --stack-name "$stack"
+fi
+
+if ! aws cloudformation deploy "${args[@]}"; then
+  echo "::group::Failed events for $stack"
+  aws cloudformation describe-stack-events --stack-name "$stack" \
+    --query 'StackEvents[?contains(ResourceStatus, `FAILED`)].[LogicalResourceId,ResourceStatusReason]' --output text | head -20
+  echo "::endgroup::"
+  exit 1
+fi
