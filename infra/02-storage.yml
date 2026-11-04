@@ -26,13 +26,23 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+      # versioning: an overwritten or deleted upload stays recoverable for 7 days
+      VersioningConfiguration:
+        Status: Enabled
       LifecycleConfiguration:
         Rules:
-          # medical-history PDFs are only kept until the worker emails them
+          # medical-history PDFs are only kept until the worker emails them (old versions 1 more day)
           - Id: expire-historiales
             Status: Enabled
             Prefix: historiales/
             ExpirationInDays: 7
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 1
+          - Id: expire-noncurrent
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 7
+            ExpiredObjectDeleteMarker: true
 
   # ponytail: unused since the frontend moved to ECS (Learner Lab denies CloudFront OAC and OAI).
   # Kept so the stack update does not drop exports; delete it together with its outputs later.
