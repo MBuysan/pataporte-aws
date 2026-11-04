@@ -7,9 +7,9 @@ Plantillas CloudFormation para AWS Academy Learner Lab (us-east-1, 2 AZ). Todos 
 | Stack | Plantilla | Tipo | Contenido |
 |---|---|---|---|
 | `pataporte-network` | `01-network.yml` | persistente | VPC 10.20.0.0/16, subredes públicas/privadas/aisladas, endpoints gateway S3 y DynamoDB, SG de las tareas ECS |
-| `pataporte-storage` | `02-storage.yml` | persistente | buckets S3 (uploads; el de frontend quedó sin uso), ECR `pataporte-api` y `pataporte-frontend`, SQS + DLQ, bus EventBridge `pataporte`, Lambda `pataporte-audit`, DynamoDB `pataporte-auditoria` y `pataporte-entregas` (deduplicación del worker, TTL 7 días), secreto de la app |
+| `pataporte-storage` | `02-storage.yml` | persistente | buckets S3 (uploads; el de frontend quedó sin uso), ECR `pataporte-api` y `pataporte-frontend`, SQS + DLQ, bus EventBridge `pataporte`, Lambda `pataporte-audit`, tópico SNS `pataporte-alarmas`, DynamoDB `pataporte-auditoria` y `pataporte-entregas` (deduplicación del worker, TTL 7 días), secreto de la app |
 | `pataporte-nat` | `10-nat.yml` | efímero | NAT Gateway (1 en dev, 1 por AZ en demo) |
-| `pataporte-database` | `11-database.yml` | efímero | RDS PostgreSQL 16 (Multi-AZ en demo). **Los datos se borran al destruir** |
+| `pataporte-database` | `11-database.yml` | efímero | RDS PostgreSQL 16 (Multi-AZ en demo). Al destruir deja un snapshot final que el próximo deploy restaura |
 | `pataporte-app` | `12-app.yml` | efímero | ALB, ECS Fargate (api, worker en Spot, tarea init), autoscaling, alarmas y dashboard |
 | `pataporte-edge` | `13-edge.yml` | no se despliega | CloudFront delante del ALB: diseño para una cuenta real; el Learner Lab no permite `cloudfront:CreateDistribution`, así que la app se publica por el ALB (HTTP) |
 
@@ -21,11 +21,28 @@ Los nombres de stack son fijos: hay un solo entorno activo a la vez (`dev` o `de
 
 En *Settings > Secrets and variables > Actions*: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` y `AWS_SESSION_TOKEN`, copiados de *AWS Details* del Learner Lab. Vencen con cada sesión del laboratorio: actualizarlos antes de ejecutar los workflows.
 
+Variable opcional (pestaña *Variables*): `ALERT_EMAIL`, ver [Alertas](#alertas).
+
 ## Workflows
 
 - **ci**: en cada PR y push a ramas que no sean `main`: pytest, cfn-lint y build de la imagen.
 - **deploy** (*Actions > deploy > Run workflow*, elegir `dev` o `demo`): despliega todos los stacks, publica la imagen, corre `init_db` y espera los servicios. La URL del ALB queda en el resumen del job. Un push a `main` solo redespliega si `pataporte-app` ya existe (mantiene su entorno).
-- **destroy** (*Run workflow* escribiendo `destroy`): borra edge, app, database y nat. Con `include_persistent` también vacía los buckets y borra storage y network (el repositorio ECR se borra con sus imágenes).
+- **destroy** (*Run workflow* escribiendo `destroy`): borra edge, app, database y nat y conserva los 2 snapshots más nuevos de la base. Con `include_persistent` también vacía los buckets (todas las versiones) y borra storage y network (el repositorio ECR se borra con sus imágenes); los snapshots se conservan salvo que se marque `delete_snapshots`.
+
+## Backups
+
+- **RDS**: la instancia se llama `pataporte-db`. Al borrar el stack `pataporte-database`, CloudFormation toma un snapshot manual final; `destroy` conserva los 2 más nuevos y borra el resto. Si el stack no existe, `deploy` restaura el snapshot disponible más nuevo (el resumen del job indica cuál) y `init_db` aplica las migraciones pendientes y recrea `pataporte_app`. Si el stack ya existe, se reutiliza el mismo `SnapshotIdentifier`: cambiarlo reemplazaría la base.
+- **Empezar con una base vacía**: correr `destroy` con `delete_snapshots`, o borrar a mano los snapshots de `pataporte-db` (*RDS > Snapshots > Manual*) antes del deploy.
+- **S3 uploads**: versionado. Las versiones anteriores y borradas se conservan 7 días (1 día bajo `historiales/`).
+- **DynamoDB** (`pataporte-auditoria`, `pataporte-entregas`): point-in-time recovery activado (últimos 35 días).
+
+## Alertas
+
+Las alarmas de `12-app.yml` (5xx, latencia y DLQ) notifican al tópico SNS `pataporte-alarmas` al dispararse y al volver a OK. Para recibirlas por email:
+
+1. En *Settings > Secrets and variables > Actions > Variables*, crear la variable de repositorio `ALERT_EMAIL` con la dirección destino.
+2. Correr `deploy`: el stack de storage suscribe el email al tópico.
+3. Confirmar la suscripción desde el email que envía AWS (*AWS Notification - Subscription Confirmation*). Como el tópico es persistente, la confirmación se mantiene entre redespliegues.
 
 ## Valores del secreto de la app
 
