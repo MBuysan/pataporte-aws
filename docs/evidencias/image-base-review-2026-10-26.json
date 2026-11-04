@@ -1,0 +1,28 @@
+{
+  "reviewed_date": "2026-10-26",
+  "findings": [
+    {
+      "cve": "CVE-2026-85091",
+      "package": "zlib",
+      "installed": "1.3.dfsg+really1.3.1-1",
+      "severity": "HIGH"
+    },
+    {
+      "cve": "CVE-2026-19499",
+      "package": "glibc",
+      "installed": "2.41-12+deb13u4",
+      "severity": "HIGH"
+    },
+    {
+      "cve": "CVE-2026-5435",
+      "package": "glibc",
+      "installed": "2.41-12+deb13u4",
+      "severity": "HIGH"
+    }
+  ],
+  "glibc_apt_candidate_after_update": "2.41-12+deb13u4",
+  "glibc_update_available": false,
+  "zlib_update_availability": "not_checked",
+  "exploitability": "not_assessed",
+  "production_security_approval": false
+}

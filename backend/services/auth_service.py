@@ -218,12 +218,12 @@ def solicitar_recuperacion(db: Session, data: SolicitarRecuperacionRequest):
     # db.add() → lo encola para insertar
     # db.commit() → ejecuta el INSERT en la BD
     db.add(recuperacion)
-    db.commit()
-
-    publicar_evento("RecuperacionPasswordSolicitada", {
+    # el evento se guarda en la outbox y se confirma junto con el código
+    publicar_evento(db, "RecuperacionPasswordSolicitada", {
         "email": tutor.email,
         "codigo": codigo_plano
     })
+    db.commit()
 
     return {
         "mensaje": "Si el email está registrado, recibirás un código de recuperación"
@@ -322,12 +322,11 @@ def generar_y_enviar_codigo_verificacion(db: Session, email: str, tipo_usuario: 
     )
 
     db.add(nueva_verificacion)
-    db.commit()
-
-    publicar_evento("VerificacionEmailSolicitada", {
+    publicar_evento(db, "VerificacionEmailSolicitada", {
         "email": email,
         "codigo": codigo_plano
     })
+    db.commit()
 
 def verificar_codigo_email(db: Session, data: VerificarEmailRequest):
     """

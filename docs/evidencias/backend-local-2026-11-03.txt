@@ -1,0 +1,131 @@
+test_production_rejects_unverified_tls_even_inside_url (test_database.ConnectionConfigurationTests.test_production_rejects_unverified_tls_even_inside_url) ... ok
+test_rds_ca_is_available_for_production (test_database.ConnectionConfigurationTests.test_rds_ca_is_available_for_production) ... ok
+test_separate_fields_preserve_password_special_characters (test_database.ConnectionConfigurationTests.test_separate_fields_preserve_password_special_characters) ... ok
+test_verified_tls_requires_an_existing_ca_file (test_database.ConnectionConfigurationTests.test_verified_tls_requires_an_existing_ca_file) ... ok
+test_adopts_legacy_schema_without_losing_existing_records (test_database.MigrationTests.test_adopts_legacy_schema_without_losing_existing_records) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running stamp_revision  -> 0001_initial_schema
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+ok
+test_empty_database_upgrade_downgrade_and_replay (test_database.MigrationTests.test_empty_database_upgrade_downgrade_and_replay) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 0003_transactional_outbox -> 0002_seed_vaccines, Avisos durables, publicados después del commit de negocio.
+INFO  [alembic.runtime.migration] Running downgrade 0002_seed_vaccines -> 0001_initial_schema, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running downgrade 0001_initial_schema -> , Initial frozen schema
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+ok
+test_refuses_concurrent_migration (test_database.MigrationTests.test_refuses_concurrent_migration) ... ok
+test_rejects_legacy_schema_drift_without_stamping (test_database.MigrationTests.test_rejects_legacy_schema_drift_without_stamping) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.autogenerate.compare] Detected removed column 'mascota.unexpected_field'
+ok
+test_runtime_account_crud_without_schema_or_migration_permissions (test_database.MigrationTests.test_runtime_account_crud_without_schema_or_migration_permissions) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+ok
+test_names_are_text_and_cannot_load_external_images_in_pdf (test_delivery.DeliveryTests.test_names_are_text_and_cannot_load_external_images_in_pdf) ... ok
+test_active_lease_does_not_process_concurrently (test_lambda.LambdaTests.test_active_lease_does_not_process_concurrently) ... ok
+test_delivery_failure_releases_lease_and_is_retried (test_lambda.LambdaTests.test_delivery_failure_releases_lease_and_is_retried) ... ok
+test_duplicate_does_not_repeat_delivery (test_lambda.LambdaTests.test_duplicate_does_not_repeat_delivery) ... ok
+test_invalid_schema_cannot_be_marked_done (test_lambda.LambdaTests.test_invalid_schema_cannot_be_marked_done) ... ok
+test_partial_batch_retries_only_failed_records (test_lambda.LambdaTests.test_partial_batch_retries_only_failed_records) ... ok
+test_success_is_marked_done_only_after_delivery (test_lambda.LambdaTests.test_success_is_marked_done_only_after_delivery) ... ok
+test_bad_secret_is_not_retained_in_errors (test_mail_secret.MailSecretTests.test_bad_secret_is_not_retained_in_errors) ... ok
+test_disabled_delivery_does_not_fetch_credentials (test_mail_secret.MailSecretTests.test_disabled_delivery_does_not_fetch_credentials) ... ok
+test_secret_cannot_disable_tls_by_changing_environment (test_mail_secret.MailSecretTests.test_secret_cannot_disable_tls_by_changing_environment) ... ok
+test_secret_is_validated_cached_and_does_not_replace_environment (test_mail_secret.MailSecretTests.test_secret_is_validated_cached_and_does_not_replace_environment) ... ok
+test_recovery_selects_the_recovery_template (test_messaging.MessagingTests.test_recovery_selects_the_recovery_template) ... ok
+test_smtp_failure_is_not_acknowledged_as_sent (test_messaging.MessagingTests.test_smtp_failure_is_not_acknowledged_as_sent) ... ok
+test_smtp_rejection_propagates (test_messaging.MessagingTests.test_smtp_rejection_propagates) ... ok
+test_success_is_acknowledged (test_messaging.MessagingTests.test_success_is_acknowledged) ... ok
+test_unencrypted_smtp_is_rejected_outside_development (test_messaging.MessagingTests.test_unencrypted_smtp_is_rejected_outside_development) ... ok
+test_unknown_message_cannot_be_silently_discarded (test_messaging.MessagingTests.test_unknown_message_cannot_be_silently_discarded) ... ok
+test_broker_outage_preserves_event_until_successful_retry (test_outbox.OutboxTests.test_broker_outage_preserves_event_until_successful_retry) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+ok
+test_concurrent_dispatcher_skips_locked_event (test_outbox.OutboxTests.test_concurrent_dispatcher_skips_locked_event) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+ok
+test_dispatched_then_sql_failure_retries_with_identical_event_id (test_outbox.OutboxTests.test_dispatched_then_sql_failure_retries_with_identical_event_id) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+ok
+test_rollback_keeps_neither_user_nor_notification (test_outbox.OutboxTests.test_rollback_keeps_neither_user_nor_notification) ... INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial frozen schema
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_seed_vaccines, Catálogo inicial de vacunas; conserva filas previas con el mismo nombre.
+INFO  [alembic.runtime.migration] Running upgrade 0002_seed_vaccines -> 0003_transactional_outbox, Avisos durables, publicados después del commit de negocio.
+ok
+test_failed_database_write_compensates_only_its_new_photo (test_photo_request.PhotoRequestTests.test_failed_database_write_compensates_only_its_new_photo) ... ok
+test_invalid_form_is_rejected_before_upload (test_photo_request.PhotoRequestTests.test_invalid_form_is_rejected_before_upload) ... ok
+test_cleanup_cannot_delete_another_bucket (test_storage.StorageTests.test_cleanup_cannot_delete_another_bucket) ... ok
+test_private_s3_upload_persists_reference_and_signs_only_on_read (test_storage.StorageTests.test_private_s3_upload_persists_reference_and_signs_only_on_read) ... ok
+test_renamed_non_image_and_oversize_are_rejected (test_storage.StorageTests.test_renamed_non_image_and_oversize_are_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 3.045s
+
+OK
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado
+Migraciones aplicadas; esquema actualizado

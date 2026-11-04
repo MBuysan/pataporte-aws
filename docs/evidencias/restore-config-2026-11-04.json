@@ -1,0 +1,28 @@
+{
+  "original": "pataporte-dev-postgres",
+  "snapshot": "pataporte-restore-20261103-a",
+  "copy": "pataporte-restore-20261103-a",
+  "class": "db.t3.micro",
+  "publicly_accessible": false,
+  "multi_az": false,
+  "deletion_protection": true,
+  "original_modified": false,
+  "generates_hourly_and_snapshot_storage_costs": true,
+  "cleanup": "La copia y snapshot quedan retenidos; revisar y eliminar solo esos recursos despu\u00e9s de guardar evidencia.",
+  "checked_at": "2026-11-04T03:08:16.770105+00:00",
+  "status": "available",
+  "endpoint": "pataporte-restore-20261103-a.co7cctydsbhn.us-east-1.rds.amazonaws.com",
+  "checks": {
+    "different_instance": true,
+    "private": true,
+    "encrypted": true,
+    "single_az_test_copy": true,
+    "same_engine": true,
+    "same_vpc": true,
+    "same_security_groups": true,
+    "same_parameter_group": true
+  },
+  "sql_restore_verified": false,
+  "rto_measured": false,
+  "next_step": "Verificar SQL y recorrido funcional desde una tarea privada; esta comprobaci\u00f3n solo cubre la copia/configuraci\u00f3n."
+}

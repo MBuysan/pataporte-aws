@@ -1,0 +1,46 @@
+{
+  "updated_at_utc": "2026-11-04T11:43:21.252229+00:00",
+  "project_date": "2026-11-04",
+  "account": "476855088538",
+  "region": "us-east-1",
+  "compute_update": {
+    "stack": "pataporte-dev-compute",
+    "status": "UPDATE_COMPLETE",
+    "outputs": {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:476855088538:targetgroup/patapo-Targe-LECPEBWGIYSM/9bfeeabbef709a0f",
+      "ServiceName": "pataporte-dev-api",
+      "AutoScalingGroupName": "pataporte-dev-compute-Hosts-9WYVgaLGZixm",
+      "ClusterName": "pataporte-dev",
+      "ApiTaskDefinitionArn": "arn:aws:ecs:us-east-1:476855088538:task-definition/pataporte-dev-api:3",
+      "CapacityProviderName": "pataporte-dev-compute-Capacity-sLdOLuunZhuO",
+      "MigrationTaskDefinitionArn": "arn:aws:ecs:us-east-1:476855088538:task-definition/pataporte-dev-migrate:2",
+      "LoadBalancerDnsNameExport": "pataporte-dev-alb-789635094.us-east-1.elb.amazonaws.com",
+      "LoadBalancerDnsName": "pataporte-dev-alb-789635094.us-east-1.elb.amazonaws.com"
+    },
+    "verified_at": "2026-11-04T03:11:25.512894+00:00"
+  },
+  "api_independent_verification": "pending",
+  "async": "deployed_and_probe_passed_consumer_disabled",
+  "migration": "0003_transactional_outbox_passed",
+  "restore_configuration": "passed_private_encrypted_copy_available",
+  "restore_sql": "pending",
+  "edge": "ROLLBACK_COMPLETE_reason_not_yet_retrieved",
+  "blocker": "ExpiredToken; local reconnection assistant reopened",
+  "smtp_verified": false,
+  "owned_domain_configured": false,
+  "aws_load_scaling_verified": false,
+  "current_budget_verified": false,
+  "test_copy_still_incurs_costs": true,
+  "github_ci": {
+    "id": 41823754721,
+    "name": "CI",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/MBuysan/pataporte-aws/actions/runs/41823754721",
+    "sha": "5d594932ceb95ca251c167cb8e8052d788ead542"
+  },
+  "github_deploy_workflow_executed": false,
+  "github_academy_environment_exists": false,
+  "github_current_access_admin": false,
+  "pull_request": "https://github.com/MBuysan/pataporte-aws/pull/2"
+}

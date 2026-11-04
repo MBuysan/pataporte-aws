@@ -1,0 +1,121 @@
+{
+  "checked_at": "2026-10-26T03:36:12.055104+00:00",
+  "region": "us-east-1",
+  "account_suffix": "8538",
+  "stack": "pataporte-dev-network",
+  "status": "CREATE_COMPLETE",
+  "vpc": "vpc-0b2b42541c3318e52",
+  "nat_mode": "none",
+  "outputs": {
+    "AppRouteTableAId": "rtb-017fc995cb38364fd",
+    "AppRouteTableBId": "rtb-0c7d25e7b1fef477f",
+    "PublicSubnetAId": "subnet-0a03d84c81c2ba38b",
+    "PublicSubnetBId": "subnet-0f12431e618c43286",
+    "AlbSecurityGroupId": "sg-0147cdd4c3509ab2c",
+    "WorkerSecurityGroupId": "sg-0c107b52b4e3b6b5b",
+    "ApiSecurityGroupId": "sg-077165bf5f918061b",
+    "DatabaseSecurityGroupId": "sg-0b43cafca05e74c56",
+    "VpcId": "vpc-0b2b42541c3318e52",
+    "DataSubnetAId": "subnet-0719bfcdece9cf292",
+    "AppSubnetAId": "subnet-05f08318609c4d19e",
+    "DataSubnetBId": "subnet-05a9a50d1aec61648",
+    "AppSubnetBId": "subnet-0104cb800ae3d32ea"
+  },
+  "subnets": [
+    {
+      "id": "subnet-05a9a50d1aec61648",
+      "cidr": "10.20.21.0/24",
+      "az": "us-east-1b"
+    },
+    {
+      "id": "subnet-0f12431e618c43286",
+      "cidr": "10.20.1.0/24",
+      "az": "us-east-1b"
+    },
+    {
+      "id": "subnet-0104cb800ae3d32ea",
+      "cidr": "10.20.11.0/24",
+      "az": "us-east-1b"
+    },
+    {
+      "id": "subnet-05f08318609c4d19e",
+      "cidr": "10.20.10.0/24",
+      "az": "us-east-1a"
+    },
+    {
+      "id": "subnet-0719bfcdece9cf292",
+      "cidr": "10.20.20.0/24",
+      "az": "us-east-1a"
+    },
+    {
+      "id": "subnet-0a03d84c81c2ba38b",
+      "cidr": "10.20.0.0/24",
+      "az": "us-east-1a"
+    }
+  ],
+  "resource_types": {
+    "AWS::EC2::SecurityGroup": 4,
+    "AWS::EC2::RouteTable": 5,
+    "AWS::EC2::Subnet": 6,
+    "AWS::EC2::SubnetRouteTableAssociation": 6,
+    "AWS::EC2::VPCEndpoint": 2,
+    "AWS::EC2::VPCGatewayAttachment": 1,
+    "AWS::EC2::InternetGateway": 1,
+    "AWS::EC2::Route": 1,
+    "AWS::EC2::VPC": 1
+  },
+  "checks": [
+    {
+      "check": "27 recursos de red completos",
+      "passed": true
+    },
+    {
+      "check": "NAT desactivado y sin IP elastica en el stack",
+      "passed": true
+    },
+    {
+      "check": "DNS de VPC habilitado",
+      "passed": true
+    },
+    {
+      "check": "CIDR y etiquetas de proyecto",
+      "passed": true
+    },
+    {
+      "check": "Seis subredes con sus CIDR previstos y sin IP publica automatica",
+      "passed": true
+    },
+    {
+      "check": "Capas publica/app/datos distribuidas en dos AZ",
+      "passed": true
+    },
+    {
+      "check": "Subredes publicas con ruta al Internet Gateway",
+      "passed": true
+    },
+    {
+      "check": "Cuatro subredes privadas sin ruta general a Internet",
+      "passed": true
+    },
+    {
+      "check": "S3 y DynamoDB por Gateway Endpoints disponibles",
+      "passed": true
+    },
+    {
+      "check": "API accesible por 8000 solo desde ALB",
+      "passed": true
+    },
+    {
+      "check": "PostgreSQL accesible por 5432 solo desde API/workers",
+      "passed": true
+    },
+    {
+      "check": "Workers sin reglas de entrada",
+      "passed": true
+    },
+    {
+      "check": "Entrada ALB limitada a HTTPS",
+      "passed": true
+    }
+  ]
+}

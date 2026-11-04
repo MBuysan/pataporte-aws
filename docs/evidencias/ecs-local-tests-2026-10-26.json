@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-26",
+  "environment": "local",
+  "backend_tests": 15,
+  "functional_tests": 10,
+  "total_passed": 25,
+  "linux_image_tests_passed": 10,
+  "linux_image_tests_skipped": 5,
+  "rds_migrations": "not_executed",
+  "reason": "AWS connectivity/access changes await explicit confirmation"
+}

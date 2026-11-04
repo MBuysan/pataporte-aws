@@ -1,0 +1,25 @@
+{
+  "task_arn": "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/244e1327aebb4f67a0b9e188de41b1fd",
+  "exit_code": 0,
+  "stop_reason": "Essential container in task exited",
+  "container_reason": null,
+  "image_digest": "sha256:4187b5c4f19d206ed2258bf58a4a81ad0e8f8980a96d3ee71b651e73e83a4c0d",
+  "verified_at": "2026-10-27T14:32:33.972467+00:00",
+  "database": {
+    "revision": "0002_seed_vaccines",
+    "application_tables": 15,
+    "vaccines": 5,
+    "tls": {
+      "ssl": true,
+      "version": "TLSv1.2",
+      "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+    },
+    "administrative_privileges": {
+      "schema_create": false,
+      "database_create": false,
+      "migration_update": false
+    },
+    "runtime_crud": "passed",
+    "probe_data_retained": false
+  }
+}

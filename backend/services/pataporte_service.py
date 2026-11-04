@@ -92,19 +92,15 @@ def generar_pataporte(db: Session, id_mascota: str, emitido_por_rol: str, emitid
     )
     
     db.add(nuevo_pataporte)
+    # el worker genera el PDF y lo manda por email; el evento se confirma junto con el pataporte
+    publicar_evento(db, "PataporteEmitido", {
+        "email": tutor.email,
+        "nombre_mascota": mascota.nombre,
+        "credencial": credencial,
+        "hash_verificacion": hash_verificacion
+    })
     db.commit()
     db.refresh(nuevo_pataporte)
-    
-    
-    try: 
-        publicar_evento("PataporteEmitido", {
-            "email": tutor.email,
-            "nombre_mascota": mascota.nombre,
-            "credencial": credencial,
-            "hash_verificacion": hash_verificacion
-        })
-    except Exception as e:
-        print(f"Error al generar/enviar PDF: {e}")
     
     
     return nuevo_pataporte

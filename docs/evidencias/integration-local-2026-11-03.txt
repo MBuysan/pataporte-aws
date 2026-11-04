@@ -1,0 +1,15 @@
+test_anonymous_and_other_tutor_are_denied (test_local_flow.LocalFlow.test_anonymous_and_other_tutor_are_denied) ... ok
+test_cannot_create_pet_for_another_tutor (test_local_flow.LocalFlow.test_cannot_create_pet_for_another_tutor) ... ok
+test_consultation_vaccine_certificate_and_pdf (test_local_flow.LocalFlow.test_consultation_vaccine_certificate_and_pdf) ... ok
+test_health_and_same_origin (test_local_flow.LocalFlow.test_health_and_same_origin) ... ok
+test_listing_only_returns_own_pets (test_local_flow.LocalFlow.test_listing_only_returns_own_pets) ... ok
+test_login_and_wrong_password (test_local_flow.LocalFlow.test_login_and_wrong_password) ... ok
+test_recovery_uses_its_template_and_code_is_single_use (test_local_flow.LocalFlow.test_recovery_uses_its_template_and_code_is_single_use) ... ok
+test_tutor_cannot_write_clinical_records (test_local_flow.LocalFlow.test_tutor_cannot_write_clinical_records) ... ok
+test_verification_code_cannot_be_reused (test_local_flow.LocalFlow.test_verification_code_cannot_be_reused) ... ok
+test_veterinarian_response_does_not_expose_password_hash (test_local_flow.LocalFlow.test_veterinarian_response_does_not_expose_password_hash) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 11.150s
+
+OK

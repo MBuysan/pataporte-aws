@@ -1,31 +1,11 @@
-import jwt
-import os
-from jwt import PyJWTError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from config.database import get_db
 from services import pataporte_service
-from utils import password_utils
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+from utils.auth import get_current_user
 
 router = APIRouter()
-
-
-def get_current_user(token: str = Depends(password_utils.oauth2_scheme)) -> str:
-    """Extrae el id_veterinario o id_tutor del token JWT."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail="No autorizado")
-    sub = payload.get("sub")
-    rol = payload.get("rol")
-    
-    if not sub or rol not in ("veterinario", "tutor"):
-        raise HTTPException(status_code=401, detail="Token inválido")
-    return {"id": sub, "rol": rol}
 
 
 @router.post(

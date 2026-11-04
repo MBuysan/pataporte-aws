@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Pataporte storage and messaging (persistent, near-zero idle cost): S3 buckets,
   ECR repository, SQS queue + DLQ, EventBridge bus and rules, audit Lambda,
-  DynamoDB audit table and the app secret.
+  DynamoDB audit and worker dedup tables and the app secret.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
 
@@ -26,13 +26,23 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+      # versioning: an overwritten or deleted upload stays recoverable for 7 days
+      VersioningConfiguration:
+        Status: Enabled
       LifecycleConfiguration:
         Rules:
-          # medical-history PDFs are only kept until the worker emails them
+          # medical-history PDFs are only kept until the worker emails them (old versions 1 more day)
           - Id: expire-historiales
             Status: Enabled
             Prefix: historiales/
             ExpirationInDays: 7
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 1
+          - Id: expire-noncurrent
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 7
+            ExpiredObjectDeleteMarker: true
 
   # ponytail: unused since the frontend moved to ECS (Learner Lab denies CloudFront OAC and OAI).
   # Kept so the stack update does not drop exports; delete it together with its outputs later.
@@ -132,12 +142,32 @@ Resources:
     Properties:
       TableName: pataporte-auditoria
       BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
         - AttributeName: pk
           AttributeType: S
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
+
+  # Worker idempotency: one item per processed event id (outbox id), expired by TTL.
+  DeliveriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: pataporte-entregas
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+        - AttributeName: id_evento
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id_evento
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expira
+        Enabled: true
 
   AuditLogGroup:
     Type: AWS::Logs::LogGroup
@@ -216,6 +246,18 @@ Resources:
         PasswordLength: 64
         ExcludePunctuation: true
 
+  # Password of the least-privilege DB user (pataporte_app, DML only) used by the API and the worker.
+  # The init task (master credentials) creates/updates the role with this password.
+  AppDbSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Pataporte runtime database user (pataporte_app) password
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "pataporte_app"}'
+        GenerateStringKey: password
+        PasswordLength: 40
+        ExcludePunctuation: true
+
 Outputs:
   UploadsBucketName:
     Value: !Ref UploadsBucket
@@ -263,6 +305,14 @@ Outputs:
     Value: !Ref AuditTable
     Export:
       Name: !Sub ${ProjectName}-AuditTableName
+  DeliveriesTableName:
+    Value: !Ref DeliveriesTable
+    Export:
+      Name: !Sub ${ProjectName}-DeliveriesTableName
+  AppDbSecretArn:
+    Value: !Ref AppDbSecret
+    Export:
+      Name: !Sub ${ProjectName}-AppDbSecretArn
   AppSecretArn:
     Value: !Ref AppSecret
     Export:

@@ -331,7 +331,8 @@ def _respaldar_historial(db: Session, mascota):
     pdf_key = f"historiales/{mascota.id_mascota}.pdf"
     try:
         storage_service.subir(pdf_key, pdf_buffer.getvalue(), "application/pdf")
-        publicar_evento("MascotaEliminada", {
+        # se confirma en el mismo commit que borra la mascota (ver eliminar)
+        publicar_evento(db, "MascotaEliminada", {
             "email": tutor.email,
             "nombre_mascota": mascota.nombre,
             "pdf_key": pdf_key,

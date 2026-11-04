@@ -72,15 +72,32 @@ jobs:
           docker push "$api"
           docker push "$frontend"
 
+      # Existing database stack: pass its CURRENT SnapshotIdentifier (a different value replaces the DB).
+      # New stack: restore the newest manual snapshot of pataporte-db (destroy leaves one), or start empty.
       - name: Ephemeral stacks (nat, database, app)
         if: steps.gate.outputs.run == 'true'
         run: |
           infra/deploy-stack.sh pataporte-nat infra/10-nat.yml Environment="$ENVIRONMENT"
-          infra/deploy-stack.sh pataporte-database infra/11-database.yml Environment="$ENVIRONMENT"
+          if aws cloudformation describe-stacks --stack-name pataporte-database >/dev/null 2>&1; then
+            snapshot=$(aws cloudformation describe-stacks --stack-name pataporte-database \
+              --query "Stacks[0].Parameters[?ParameterKey=='SnapshotIdentifier'].ParameterValue" --output text)
+            echo "Database: existing stack kept (SnapshotIdentifier='$snapshot')" >> "$GITHUB_STEP_SUMMARY"
+          else
+            snapshot=$(aws rds describe-db-snapshots --db-instance-identifier pataporte-db --snapshot-type manual \
+              --query "sort_by(DBSnapshots[?Status=='available'], &SnapshotCreateTime)[-1].DBSnapshotIdentifier" --output text)
+            [ "$snapshot" = "None" ] && snapshot=""
+            if [ -n "$snapshot" ]; then
+              echo "Database: restored from snapshot \`$snapshot\`" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "Database: no snapshot of pataporte-db, created empty" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+          infra/deploy-stack.sh pataporte-database infra/11-database.yml Environment="$ENVIRONMENT" SnapshotIdentifier="$snapshot"
           infra/deploy-stack.sh pataporte-app infra/12-app.yml Environment="$ENVIRONMENT" ImageTag="$GITHUB_SHA"
 
-      # ponytail: init_db runs after the new image is live; fine while it only creates
-      # missing tables + seed. Move it before the app update if real migrations appear.
+      # ponytail: init_db (alembic upgrade head) runs after the new image is live, so only
+      # additive migrations are safe. Move it before the app update for breaking ones.
+      # On a fresh database the API/worker cannot use the DB until this creates pataporte_app.
       - name: Run init_db task
         if: steps.gate.outputs.run == 'true'
         run: |

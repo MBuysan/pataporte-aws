@@ -203,9 +203,11 @@ Resources:
             - Name: DB_NAME
               Value:
                 Fn::ImportValue: !Sub ${ProjectName}-DbName
+            # least-privilege user created by the init task (scripts/init_db.py)
             - Name: DB_USER
-              Value:
-                Fn::ImportValue: !Sub ${ProjectName}-DbUser
+              Value: pataporte_app
+            - Name: DB_SSLMODE
+              Value: verify-full
             - Name: ALGORITHM
               Value: HS256
             - Name: ACCESS_TOKEN_EXPIRE_MINUTES
@@ -238,7 +240,7 @@ Resources:
               ValueFrom: !Sub
                 - '${Arn}:password::'
                 - Arn:
-                    Fn::ImportValue: !Sub ${ProjectName}-DbSecretArn
+                    Fn::ImportValue: !Sub ${ProjectName}-AppDbSecretArn
             - Name: SECRET_KEY
               ValueFrom: !Sub
                 - '${Arn}:SECRET_KEY::'
@@ -282,6 +284,9 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: worker
           Environment:
+            - Name: DEDUP_TABLE
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DeliveriesTableName
             - Name: DB_HOST
               Value:
                 Fn::ImportValue: !Sub ${ProjectName}-DbEndpoint
@@ -291,9 +296,11 @@ Resources:
             - Name: DB_NAME
               Value:
                 Fn::ImportValue: !Sub ${ProjectName}-DbName
+            # least-privilege user created by the init task (scripts/init_db.py)
             - Name: DB_USER
-              Value:
-                Fn::ImportValue: !Sub ${ProjectName}-DbUser
+              Value: pataporte_app
+            - Name: DB_SSLMODE
+              Value: verify-full
             - Name: ALGORITHM
               Value: HS256
             - Name: ACCESS_TOKEN_EXPIRE_MINUTES
@@ -326,7 +333,7 @@ Resources:
               ValueFrom: !Sub
                 - '${Arn}:password::'
                 - Arn:
-                    Fn::ImportValue: !Sub ${ProjectName}-DbSecretArn
+                    Fn::ImportValue: !Sub ${ProjectName}-AppDbSecretArn
             - Name: SECRET_KEY
               ValueFrom: !Sub
                 - '${Arn}:SECRET_KEY::'
@@ -383,6 +390,8 @@ Resources:
             - Name: DB_USER
               Value:
                 Fn::ImportValue: !Sub ${ProjectName}-DbUser
+            - Name: DB_SSLMODE
+              Value: verify-full
             - Name: ALGORITHM
               Value: HS256
             - Name: ACCESS_TOKEN_EXPIRE_MINUTES
@@ -416,6 +425,12 @@ Resources:
                 - '${Arn}:password::'
                 - Arn:
                     Fn::ImportValue: !Sub ${ProjectName}-DbSecretArn
+            # sets the pataporte_app password (master creds above run the migrations)
+            - Name: APP_DB_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:password::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppDbSecretArn
             - Name: SECRET_KEY
               ValueFrom: !Sub
                 - '${Arn}:SECRET_KEY::'

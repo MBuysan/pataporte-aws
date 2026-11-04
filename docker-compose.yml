@@ -8,6 +8,7 @@ x-aws-local: &aws-local
   UPLOADS_BUCKET: pataporte-uploads
   QUEUE_URL: http://localhost.localstack.cloud:4566/000000000000/pataporte-eventos
   EVENT_BUS_NAME: ""
+  DEDUP_TABLE: pataporte-entregas
   # la URL se arma con DB_* apuntando al contenedor db (pisa un DATABASE_URL viejo del .env)
   DATABASE_URL: ""
   DB_HOST: db
@@ -16,13 +17,13 @@ services:
   localstack:
     image: localstack/localstack:3.8.1
     environment:
-      SERVICES: s3,sqs
+      SERVICES: s3,sqs,dynamodb
     ports:
       - "4566:4566"
     volumes:
       - ./localstack/init/ready.d:/etc/localstack/init/ready.d
     healthcheck:
-      test: ["CMD", "awslocal", "sqs", "get-queue-url", "--queue-name", "pataporte-eventos"]
+      test: ["CMD", "awslocal", "dynamodb", "describe-table", "--table-name", "pataporte-entregas"]
       interval: 5s
       retries: 20
     networks:

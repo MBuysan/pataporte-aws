@@ -1,3 +1,4 @@
+from pathlib import Path
 from urllib.parse import quote_plus
 
 from pydantic import model_validator
@@ -12,6 +13,12 @@ class Settings(BaseSettings):
     DB_NAME: str | None = None
     DB_USER: str | None = None
     DB_PASSWORD: str | None = None
+    # TLS hacia RDS: en AWS DB_SSLMODE=verify-full; vacío = lo que diga libpq (Postgres local sin TLS)
+    DB_SSLMODE: str = ""
+    DB_SSLROOTCERT: str = str(Path(__file__).resolve().parents[1] / "certs" / "us-east-1-bundle.pem")
+    # solo la tarea init_db: crea/actualiza el usuario de la app (DML) con esta contraseña
+    APP_DB_USER: str = "pataporte_app"
+    APP_DB_PASSWORD: str = ""
 
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
@@ -31,6 +38,8 @@ class Settings(BaseSettings):
     UPLOADS_BUCKET: str = ""
     QUEUE_URL: str = ""
     EVENT_BUS_NAME: str = ""
+    # tabla DynamoDB de entregas ya procesadas por el worker (vacío = sin deduplicar)
+    DEDUP_TABLE: str = ""
 
     class Config:
         env_file = ".env"

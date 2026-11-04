@@ -1,0 +1,11 @@
+{
+  "stack": "pataporte-dev-bootstrap",
+  "status": "CREATE_COMPLETE",
+  "outputs": {
+    "AppDatabaseSecretArn": "arn:aws:secretsmanager:us-east-1:476855088538:secret:pataporte/dev/database-app-UaDQie",
+    "RepositoryName": "pataporte-dev-backend",
+    "RepositoryUri": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend",
+    "JwtSecretArn": "arn:aws:secretsmanager:us-east-1:476855088538:secret:pataporte/dev/jwt-84UARa"
+  },
+  "verified_at": "2026-10-27T02:00:26.070787+00:00"
+}

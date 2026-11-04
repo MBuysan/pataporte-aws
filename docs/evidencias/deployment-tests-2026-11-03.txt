@@ -1,0 +1,22 @@
+test_full_release_migration_failure_prevents_all_downstream_deployments (test_delivery_operations.DeliveryOperationsTests.test_full_release_migration_failure_prevents_all_downstream_deployments) ... ok
+test_full_release_refuses_missing_or_foreign_configuration (test_delivery_operations.DeliveryOperationsTests.test_full_release_refuses_missing_or_foreign_configuration) ... ok
+test_load_metrics_include_errors_and_do_not_store_bearer_token (test_delivery_operations.DeliveryOperationsTests.test_load_metrics_include_errors_and_do_not_store_bearer_token) ... ok
+test_load_probe_rejects_embedded_credentials_before_any_network (test_delivery_operations.DeliveryOperationsTests.test_load_probe_rejects_embedded_credentials_before_any_network) ... ok
+test_restore_rejects_original_instance_and_exposes_isolation_drift (test_delivery_operations.DeliveryOperationsTests.test_restore_rejects_original_instance_and_exposes_isolation_drift) ... ok
+test_api_plan_pins_previous_resolved_ami_instead_of_moving_ssm_key (test_deployment.DeploymentTests.test_api_plan_pins_previous_resolved_ami_instead_of_moving_ssm_key) ... ok
+test_data_replacement_is_refused_before_execution (test_deployment.DeploymentTests.test_data_replacement_is_refused_before_execution) ... ok
+test_existing_frontend_release_cannot_be_overwritten_with_different_content (test_deployment.DeploymentTests.test_existing_frontend_release_cannot_be_overwritten_with_different_content) ... ok
+test_final_release_allows_only_existing_dependent_alarm (test_deployment.DeploymentTests.test_final_release_allows_only_existing_dependent_alarm) ... ok
+test_migration_failure_prevents_api_release (test_deployment.DeploymentTests.test_migration_failure_prevents_api_release) ... ok
+test_wrong_account_never_reaches_cloudformation (test_deployment.DeploymentTests.test_wrong_account_never_reaches_cloudformation) ... ok
+test_form_origin_and_stale_form_recovery (test_lab_connection.LabConnectionTests.test_form_origin_and_stale_form_recovery) ... LAB_PROFILE_READY account=476855088538
+ok
+test_missing_session_token_is_rejected_before_sts (test_lab_connection.LabConnectionTests.test_missing_session_token_is_rejected_before_sts) ... ok
+test_page_never_includes_pasted_credentials (test_lab_connection.LabConnectionTests.test_page_never_includes_pasted_credentials) ... ok
+test_validated_credentials_are_private_and_isolated (test_lab_connection.LabConnectionTests.test_validated_credentials_are_private_and_isolated) ... ok
+test_wrong_account_writes_nothing (test_lab_connection.LabConnectionTests.test_wrong_account_writes_nothing) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.539s
+
+OK

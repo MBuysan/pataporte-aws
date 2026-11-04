@@ -29,7 +29,7 @@ def test_publica_sobre_tipo_eventbridge_directo_a_sqs(monkeypatch):
     monkeypatch.setattr(publisher, "_cliente", lambda servicio: falso)
     monkeypatch.setattr(settings, "EVENT_BUS_NAME", "")
 
-    publisher.publicar_evento("PataporteEmitido", {"email": "a@b.c"})
+    publisher.enviar("ev-1", "PataporteEmitido", {"email": "a@b.c"})
 
     [(metodo, kw)] = falso.llamadas
     assert metodo == "send_message"
@@ -37,7 +37,7 @@ def test_publica_sobre_tipo_eventbridge_directo_a_sqs(monkeypatch):
     assert json.loads(kw["MessageBody"]) == {
         "source": "pataporte.api",
         "detail-type": "PataporteEmitido",
-        "detail": {"email": "a@b.c"},
+        "detail": {"email": "a@b.c", "id_evento": "ev-1"},
     }
 
 
@@ -46,7 +46,7 @@ def test_publica_en_eventbridge_si_hay_bus(monkeypatch):
     monkeypatch.setattr(publisher, "_cliente", lambda servicio: falso)
     monkeypatch.setattr(settings, "EVENT_BUS_NAME", "bus-pataporte")
 
-    publisher.publicar_evento("MascotaEliminada", {"pdf_key": "x.pdf"})
+    publisher.enviar("ev-2", "MascotaEliminada", {"pdf_key": "x.pdf"})
 
     [(metodo, kw)] = falso.llamadas
     assert metodo == "put_events"
@@ -54,7 +54,7 @@ def test_publica_en_eventbridge_si_hay_bus(monkeypatch):
     assert entrada["EventBusName"] == "bus-pataporte"
     assert entrada["Source"] == "pataporte.api"
     assert entrada["DetailType"] == "MascotaEliminada"
-    assert json.loads(entrada["Detail"]) == {"pdf_key": "x.pdf"}
+    assert json.loads(entrada["Detail"]) == {"pdf_key": "x.pdf", "id_evento": "ev-2"}
 
 
 def test_worker_despacha_por_detail_type_y_borra_solo_los_exitosos(monkeypatch):
@@ -89,3 +89,41 @@ def test_detail_types_conocidos():
         "PataporteEmitido",
         "MascotaEliminada",
     }
+
+
+class DynamoFalso:
+    """put_item condicional (attribute_not_exists) y delete_item sobre un dict."""
+    def __init__(self):
+        self.items = {}
+
+    def put_item(self, TableName, Item, ConditionExpression):
+        from botocore.exceptions import ClientError
+        clave = Item["id_evento"]["S"]
+        if clave in self.items:
+            raise ClientError({"Error": {"Code": "ConditionalCheckFailedException"}}, "PutItem")
+        self.items[clave] = Item
+
+    def delete_item(self, TableName, Key):
+        self.items.pop(Key["id_evento"]["S"], None)
+
+
+def test_worker_deduplica_por_id_evento_y_libera_si_falla(monkeypatch):
+    dynamo = DynamoFalso()
+    monkeypatch.setattr(consumer, "_cliente", lambda servicio: dynamo)
+    monkeypatch.setattr(settings, "DEDUP_TABLE", "pataporte-entregas")
+    recibidos = []
+    monkeypatch.setitem(consumer.MANEJADORES, "VerificacionEmailSolicitada", recibidos.append)
+    sobre = lambda tipo, id_evento: json.dumps({"detail-type": tipo, "detail": {"id_evento": id_evento}})
+
+    sqs = ClienteFalso([
+        {"MessageId": "1", "ReceiptHandle": "a", "Body": sobre("VerificacionEmailSolicitada", "e1")},
+        {"MessageId": "2", "ReceiptHandle": "b", "Body": sobre("VerificacionEmailSolicitada", "e1")},
+        {"MessageId": "3", "ReceiptHandle": "c", "Body": sobre("TipoInexistente", "e2")},
+    ])
+    consumer.procesar_mensajes(sqs)
+
+    assert len(recibidos) == 1  # el duplicado no se procesa
+    borrados = [kw["ReceiptHandle"] for metodo, kw in sqs.llamadas if metodo == "delete_message"]
+    assert borrados == ["a", "b"]  # el duplicado sí se borra de la cola
+    assert set(dynamo.items) == {"e1"}  # e2 falló: se liberó para que el reintento corra
+    assert int(dynamo.items["e1"]["expira"]["N"]) > 0
