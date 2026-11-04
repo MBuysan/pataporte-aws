@@ -34,7 +34,8 @@ Resources:
             Prefix: historiales/
             ExpirationInDays: 7
 
-  # private; the CloudFront OAC bucket policy lives in 13-edge.yml (avoids a cycle)
+  # ponytail: unused since the frontend moved to ECS (Learner Lab denies CloudFront OAC and OAI).
+  # Kept so the stack update does not drop exports; delete it together with its outputs later.
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -53,6 +54,19 @@ Resources:
     Type: AWS::ECR::Repository
     Properties:
       RepositoryName: pataporte-api
+      EmptyOnDelete: true
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {"rules": [{"rulePriority": 1, "description": "keep last 10 images",
+            "selection": {"tagStatus": "any", "countType": "imageCountMoreThan", "countNumber": 10},
+            "action": {"type": "expire"}}]}
+
+  FrontendRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: pataporte-frontend
       EmptyOnDelete: true
       ImageScanningConfiguration:
         ScanOnPush: true
@@ -227,6 +241,8 @@ Outputs:
     Value: !GetAtt ApiRepository.RepositoryUri
     Export:
       Name: !Sub ${ProjectName}-RepositoryUri
+  FrontendRepositoryUri:
+    Value: !GetAtt FrontendRepository.RepositoryUri
   QueueUrl:
     Value: !Ref EventsQueue
     Export:

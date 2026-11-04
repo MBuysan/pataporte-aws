@@ -1,81 +1,50 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  Pataporte edge (ephemeral): CloudFront in front of the private frontend bucket
-  (OAI) and the ALB (/api/*), plus the frontend bucket policy.
+  Pataporte edge (ephemeral): CloudFront in front of the ALB, which serves the
+  frontend (nginx on ECS) and routes /api/* to the API.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
+# ponytail: Learner Lab denies CloudFront OAC and OAI, so the frontend is not served from S3.
+# In a real account: private S3 bucket + OAC as the default origin, ALB only for /api/*.
 
 Parameters:
   ProjectName:
     Type: String
     Default: pataporte
-    Description: Prefix of the storage/app stack exports
+    Description: Prefix of the app stack exports
 
 Resources:
-  # ponytail: legacy OAI instead of OAC because Learner Lab denies
-  # cloudfront:CreateOriginAccessControl. Switch back to OAC in a real account.
-  FrontendOai:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub ${ProjectName}-frontend
-
-  # Pages are static files: / -> index.html, the rest live under /pages/*.html,
-  # requested by their full path, so no SPA rewrite or error page is needed.
   Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Enabled: true
         Comment: Pataporte
-        DefaultRootObject: index.html
         PriceClass: PriceClass_All
         HttpVersion: http2and3
         Origins:
-          - Id: frontend
-            DomainName:
-              Fn::ImportValue: !Sub ${ProjectName}-FrontendBucketDomainName
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${FrontendOai}
           # ponytail: CloudFront -> ALB is plain HTTP (no domain/ACM cert in Learner Lab).
-          - Id: api
+          - Id: alb
             DomainName:
               Fn::ImportValue: !Sub ${ProjectName}-AlbDnsName
             CustomOriginConfig:
               OriginProtocolPolicy: http-only
               HTTPPort: 80
+        # Static pages: cached at the edge, invalidated on every deploy.
         DefaultCacheBehavior:
-          TargetOriginId: frontend
+          TargetOriginId: alb
           ViewerProtocolPolicy: redirect-to-https
           Compress: true
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # Managed-CachingOptimized
         CacheBehaviors:
           - PathPattern: /api/*
-            TargetOriginId: api
+            TargetOriginId: alb
             ViewerProtocolPolicy: redirect-to-https
             AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
             CachedMethods: [GET, HEAD]
             Compress: true
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # Managed-CachingDisabled
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # Managed-AllViewerExceptHostHeader
-
-  # Here and not in the storage stack: it needs the OAI, which is ephemeral.
-  FrontendBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
-        Fn::ImportValue: !Sub ${ProjectName}-FrontendBucketName
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              CanonicalUser: !GetAtt FrontendOai.S3CanonicalUserId
-            Action: s3:GetObject
-            Resource: !Sub
-              - ${BucketArn}/*
-              - BucketArn:
-                  Fn::ImportValue: !Sub ${ProjectName}-FrontendBucketArn
 
 Outputs:
   DistributionId:

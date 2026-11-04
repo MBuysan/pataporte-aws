@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Pataporte application (ephemeral): ALB reachable only from CloudFront, ECS Fargate
-  cluster with the API service, the SQS worker (Fargate Spot) and the one-off
+  cluster with the frontend (nginx) and API services, the SQS worker (Fargate Spot) and the one-off
   init_db task, autoscaling, alarms and a CloudWatch dashboard.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
@@ -17,7 +17,7 @@ Parameters:
     AllowedValues: [dev, demo]
   ImageTag:
     Type: String
-    Description: Tag of the pataporte-api image in ECR (the pipeline passes the git sha)
+    Description: Tag of the pataporte-api and pataporte-frontend images in ECR (the pipeline passes the git sha)
   CloudFrontPrefixListId:
     Type: String
     Default: pl-3b927c52
@@ -62,6 +62,16 @@ Resources:
       ToPort: 8000
       SourceSecurityGroupId: !Ref AlbSecurityGroup
 
+  FrontendIngressFromAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref AlbSecurityGroup
+
   Alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -86,6 +96,22 @@ Resources:
         - Key: deregistration_delay.timeout_seconds
           Value: '30'
 
+  FrontendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: ip
+      Protocol: HTTP
+      Port: 80
+      VpcId:
+        Fn::ImportValue: !Sub ${ProjectName}-VpcId
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: '200'
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '30'
+
+  # Static pages go to nginx by default; /api/* goes to the API.
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -93,6 +119,19 @@ Resources:
       Port: 80
       Protocol: HTTP
       DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref FrontendTargetGroup
+
+  ApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref Listener
+      Priority: 10
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values: [/api/*]
+      Actions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
 
@@ -111,6 +150,28 @@ Resources:
     Properties:
       LogGroupName: !Sub /ecs/${ProjectName}
       RetentionInDays: 3
+
+  FrontendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-frontend
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      ContainerDefinitions:
+        - Name: frontend
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/pataporte-frontend:${ImageTag}
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: frontend
 
   # API and worker share the same environment (same image, same settings.py).
   ApiTaskDefinition:
@@ -379,9 +440,38 @@ Resources:
                 - Arn:
                     Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
 
-  ApiService:
+  FrontendService:
     Type: AWS::ECS::Service
     DependsOn: Listener
+    Properties:
+      ServiceName: frontend
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref FrontendTaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: !If [IsDemo, 2, 1]
+      HealthCheckGracePeriodSeconds: 30
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - Fn::ImportValue: !Sub ${ProjectName}-PrivateSubnet1
+            - Fn::ImportValue: !Sub ${ProjectName}-PrivateSubnet2
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
+      LoadBalancers:
+        - ContainerName: frontend
+          ContainerPort: 80
+          TargetGroupArn: !Ref FrontendTargetGroup
+
+  ApiService:
+    Type: AWS::ECS::Service
+    DependsOn: ApiListenerRule
     Properties:
       ServiceName: api
       Cluster: !Ref Cluster

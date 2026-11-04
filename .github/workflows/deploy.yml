@@ -64,10 +64,13 @@ jobs:
       - name: Build and push image
         if: steps.gate.outputs.run == 'true'
         run: |
-          image="$(aws cloudformation describe-stacks --stack-name pataporte-storage \
-            --query "Stacks[0].Outputs[?OutputKey=='RepositoryUri'].OutputValue" --output text):$GITHUB_SHA"
-          docker build -t "$image" backend
-          docker push "$image"
+          out() { aws cloudformation describe-stacks --stack-name pataporte-storage --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text; }
+          api="$(out RepositoryUri):$GITHUB_SHA"
+          frontend="$(out FrontendRepositoryUri):$GITHUB_SHA"
+          docker build -t "$api" backend
+          docker build -t "$frontend" frontend
+          docker push "$api"
+          docker push "$frontend"
 
       - name: Ephemeral stacks (nat, database, app, edge)
         if: steps.gate.outputs.run == 'true'
@@ -101,14 +104,12 @@ jobs:
 
       - name: Wait for services
         if: steps.gate.outputs.run == 'true'
-        run: aws ecs wait services-stable --cluster pataporte --services api worker
+        run: aws ecs wait services-stable --cluster pataporte --services frontend api worker
 
-      - name: Publish frontend
+      - name: Invalidate CloudFront
         if: steps.gate.outputs.run == 'true'
         run: |
           out() { aws cloudformation describe-stacks --stack-name "$1" --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text; }
-          aws s3 sync frontend/ "s3://$(out pataporte-storage FrontendBucketName)" --delete \
-            --exclude Dockerfile --exclude nginx.conf --exclude '.*'
           aws cloudfront create-invalidation --distribution-id "$(out pataporte-edge DistributionId)" --paths '/*' >/dev/null
           url=$(out pataporte-edge Url)
           echo "### Pataporte ($ENVIRONMENT) deployed: $url" >> "$GITHUB_STEP_SUMMARY"
