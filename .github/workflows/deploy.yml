@@ -79,8 +79,8 @@ jobs:
           infra/deploy-stack.sh pataporte-database infra/11-database.yml Environment="$ENVIRONMENT"
           infra/deploy-stack.sh pataporte-app infra/12-app.yml Environment="$ENVIRONMENT" ImageTag="$GITHUB_SHA"
 
-      # ponytail: init_db runs after the new image is live; fine while it only creates
-      # missing tables + seed. Move it before the app update if real migrations appear.
+      # ponytail: init_db (alembic upgrade head) runs after the new image is live, so only
+      # additive migrations are safe. Move it before the app update for breaking ones.
       - name: Run init_db task
         if: steps.gate.outputs.run == 'true'
         run: |

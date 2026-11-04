@@ -106,13 +106,14 @@ pataporte/
 
 3. Editar `.env` con los valores correspondientes (ver sección [Variables de entorno](#variables-de-entorno)).
 
-4. Levantar los servicios (LocalStack hace de S3/SQS; el servicio `init-db` crea tablas y seed antes del backend):
+4. Levantar los servicios (LocalStack hace de S3/SQS; el servicio `init-db` aplica las migraciones de Alembic, esquema y seed, antes del backend):
 
    ```bash
    docker compose up --build
    ```
 
-   Para re-inicializar la base a mano: `docker compose run --rm init-db` (equivale a `python -m scripts.init_db`).
+   Para re-inicializar la base a mano: `docker compose run --rm init-db` (equivale a `python -m scripts.init_db`, que corre `alembic upgrade head`).
+   Para un cambio de modelo: `docker compose run --rm -v ./backend:/app init-db alembic revision --autogenerate -m "descripcion"`, revisar el archivo generado en `backend/alembic/versions/` y commitearlo.
 
 5. Tests del backend:
 
