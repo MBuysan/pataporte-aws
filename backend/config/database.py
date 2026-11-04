@@ -1,14 +1,14 @@
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from sqlalchemy import (
     create_engine, text,
-    String, VARCHAR, Text, Boolean, SmallInteger, Date, DateTime,
+    String, VARCHAR, Text, Boolean, SmallInteger, Integer, Date, DateTime,
     ForeignKey, UniqueConstraint, CheckConstraint, Index,
     Enum as SAEnum,
 )
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from config.settings import settings
 
@@ -266,6 +266,26 @@ class VerificacionEmail(Base):
     expiracion:      Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     usado:           Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
     fecha_solicitud: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+
+class Outbox(Base):
+    """
+    Eventos de dominio pendientes de publicar (patrón transactional outbox).
+    Se insertan en la misma transacción que el cambio de negocio; el worker los
+    publica en EventBridge/SQS y marca 'enviado'. El id viaja en el evento para deduplicar.
+    """
+    __tablename__ = "outbox"
+    __table_args__ = (
+        Index("ix_outbox_pendientes", "disponible_desde", postgresql_where=text("enviado IS NULL")),
+    )
+
+    id:               Mapped[str]           = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tipo:             Mapped[str]           = mapped_column(VARCHAR(60), nullable=False)  # detail-type
+    detalle:          Mapped[dict]          = mapped_column(JSONB, nullable=False)
+    creado:           Mapped[datetime]      = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    disponible_desde: Mapped[datetime]      = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    enviado:          Mapped[datetime|None] = mapped_column(DateTime(timezone=True), nullable=True)
+    intentos:         Mapped[int]           = mapped_column(Integer, nullable=False, default=0)
+    ultimo_error:     Mapped[str|None]      = mapped_column(Text, nullable=True)
 
 # ── Sesion y utilidades ───────────────────────────────────────────────────────
 

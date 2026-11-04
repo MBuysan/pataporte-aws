@@ -1,8 +1,9 @@
 import json
 import logging
+import threading
 
 from config.settings import settings
-from messaging.publisher import _cliente
+from messaging.publisher import _cliente, bucle_despachador
 from services import auth_service, mascota_service, pataporte_service, storage_service
 
 logger = logging.getLogger("pataporte.worker")
@@ -48,5 +49,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=settings.LOG_LEVEL)
     logger.info("Worker escuchando %s", settings.QUEUE_URL)
     sqs = _cliente("sqs")
+    # clientes boto3 creados acá: crearlos en paralelo desde dos hilos no es seguro
+    _cliente("events" if settings.EVENT_BUS_NAME else "sqs")
+    threading.Thread(target=bucle_despachador, name="outbox", daemon=True).start()
     while True:
         procesar_mensajes(sqs)

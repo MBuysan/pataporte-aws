@@ -29,7 +29,7 @@ def test_publica_sobre_tipo_eventbridge_directo_a_sqs(monkeypatch):
     monkeypatch.setattr(publisher, "_cliente", lambda servicio: falso)
     monkeypatch.setattr(settings, "EVENT_BUS_NAME", "")
 
-    publisher.publicar_evento("PataporteEmitido", {"email": "a@b.c"})
+    publisher.enviar("ev-1", "PataporteEmitido", {"email": "a@b.c"})
 
     [(metodo, kw)] = falso.llamadas
     assert metodo == "send_message"
@@ -37,7 +37,7 @@ def test_publica_sobre_tipo_eventbridge_directo_a_sqs(monkeypatch):
     assert json.loads(kw["MessageBody"]) == {
         "source": "pataporte.api",
         "detail-type": "PataporteEmitido",
-        "detail": {"email": "a@b.c"},
+        "detail": {"email": "a@b.c", "id_evento": "ev-1"},
     }
 
 
@@ -46,7 +46,7 @@ def test_publica_en_eventbridge_si_hay_bus(monkeypatch):
     monkeypatch.setattr(publisher, "_cliente", lambda servicio: falso)
     monkeypatch.setattr(settings, "EVENT_BUS_NAME", "bus-pataporte")
 
-    publisher.publicar_evento("MascotaEliminada", {"pdf_key": "x.pdf"})
+    publisher.enviar("ev-2", "MascotaEliminada", {"pdf_key": "x.pdf"})
 
     [(metodo, kw)] = falso.llamadas
     assert metodo == "put_events"
@@ -54,7 +54,7 @@ def test_publica_en_eventbridge_si_hay_bus(monkeypatch):
     assert entrada["EventBusName"] == "bus-pataporte"
     assert entrada["Source"] == "pataporte.api"
     assert entrada["DetailType"] == "MascotaEliminada"
-    assert json.loads(entrada["Detail"]) == {"pdf_key": "x.pdf"}
+    assert json.loads(entrada["Detail"]) == {"pdf_key": "x.pdf", "id_evento": "ev-2"}
 
 
 def test_worker_despacha_por_detail_type_y_borra_solo_los_exitosos(monkeypatch):
