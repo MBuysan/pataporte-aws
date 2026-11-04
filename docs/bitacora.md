@@ -214,3 +214,15 @@ Este registro reúne avances, decisiones, pruebas y límites. Los hitos del 25�
 **Restauración.** La copia `pataporte-restore-20261103-a` está disponible, privada, cifrada y separada de la original, con la misma VPC, grupos de seguridad y parámetros. Falta comparar las tablas desde ECS privado. La copia y snapshot generan costos; la limpieza de la copia sigue pendiente después de conservar evidencia.
 
 **CloudFront y acceso.** El intento de crear edge terminó en ROLLBACK_COMPLETE. Falta leer el evento de error: no se atribuye una causa sin evidencia. Las credenciales Academy vencieron antes de esa consulta y de las verificaciones finales; se reabrió el asistente local corregido para renovarlas, sin usar la cuenta personal. [Estado parcial y límites](evidencias/aws-progress-2026-11-04.json).
+
+
+## 04/11/2026 · Rama compartida, PR en borrador y CI remoto aprobado
+<!-- estado: local; area: entrega -->
+
+**Publicación.** Se subió el avance a `feature/preparacion-despliegue-aws`, commit `5d594932ceb95ca251c167cb8e8052d788ead542`, y se abrió el [PR en borrador #2](https://github.com/MBuysan/pataporte-aws/pull/2). El borrador enumera avances y pendientes; no presenta como terminada la aplicación remota. No se incluyeron credenciales locales, archivos `.env` ni claves privadas.
+
+**Verificación fuera de esta computadora.** [CI 41823754721](https://github.com/MBuysan/pataporte-aws/actions/runs/41823754721) terminó en success para ese commit: validación Python/CloudFormation, pruebas de scripts, construcción e inicio de Compose, empaquetado Lambda, migraciones, pruebas de backend e integración, conservación de logs y limpieza del entorno efímero. La evidencia se guarda en [resultado de CI](evidencias/github-ci-2026-11-04.json). Es una ejecución de CI en GitHub, no del workflow de despliegue a AWS.
+
+**Dependencia administrativa comprobada.** La API de GitHub no encontró environments configurados. El acceso actual tiene push pero no admin. Un administrador del repositorio debe crear/proteger `academy`, configurar revisión y ramas autorizadas, y cargar allí las tres credenciales temporales. El YAML por sí solo no crea esas protecciones; no se colocaron claves en secretos del repositorio para eludir ese control.
+
+**Continuación necesaria.** Renovar la sesión Academy en el asistente local permite consultar el error de CloudFront, verificar la API nueva, comparar SQL de la restauración y revisar la limpieza de su copia. El nuevo intento de controlar Chrome volvió a fallar antes de leer el laboratorio; no se sustituyó la identidad por la cuenta AWS personal. La copia de ensayo permanece activa y genera costo hasta la limpieza.

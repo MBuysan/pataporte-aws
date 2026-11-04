@@ -28,8 +28,19 @@
   "blocker": "ExpiredToken; local reconnection assistant reopened",
   "smtp_verified": false,
   "owned_domain_configured": false,
-  "github_workflow_executed": false,
   "aws_load_scaling_verified": false,
   "current_budget_verified": false,
-  "test_copy_still_incurs_costs": true
+  "test_copy_still_incurs_costs": true,
+  "github_ci": {
+    "id": 41823754721,
+    "name": "CI",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/MBuysan/pataporte-aws/actions/runs/41823754721",
+    "sha": "5d594932ceb95ca251c167cb8e8052d788ead542"
+  },
+  "github_deploy_workflow_executed": false,
+  "github_academy_environment_exists": false,
+  "github_current_access_admin": false,
+  "pull_request": "https://github.com/MBuysan/pataporte-aws/pull/2"
 }

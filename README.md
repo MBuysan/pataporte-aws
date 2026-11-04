@@ -6,7 +6,7 @@
 > Web: http://localhost:8085 · Correos de prueba: http://localhost:8025.
 > Ensayo completo: `python3 scripts/check_local.py`.
 > Avance local del 03/11/2026: fotos privadas S3, outbox transaccional, publicador RabbitMQ/SQS, Lambda/DynamoDB, plantillas async/edge y pipeline manual de entrega de API preparados y probados. 61 pruebas locales aprobadas y seis plantillas validadas. Consultá la [bitácora con decisiones y evidencias](docs/bitacora.html).
-> Avance AWS al 04/11/2026: migración 0003 aplicada con TLS/SQL DML; API nueva aplicada, pendiente de verificación final; S3/SQS/Lambda/DynamoDB probados y consumidor pausado. Copia RDS privada disponible, comparación SQL pendiente. CloudFront revirtió su creación y requiere diagnóstico. La sesión temporal venció; también faltan SMTP real, dominio/certificado, configuración/ejecución de GitHub y pruebas remotas de carga/escalado. Ver bitácora y etapa 9.
+> Avance AWS al 04/11/2026: migración 0003 aplicada con TLS/SQL DML; API nueva aplicada, pendiente de verificación final; S3/SQS/Lambda/DynamoDB probados y consumidor pausado. Copia RDS privada disponible, comparación SQL pendiente. CloudFront revirtió su creación y requiere diagnóstico. La sesión temporal venció; también faltan SMTP real, dominio/certificado, entorno protegido/despliegue GitHub y pruebas remotas de carga/escalado. El [CI del PR #2](https://github.com/MBuysan/pataporte-aws/actions/runs/41823754721) aprobó el commit `5d59493`. Ver bitácora y etapa 9.
 
 Aplicación web para la gestión del historial médico de mascotas. Permite a tutores registrar sus animales, y a organizaciones veterinarias llevar el registro de consultas, tratamientos y vacunas con certificación digital.
 
