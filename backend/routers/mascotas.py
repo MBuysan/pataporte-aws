@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import Optional
-import uuid, os
-import jwt
-from jwt import PyJWTError
+import uuid
 from sqlalchemy.orm import Session
 
 from config.database import get_db
@@ -14,43 +12,15 @@ from schemas.mascota import (
     SexoEnum
 )
 from services import mascota_service, storage_service
-from utils import password_utils
+from utils.auth import get_current_tutor
 
 # todos las etiquetas get,post etc de mas abajo se registran sobre este objeto
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
 """
 parametros dentro del endpoint
 1er parametro: permite agregar entre llaves un parametro de ruta, usualmente es usado mas adelante en el flujo
 2do parametro: le dice lo que espera del retorno, puede ser una forma de objeto especifica del schema, o una lista de los mismos
 3er parametro: summary (resumen) o description usualmente
 """
-def get_current_tutor(token: str = Depends(password_utils.oauth2_scheme)):
-    try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
-    except PyJWTError:
-
-        raise HTTPException(
-            status_code=401,
-            detail="No autorizado"
-        )
-
-    id_tutor = payload.get("sub")
-
-    if not id_tutor:
-
-        raise HTTPException(
-            status_code=401,
-            detail="Token inválido"
-        )
-
-    return id_tutor
-
 router = APIRouter(    dependencies=[Depends(get_current_tutor)])
 
 @router.get(

@@ -1,34 +1,10 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-import jwt
-from jwt import PyJWTError
-import os
 from config.database import get_db
 from schemas.consulta import ConsultaCreate, ConsultaResponse
 from services import historial_service, consulta_service
 
-from utils import password_utils
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-
-def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-    except PyJWTError:
-        raise HTTPException(
-            status_code=401,
-            detail="No autorizado"
-        )
-    if payload.get("rol") != "veterinario":
-        raise HTTPException(status_code=401, detail="No autorizado")
-
-    id_veterinario = payload.get("sub")
-    if not id_veterinario:
-        raise HTTPException(status_code=401, detail="Token inválido")
-
-    return id_veterinario
+from utils.auth import get_current_vet
 
 router = APIRouter( )
 

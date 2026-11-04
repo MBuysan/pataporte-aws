@@ -1,8 +1,3 @@
-from http.client import HTTPException
-import os
-import jwt
-from jwt import PyJWTError
-from utils import password_utils
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -11,25 +6,9 @@ from schemas.vacuna import DosisCreate, DosisResponse, EsquemaVacunacionResponse
 from services import vacuna_service
 from config.database import Dosis, EsquemaVacunacion, EsquemaVacuna
 from typing import Optional
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+from utils.auth import get_current_vet
 
 router = APIRouter()
-
-def get_current_vet(token: str = Depends(password_utils.oauth2_scheme)) -> str:
-    """Extrae el id_veterinario del token JWT."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except PyJWTError:
-        raise HTTPException(status_code=401, detail="No autorizado")
-    if payload.get("rol") != "veterinario":
-        raise HTTPException(status_code=401, detail="No autorizado")
-
-    id_veterinario = payload.get("sub")
-    if not id_veterinario:
-        raise HTTPException(status_code=401, detail="Token inválido")
-    return id_veterinario
 
 @router.get(
     "/{id_mascota}/carnet",
