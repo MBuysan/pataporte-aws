@@ -604,7 +604,7 @@ Resources:
         ScaleInCooldown: 120
         ScaleOutCooldown: 60
 
-  # --- Alarms (no actions: visible in the console/dashboard only) ---
+  # --- Alarms (notify the SNS topic of the storage stack, email if ALERT_EMAIL is set) ---
   Alb5xxAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -621,6 +621,10 @@ Resources:
       Threshold: 5
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${ProjectName}-AlarmTopicArn
+      OKActions:
+        - Fn::ImportValue: !Sub ${ProjectName}-AlarmTopicArn
 
   AlbLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -638,6 +642,10 @@ Resources:
       Threshold: 2
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${ProjectName}-AlarmTopicArn
+      OKActions:
+        - Fn::ImportValue: !Sub ${ProjectName}-AlarmTopicArn
 
   DlqAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -656,6 +664,10 @@ Resources:
       Threshold: 0
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${ProjectName}-AlarmTopicArn
+      OKActions:
+        - Fn::ImportValue: !Sub ${ProjectName}-AlarmTopicArn
 
   Dashboard:
     Type: AWS::CloudWatch::Dashboard
