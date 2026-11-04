@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  Pataporte application (ephemeral): ALB reachable only from CloudFront, ECS Fargate
+  Pataporte application (ephemeral): public ALB, ECS Fargate
   cluster with the frontend (nginx) and API services, the SQS worker (Fargate Spot) and the one-off
   init_db task, autoscaling, alarms and a CloudWatch dashboard.
 
@@ -18,10 +18,6 @@ Parameters:
   ImageTag:
     Type: String
     Description: Tag of the pataporte-api and pataporte-frontend images in ECR (the pipeline passes the git sha)
-  CloudFrontPrefixListId:
-    Type: String
-    Default: pl-3b927c52
-    Description: com.amazonaws.global.cloudfront.origin-facing managed prefix list (us-east-1)
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -31,26 +27,27 @@ Metadata:
         Parameters: [Environment, ImageTag]
       - Label:
           default: Wiring
-        Parameters: [ProjectName, CloudFrontPrefixListId]
+        Parameters: [ProjectName]
 
 Conditions:
   IsDemo: !Equals [!Ref Environment, demo]
 
 Resources:
   # --- Load balancer ---
-  # ponytail: any CloudFront distribution can reach this ALB, not only ours.
-  # Add a secret origin header checked by a listener rule if that matters.
+  # ponytail: Learner Lab denies cloudfront:CreateDistribution, so the ALB is the public entry
+  # point over plain HTTP (no domain for an ACM cert). In a real account: CloudFront in front
+  # (infra/13-edge.yml) and this ingress restricted to the CloudFront origin-facing prefix list.
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Pataporte ALB, HTTP only from CloudFront
+      GroupDescription: Pataporte ALB, public HTTP
       VpcId:
         Fn::ImportValue: !Sub ${ProjectName}-VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourcePrefixListId: !Ref CloudFrontPrefixListId
+          CidrIp: 0.0.0.0/0
 
   AppIngressFromAlb:
     Type: AWS::EC2::SecurityGroupIngress
@@ -678,6 +675,8 @@ Outputs:
     Value: !GetAtt Alb.DNSName
     Export:
       Name: !Sub ${ProjectName}-AlbDnsName
+  Url:
+    Value: !Sub http://${Alb.DNSName}
   ClusterName:
     Value: !Ref Cluster
     Export:

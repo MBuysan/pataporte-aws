@@ -11,7 +11,7 @@ Plantillas CloudFormation para AWS Academy Learner Lab (us-east-1, 2 AZ). Todos 
 | `pataporte-nat` | `10-nat.yml` | efímero | NAT Gateway (1 en dev, 1 por AZ en demo) |
 | `pataporte-database` | `11-database.yml` | efímero | RDS PostgreSQL 16 (Multi-AZ en demo). **Los datos se borran al destruir** |
 | `pataporte-app` | `12-app.yml` | efímero | ALB, ECS Fargate (api, worker en Spot, tarea init), autoscaling, alarmas y dashboard |
-| `pataporte-edge` | `13-edge.yml` | efímero | CloudFront delante del ALB (el Learner Lab no permite OAC ni OAI para servir desde S3) |
+| `pataporte-edge` | `13-edge.yml` | no se despliega | CloudFront delante del ALB: diseño para una cuenta real; el Learner Lab no permite `cloudfront:CreateDistribution`, así que la app se publica por el ALB (HTTP) |
 
 Los persistentes cuestan casi nada en reposo. Los efímeros (NAT, RDS, ALB, Fargate) cobran por hora: se crean con `deploy` y se borran con `destroy` al terminar de usarlos.
 
@@ -24,7 +24,7 @@ En *Settings > Secrets and variables > Actions*: `AWS_ACCESS_KEY_ID`, `AWS_SECRE
 ## Workflows
 
 - **ci**: en cada PR y push a ramas que no sean `main`: pytest, cfn-lint y build de la imagen.
-- **deploy** (*Actions > deploy > Run workflow*, elegir `dev` o `demo`): despliega todos los stacks, publica la imagen, corre `init_db` e invalida CloudFront. La URL queda en el resumen del job. Un push a `main` solo redespliega si `pataporte-app` ya existe (mantiene su entorno).
+- **deploy** (*Actions > deploy > Run workflow*, elegir `dev` o `demo`): despliega todos los stacks, publica la imagen, corre `init_db` y espera los servicios. La URL del ALB queda en el resumen del job. Un push a `main` solo redespliega si `pataporte-app` ya existe (mantiene su entorno).
 - **destroy** (*Run workflow* escribiendo `destroy`): borra edge, app, database y nat. Con `include_persistent` también vacía los buckets y borra storage y network (el repositorio ECR se borra con sus imágenes).
 
 ## Valores del secreto de la app

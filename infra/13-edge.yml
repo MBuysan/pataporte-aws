@@ -3,6 +3,9 @@ Description: >-
   Pataporte edge (ephemeral): CloudFront in front of the ALB, which serves the
   frontend (nginx on ECS) and routes /api/* to the API.
 
+# NOT DEPLOYED: Learner Lab denies cloudfront:CreateDistribution. Kept as the design for a
+# real account; the pipeline publishes the ALB URL instead.
+
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
 # ponytail: Learner Lab denies CloudFront OAC and OAI, so the frontend is not served from S3.
 # In a real account: private S3 bucket + OAC as the default origin, ALB only for /api/*.

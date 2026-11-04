@@ -72,13 +72,12 @@ jobs:
           docker push "$api"
           docker push "$frontend"
 
-      - name: Ephemeral stacks (nat, database, app, edge)
+      - name: Ephemeral stacks (nat, database, app)
         if: steps.gate.outputs.run == 'true'
         run: |
           infra/deploy-stack.sh pataporte-nat infra/10-nat.yml Environment="$ENVIRONMENT"
           infra/deploy-stack.sh pataporte-database infra/11-database.yml Environment="$ENVIRONMENT"
           infra/deploy-stack.sh pataporte-app infra/12-app.yml Environment="$ENVIRONMENT" ImageTag="$GITHUB_SHA"
-          infra/deploy-stack.sh pataporte-edge infra/13-edge.yml
 
       # ponytail: init_db runs after the new image is live; fine while it only creates
       # missing tables + seed. Move it before the app update if real migrations appear.
@@ -106,11 +105,10 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         run: aws ecs wait services-stable --cluster pataporte --services frontend api worker
 
-      - name: Invalidate CloudFront
+      - name: Publish URL
         if: steps.gate.outputs.run == 'true'
         run: |
           out() { aws cloudformation describe-stacks --stack-name "$1" --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text; }
-          aws cloudfront create-invalidation --distribution-id "$(out pataporte-edge DistributionId)" --paths '/*' >/dev/null
-          url=$(out pataporte-edge Url)
+          url=$(out pataporte-app Url)
           echo "### Pataporte ($ENVIRONMENT) deployed: $url" >> "$GITHUB_STEP_SUMMARY"
           echo "Pataporte: $url"
