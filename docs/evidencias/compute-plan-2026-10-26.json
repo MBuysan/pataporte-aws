@@ -1,0 +1,104 @@
+{
+  "stack": "pataporte-dev-compute",
+  "type": "CREATE",
+  "change_set": "compute-initial-20261026",
+  "created_at": "2026-10-27T02:02:28.724517+00:00",
+  "changes": [
+    {
+      "Action": "Add",
+      "LogicalResourceId": "ApiLogs",
+      "ResourceType": "AWS::Logs::LogGroup",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "ApiService",
+      "ResourceType": "AWS::ECS::Service",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "ApiTask",
+      "ResourceType": "AWS::ECS::TaskDefinition",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "Capacity",
+      "ResourceType": "AWS::ECS::CapacityProvider",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "ClusterCapacity",
+      "ResourceType": "AWS::ECS::ClusterCapacityProviderAssociations",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "Cluster",
+      "ResourceType": "AWS::ECS::Cluster",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "HealthHttpIngress",
+      "ResourceType": "AWS::EC2::SecurityGroupIngress",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "HealthListener",
+      "ResourceType": "AWS::ElasticLoadBalancingV2::Listener",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "HealthRule",
+      "ResourceType": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "HostSecurityGroup",
+      "ResourceType": "AWS::EC2::SecurityGroup",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "Hosts",
+      "ResourceType": "AWS::AutoScaling::AutoScalingGroup",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "LaunchTemplate",
+      "ResourceType": "AWS::EC2::LaunchTemplate",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "LoadBalancer",
+      "ResourceType": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "MigrationLogs",
+      "ResourceType": "AWS::Logs::LogGroup",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "MigrationTask",
+      "ResourceType": "AWS::ECS::TaskDefinition",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "TargetGroup",
+      "ResourceType": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Replacement": null
+    }
+  ]
+}

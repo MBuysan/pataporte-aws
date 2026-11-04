@@ -1,0 +1,11 @@
+{
+  "status": {
+    "status": "COMPLETE",
+    "description": "The scan was completed successfully."
+  },
+  "severity_counts": {
+    "HIGH": 3,
+    "MEDIUM": 9,
+    "LOW": 3
+  }
+}

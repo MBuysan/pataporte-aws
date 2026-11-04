@@ -1,0 +1,20 @@
+{
+  "destination": "local",
+  "requests": 80,
+  "concurrency": 4,
+  "requested_rps": 10.0,
+  "duration_seconds": 7.91,
+  "status_counts": {
+    "200": 80
+  },
+  "errors": 0,
+  "p50_ms": 10.291,
+  "p95_ms": 29.506,
+  "p99_ms": 32.058,
+  "authenticated": true,
+  "paths": [
+    "/mascotas/",
+    "/health/ready"
+  ],
+  "autoscaling_proven": false
+}

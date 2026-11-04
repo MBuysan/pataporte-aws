@@ -1,0 +1,6 @@
+{
+  "pataporte-dev-compute": "UPDATE_COMPLETE",
+  "pataporte-dev-bootstrap": "CREATE_COMPLETE",
+  "pataporte-dev-data": "CREATE_COMPLETE",
+  "pataporte-dev-network": "UPDATE_COMPLETE"
+}

@@ -1,0 +1,25 @@
+{
+  "task_arn": "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/1a44497a8c8b40af9569c493cb405510",
+  "exit_code": 0,
+  "stop_reason": "Essential container in task exited",
+  "container_reason": null,
+  "image_digest": "sha256:b1f9ae355dae2651f7e03efbd92a64b45ae9fda9930a380ec1d4bd91995ba2c1",
+  "verified_at": "2026-11-04T03:03:11.816839+00:00",
+  "database": {
+    "revision": "0003_transactional_outbox",
+    "application_tables": 16,
+    "vaccines": 5,
+    "tls": {
+      "ssl": true,
+      "version": "TLSv1.2",
+      "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+    },
+    "administrative_privileges": {
+      "schema_create": false,
+      "database_create": false,
+      "migration_update": false
+    },
+    "runtime_crud": "passed",
+    "probe_data_retained": false
+  }
+}

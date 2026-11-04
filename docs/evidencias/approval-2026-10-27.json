@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-27",
+  "account": "476855088538",
+  "region": "us-east-1",
+  "source": "explicit human reply to the deployment confirmation",
+  "answer": "Sí, autorizo esos cambios en Academy",
+  "scope": [
+    "one NAT and two application subnet routes",
+    "two private t3.micro ECS hosts with maximum three",
+    "public health-only ALB",
+    "existing LabInstanceProfile and LabRole",
+    "RDS migration and pataporte_app DML account",
+    "two API replicas after successful migration"
+  ]
+}

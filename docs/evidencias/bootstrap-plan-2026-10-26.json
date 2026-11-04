@@ -1,0 +1,26 @@
+{
+  "stack": "pataporte-dev-bootstrap",
+  "type": "CREATE",
+  "change_set": "bootstrap-20261026",
+  "created_at": "2026-10-27T01:59:26.685737+00:00",
+  "changes": [
+    {
+      "Action": "Add",
+      "LogicalResourceId": "AppDatabaseSecret",
+      "ResourceType": "AWS::SecretsManager::Secret",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "BackendRepository",
+      "ResourceType": "AWS::ECR::Repository",
+      "Replacement": null
+    },
+    {
+      "Action": "Add",
+      "LogicalResourceId": "JwtSecret",
+      "ResourceType": "AWS::SecretsManager::Secret",
+      "Replacement": null
+    }
+  ]
+}

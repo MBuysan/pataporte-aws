@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-11-04T02:57:29.084100+00:00",
+  "account": "476855088538",
+  "region": "us-east-1",
+  "sqs_lambda_dynamodb_s3": "passed",
+  "duplicate_direct_lambda_invocation": "passed",
+  "event_id": "d19a7413-6dce-437b-9554-2bdbfebd7341",
+  "artifact_version": "fuxvCMr9vu8zt9l4QO55xxzTAvZ6iy.6",
+  "artifact_encryption": "AES256",
+  "smtp_delivery_verified": false,
+  "exactly_once_smtp_proven": false
+}

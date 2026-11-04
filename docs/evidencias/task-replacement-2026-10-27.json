@@ -1,0 +1,18 @@
+{
+  "started_at": "2026-10-27T14:36:13.546767+00:00",
+  "finished_at": "2026-10-27T14:37:44.486390+00:00",
+  "stopped_task": "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/01bacbfe56024fc0862dad8f14083696",
+  "replacement_tasks": [
+    "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/5f0f0b82c38241d6a3c367fa082014ed"
+  ],
+  "before_tasks": [
+    "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/01bacbfe56024fc0862dad8f14083696",
+    "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/d2b41f3630df4373a40935d72f7ed2b5"
+  ],
+  "after_tasks": [
+    "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/5f0f0b82c38241d6a3c367fa082014ed",
+    "arn:aws:ecs:us-east-1:476855088538:task/pataporte-dev/d2b41f3630df4373a40935d72f7ed2b5"
+  ],
+  "passed": true,
+  "scope": "single API task replacement; not an AZ or host failure test"
+}

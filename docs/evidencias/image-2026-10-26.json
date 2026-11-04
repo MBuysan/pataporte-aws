@@ -1,0 +1,10 @@
+{
+  "repository": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend",
+  "tag": "source-8dc1b227edaac905",
+  "digest": "sha256:4187b5c4f19d206ed2258bf58a4a81ad0e8f8980a96d3ee71b651e73e83a4c0d",
+  "image": "476855088538.dkr.ecr.us-east-1.amazonaws.com/pataporte-dev-backend@sha256:4187b5c4f19d206ed2258bf58a4a81ad0e8f8980a96d3ee71b651e73e83a4c0d",
+  "size_bytes": 94816872,
+  "source_manifest_sha256": "8dc1b227edaac9050b2927a713c09fce16b63c1d7cd7392e0ae6e43001950477",
+  "published_at": "2026-10-27 02:01:37.594000+00:00",
+  "verified_at": "2026-10-27T02:00:26.665488+00:00"
+}
