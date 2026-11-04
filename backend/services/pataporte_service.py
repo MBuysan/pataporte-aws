@@ -1,8 +1,8 @@
 import hashlib
 import io
 import json
-import smtplib
-from messaging.publisher import publicar_email
+from messaging.publisher import publicar_evento
+from services import email_service
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -97,8 +97,7 @@ def generar_pataporte(db: Session, id_mascota: str, emitido_por_rol: str, emitid
     
     
     try: 
-        publicar_email({
-            "tipo": "pdf_email",
+        publicar_evento("PataporteEmitido", {
             "email": tutor.email,
             "nombre_mascota": mascota.nombre,
             "credencial": credencial,
@@ -231,7 +230,7 @@ def _calcular_hash(credencial: dict) -> str:
 
 
 
-def _generar_pdf(credencial: dict, hash_verificacion: str) -> bytes:
+def generar_pdf(credencial: dict, hash_verificacion: str) -> bytes:
     
     """
     genera un PDF con el diseño del pataporte digital, incluyendo:
@@ -432,48 +431,41 @@ def _generar_pdf(credencial: dict, hash_verificacion: str) -> bytes:
 
 
 
-def _enviar_pdf_por_email(destinatario: str, nombre_mascota: str, pdf_bytes: bytes):
-    try:
-        msg = MIMEMultipart()
-        msg["From"]    = settings.MAIL_FROM
-        msg["To"]      = destinatario
-        msg["Subject"] = f"Pataporte de vacunación — {nombre_mascota}"
- 
-        cuerpo_html = f"""
-        <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#111827;">
-          <h2 style="color:#2563EB;">Pataporte</h2>
-          <p>Hola,</p>
-          <p>
-            Adjunto encontrarás el certificado digital de vacunación de
-            <strong>{nombre_mascota}</strong>, generado desde el sistema Pataporte.
-          </p>
-          <p>
-            El PDF contiene un <strong>código de verificación</strong> que podés
-            ingresar en la sección <em>Verificar Pataporte</em> del sistema para
-            confirmar su autenticidad en cualquier momento.
-          </p>
-          <hr style="border:none;border-top:1px solid #E5E7EB;margin:20px 0;" />
-          <p style="font-size:12px;color:#6B7280;">
-            Este correo fue enviado automáticamente por el sistema Pataporte.
-          </p>
-        </div>
-        """
- 
-        msg.attach(MIMEText(cuerpo_html, "html"))
- 
-        adjunto = MIMEBase("application", "pdf")
-        adjunto.set_payload(pdf_bytes)
-        encoders.encode_base64(adjunto)
-        adjunto.add_header(
-            "Content-Disposition",
-            f'attachment; filename="pataporte_{nombre_mascota.lower().replace(" ", "_")}.pdf"',
-        )
-        msg.attach(adjunto)
- 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            servidor.sendmail(settings.MAIL_FROM, destinatario, msg.as_string())
- 
-    except Exception as e:
-        # el email falla silenciosamente — el pataporte ya fue persistido
-        print(f"[ERROR EMAIL PATAPORTE] No se pudo enviar a {destinatario}: {e}")
+def enviar_pdf_por_email(destinatario: str, nombre_mascota: str, pdf_bytes: bytes):
+    msg = MIMEMultipart()
+    msg["From"]    = settings.MAIL_FROM
+    msg["To"]      = destinatario
+    msg["Subject"] = f"Pataporte de vacunación — {nombre_mascota}"
+
+    cuerpo_html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#111827;">
+      <h2 style="color:#2563EB;">Pataporte</h2>
+      <p>Hola,</p>
+      <p>
+        Adjunto encontrarás el certificado digital de vacunación de
+        <strong>{nombre_mascota}</strong>, generado desde el sistema Pataporte.
+      </p>
+      <p>
+        El PDF contiene un <strong>código de verificación</strong> que podés
+        ingresar en la sección <em>Verificar Pataporte</em> del sistema para
+        confirmar su autenticidad en cualquier momento.
+      </p>
+      <hr style="border:none;border-top:1px solid #E5E7EB;margin:20px 0;" />
+      <p style="font-size:12px;color:#6B7280;">
+        Este correo fue enviado automáticamente por el sistema Pataporte.
+      </p>
+    </div>
+    """
+
+    msg.attach(MIMEText(cuerpo_html, "html"))
+
+    adjunto = MIMEBase("application", "pdf")
+    adjunto.set_payload(pdf_bytes)
+    encoders.encode_base64(adjunto)
+    adjunto.add_header(
+        "Content-Disposition",
+        f'attachment; filename="pataporte_{nombre_mascota.lower().replace(" ", "_")}.pdf"',
+    )
+    msg.attach(adjunto)
+
+    email_service.enviar(msg)

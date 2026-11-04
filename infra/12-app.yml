@@ -1,0 +1,606 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Pataporte application (ephemeral): ALB reachable only from CloudFront, ECS Fargate
+  cluster with the API service, the SQS worker (Fargate Spot) and the one-off
+  init_db task, autoscaling, alarms and a CloudWatch dashboard.
+
+# ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: pataporte
+    Description: Prefix of the network/storage/database stack exports
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, demo]
+  ImageTag:
+    Type: String
+    Description: Tag of the pataporte-api image in ECR (the pipeline passes the git sha)
+  CloudFrontPrefixListId:
+    Type: String
+    Default: pl-3b927c52
+    Description: com.amazonaws.global.cloudfront.origin-facing managed prefix list (us-east-1)
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Deployment
+        Parameters: [Environment, ImageTag]
+      - Label:
+          default: Wiring
+        Parameters: [ProjectName, CloudFrontPrefixListId]
+
+Conditions:
+  IsDemo: !Equals [!Ref Environment, demo]
+
+Resources:
+  # --- Load balancer ---
+  # ponytail: any CloudFront distribution can reach this ALB, not only ours.
+  # Add a secret origin header checked by a listener rule if that matters.
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Pataporte ALB, HTTP only from CloudFront
+      VpcId:
+        Fn::ImportValue: !Sub ${ProjectName}-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourcePrefixListId: !Ref CloudFrontPrefixListId
+
+  AppIngressFromAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
+      IpProtocol: tcp
+      FromPort: 8000
+      ToPort: 8000
+      SourceSecurityGroupId: !Ref AlbSecurityGroup
+
+  Alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups: [!Ref AlbSecurityGroup]
+      Subnets:
+        - Fn::ImportValue: !Sub ${ProjectName}-PublicSubnet1
+        - Fn::ImportValue: !Sub ${ProjectName}-PublicSubnet2
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: ip
+      Protocol: HTTP
+      Port: 8000
+      VpcId:
+        Fn::ImportValue: !Sub ${ProjectName}-VpcId
+      HealthCheckPath: /api/health
+      Matcher:
+        HttpCode: '200'
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '30'
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref Alb
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  # --- ECS ---
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${ProjectName}
+      CapacityProviders: [FARGATE, FARGATE_SPOT]
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 1
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${ProjectName}
+      RetentionInDays: 3
+
+  # API and worker share the same environment (same image, same settings.py).
+  ApiTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-api
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      ContainerDefinitions:
+        - Name: api
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/pataporte-api:${ImageTag}
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8000
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: api
+          Environment:
+            - Name: DB_HOST
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbEndpoint
+            - Name: DB_PORT
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbPort
+            - Name: DB_NAME
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbName
+            - Name: DB_USER
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbUser
+            - Name: ALGORITHM
+              Value: HS256
+            - Name: ACCESS_TOKEN_EXPIRE_MINUTES
+              Value: '60'
+            # the browser calls /api on the same CloudFront origin, so CORS never applies;
+            # a harmless value keeps settings.py from falling back to its defaults
+            - Name: CORS_ORIGINS
+              Value: http://localhost
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: UPLOADS_BUCKET
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-UploadsBucketName
+            - Name: QUEUE_URL
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-QueueUrl
+            - Name: EVENT_BUS_NAME
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-EventBusName
+            - Name: SMTP_HOST
+              Value: smtp.gmail.com
+            - Name: SMTP_PORT
+              Value: '587'
+            - Name: ENVIRONMENT
+              Value: !Ref Environment
+            - Name: LOG_LEVEL
+              Value: INFO
+          Secrets:
+            - Name: DB_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:password::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-DbSecretArn
+            - Name: SECRET_KEY
+              ValueFrom: !Sub
+                - '${Arn}:SECRET_KEY::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_USERNAME
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_USERNAME::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_PASSWORD::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_FROM
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_FROM::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+
+  WorkerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-worker
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      ContainerDefinitions:
+        - Name: worker
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/pataporte-api:${ImageTag}
+          Essential: true
+          Command: [python, -m, messaging.consumer]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: worker
+          Environment:
+            - Name: DB_HOST
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbEndpoint
+            - Name: DB_PORT
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbPort
+            - Name: DB_NAME
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbName
+            - Name: DB_USER
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbUser
+            - Name: ALGORITHM
+              Value: HS256
+            - Name: ACCESS_TOKEN_EXPIRE_MINUTES
+              Value: '60'
+            # the browser calls /api on the same CloudFront origin, so CORS never applies;
+            # a harmless value keeps settings.py from falling back to its defaults
+            - Name: CORS_ORIGINS
+              Value: http://localhost
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: UPLOADS_BUCKET
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-UploadsBucketName
+            - Name: QUEUE_URL
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-QueueUrl
+            - Name: EVENT_BUS_NAME
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-EventBusName
+            - Name: SMTP_HOST
+              Value: smtp.gmail.com
+            - Name: SMTP_PORT
+              Value: '587'
+            - Name: ENVIRONMENT
+              Value: !Ref Environment
+            - Name: LOG_LEVEL
+              Value: INFO
+          Secrets:
+            - Name: DB_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:password::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-DbSecretArn
+            - Name: SECRET_KEY
+              ValueFrom: !Sub
+                - '${Arn}:SECRET_KEY::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_USERNAME
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_USERNAME::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_PASSWORD::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_FROM
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_FROM::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+
+  # one-off, run by the pipeline with `aws ecs run-task` before traffic matters
+  InitTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-init
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/LabRole
+      ContainerDefinitions:
+        - Name: init
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/pataporte-api:${ImageTag}
+          Essential: true
+          Command: [python, -m, scripts.init_db]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: init
+          Environment:
+            - Name: DB_HOST
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbEndpoint
+            - Name: DB_PORT
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbPort
+            - Name: DB_NAME
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbName
+            - Name: DB_USER
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-DbUser
+            - Name: ALGORITHM
+              Value: HS256
+            - Name: ACCESS_TOKEN_EXPIRE_MINUTES
+              Value: '60'
+            # the browser calls /api on the same CloudFront origin, so CORS never applies;
+            # a harmless value keeps settings.py from falling back to its defaults
+            - Name: CORS_ORIGINS
+              Value: http://localhost
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: UPLOADS_BUCKET
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-UploadsBucketName
+            - Name: QUEUE_URL
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-QueueUrl
+            - Name: EVENT_BUS_NAME
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-EventBusName
+            - Name: SMTP_HOST
+              Value: smtp.gmail.com
+            - Name: SMTP_PORT
+              Value: '587'
+            - Name: ENVIRONMENT
+              Value: !Ref Environment
+            - Name: LOG_LEVEL
+              Value: INFO
+          Secrets:
+            - Name: DB_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:password::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-DbSecretArn
+            - Name: SECRET_KEY
+              ValueFrom: !Sub
+                - '${Arn}:SECRET_KEY::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_USERNAME
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_USERNAME::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_PASSWORD
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_PASSWORD::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+            - Name: MAIL_FROM
+              ValueFrom: !Sub
+                - '${Arn}:MAIL_FROM::'
+                - Arn:
+                    Fn::ImportValue: !Sub ${ProjectName}-AppSecretArn
+
+  ApiService:
+    Type: AWS::ECS::Service
+    DependsOn: Listener
+    Properties:
+      ServiceName: api
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref ApiTaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: !If [IsDemo, 2, 1]
+      HealthCheckGracePeriodSeconds: 60
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - Fn::ImportValue: !Sub ${ProjectName}-PrivateSubnet1
+            - Fn::ImportValue: !Sub ${ProjectName}-PrivateSubnet2
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
+      LoadBalancers:
+        - ContainerName: api
+          ContainerPort: 8000
+          TargetGroupArn: !Ref TargetGroup
+
+  # ponytail: Spot can interrupt the worker; SQS redelivers unacked messages, so it is safe.
+  WorkerService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: worker
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref WorkerTaskDefinition
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
+      DesiredCount: 1
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - Fn::ImportValue: !Sub ${ProjectName}-PrivateSubnet1
+            - Fn::ImportValue: !Sub ${ProjectName}-PrivateSubnet2
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
+
+  # --- Autoscaling (no RoleARN: Application Auto Scaling uses its service-linked role) ---
+  # API: dev 1..2, demo 2..4, target tracking on CPU and requests per target.
+  ApiScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      ResourceId: !Sub service/${Cluster}/${ApiService.Name}
+      MinCapacity: !If [IsDemo, 2, 1]
+      MaxCapacity: !If [IsDemo, 4, 2]
+
+  ApiCpuScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: api-cpu
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ApiScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleInCooldown: 120
+        ScaleOutCooldown: 60
+
+  ApiRequestScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: api-requests
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ApiScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 100
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ALBRequestCountPerTarget
+          ResourceLabel: !Sub ${Alb.LoadBalancerFullName}/${TargetGroup.TargetGroupFullName}
+        ScaleInCooldown: 120
+        ScaleOutCooldown: 60
+
+  # Worker: demo only, 1..3 on queue depth.
+  # ponytail: tracks total visible messages, not backlog per task; fine for a demo load.
+  WorkerScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Condition: IsDemo
+    Properties:
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      ResourceId: !Sub service/${Cluster}/${WorkerService.Name}
+      MinCapacity: 1
+      MaxCapacity: 3
+
+  WorkerQueueScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Condition: IsDemo
+    Properties:
+      PolicyName: worker-queue-depth
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref WorkerScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 10
+        CustomizedMetricSpecification:
+          Namespace: AWS/SQS
+          MetricName: ApproximateNumberOfMessagesVisible
+          Statistic: Average
+          Dimensions:
+            - Name: QueueName
+              Value:
+                Fn::ImportValue: !Sub ${ProjectName}-QueueName
+        ScaleInCooldown: 120
+        ScaleOutCooldown: 60
+
+  # --- Alarms (no actions: visible in the console/dashboard only) ---
+  Alb5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${ProjectName}-alb-5xx
+      AlarmDescription: API returned 5xx responses
+      Namespace: AWS/ApplicationELB
+      MetricName: HTTPCode_Target_5XX_Count
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !GetAtt Alb.LoadBalancerFullName
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  AlbLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${ProjectName}-alb-latency
+      AlarmDescription: API average response time above 2 seconds
+      Namespace: AWS/ApplicationELB
+      MetricName: TargetResponseTime
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !GetAtt Alb.LoadBalancerFullName
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 2
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  DlqAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${ProjectName}-dlq-messages
+      AlarmDescription: Events failed 5 times and landed in the DLQ
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value:
+            Fn::ImportValue: !Sub ${ProjectName}-DlqName
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub ${ProjectName}
+      DashboardBody: !Sub
+        - |
+          {"widgets": [
+            {"type": "metric", "x": 0, "y": 0, "width": 12, "height": 6, "properties": {
+              "title": "ALB requests and 5xx", "region": "${AWS::Region}", "stat": "Sum", "period": 60,
+              "metrics": [["AWS/ApplicationELB", "RequestCount", "LoadBalancer", "${Alb.LoadBalancerFullName}"],
+                          [".", "HTTPCode_Target_5XX_Count", ".", "."]]}},
+            {"type": "metric", "x": 12, "y": 0, "width": 12, "height": 6, "properties": {
+              "title": "Response time (s)", "region": "${AWS::Region}", "stat": "Average", "period": 60,
+              "metrics": [["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", "${Alb.LoadBalancerFullName}"]]}},
+            {"type": "metric", "x": 0, "y": 6, "width": 12, "height": 6, "properties": {
+              "title": "ECS CPU %", "region": "${AWS::Region}", "stat": "Average", "period": 60,
+              "metrics": [["AWS/ECS", "CPUUtilization", "ClusterName", "${Cluster}", "ServiceName", "api"],
+                          ["...", "worker"]]}},
+            {"type": "metric", "x": 12, "y": 6, "width": 12, "height": 6, "properties": {
+              "title": "Queue and DLQ visible messages", "region": "${AWS::Region}", "stat": "Maximum", "period": 60,
+              "metrics": [["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${Queue}"],
+                          ["...", "${Dlq}"]]}}
+          ]}
+        - Queue:
+            Fn::ImportValue: !Sub ${ProjectName}-QueueName
+          Dlq:
+            Fn::ImportValue: !Sub ${ProjectName}-DlqName
+
+Outputs:
+  AlbDnsName:
+    Value: !GetAtt Alb.DNSName
+    Export:
+      Name: !Sub ${ProjectName}-AlbDnsName
+  ClusterName:
+    Value: !Ref Cluster
+    Export:
+      Name: !Sub ${ProjectName}-ClusterName
+  ApiServiceName:
+    Value: !GetAtt ApiService.Name
+  WorkerServiceName:
+    Value: !GetAtt WorkerService.Name
+  InitTaskDefinitionArn:
+    Value: !Ref InitTaskDefinition
+    Export:
+      Name: !Sub ${ProjectName}-InitTaskDefinitionArn
+  InitTaskFamily:
+    Value: !Sub ${ProjectName}-init
+    Export:
+      Name: !Sub ${ProjectName}-InitTaskFamily

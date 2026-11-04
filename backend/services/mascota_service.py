@@ -1,7 +1,5 @@
 import secrets
 import string
-import smtplib
-import os
 from io import BytesIO
 from datetime import date, datetime, timedelta, timezone
 from sqlalchemy.orm import Session
@@ -9,6 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from config.settings import settings
+from messaging.publisher import publicar_evento
+from services import email_service, storage_service
 from schemas.mascota import MascotaCreate
 from config.database import Mascota, CodigoAccesoMascota, UsuarioTutor, MascotaTutor
 
@@ -172,7 +172,7 @@ def eliminar(db: Session, id_mascota: str, id_tutor: str):
             detail="Mascota no encontrada o sin permisos"
         )
 
-    _enviar_historial_por_email(db, mascota)
+    _respaldar_historial(db, mascota)
 
     try:
         db.delete(mascota)
@@ -185,7 +185,7 @@ def eliminar(db: Session, id_mascota: str, id_tutor: str):
             detail=f"No se pudo eliminar la mascota: {str(e)}"
         )
 
-def _enviar_historial_por_email(db: Session, mascota):
+def _respaldar_historial(db: Session, mascota):
     tutor = (
         db.query(UsuarioTutor)
         .join(MascotaTutor)
@@ -325,20 +325,35 @@ def _enviar_historial_por_email(db: Session, mascota):
         pdf.drawString(60, y, "Sin vacunas registradas")
         y -= 20
 
-    # GUARDAR PDF
+    # GUARDAR PDF en S3 y avisar al worker para que lo mande por email
     pdf.save()
-    pdf_buffer.seek(0)
 
-    # EMAIL
+    pdf_key = f"historiales/{mascota.id_mascota}.pdf"
+    try:
+        storage_service.subir(pdf_key, pdf_buffer.getvalue(), "application/pdf")
+        publicar_evento("MascotaEliminada", {
+            "email": tutor.email,
+            "nombre_mascota": mascota.nombre,
+            "pdf_key": pdf_key,
+        })
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"No se pudo generar el respaldo: {str(e)}"
+        )
+
+
+def enviar_historial_por_email(email: str, nombre_mascota: str, pdf_bytes: bytes):
+    """La llama el worker con el PDF de respaldo ya generado."""
     mensaje = MIMEMultipart()
-    mensaje["Subject"] = f"Respaldo clínico de {mascota.nombre}"
+    mensaje["Subject"] = f"Respaldo clínico de {nombre_mascota}"
     mensaje["From"] = settings.MAIL_FROM
-    mensaje["To"] = tutor.email
+    mensaje["To"] = email
 
     cuerpo = f"""
 Hola,
 
-Adjuntamos el respaldo clínico de {mascota.nombre}
+Adjuntamos el respaldo clínico de {nombre_mascota}
 previo a la eliminación definitiva de su perfil en Pataporte.
 
 Equipo Pataporte
@@ -346,22 +361,13 @@ Equipo Pataporte
 
     mensaje.attach(MIMEText(cuerpo, "plain", "utf-8"))
 
-    adjunto = MIMEApplication(pdf_buffer.read(), _subtype="pdf")
+    adjunto = MIMEApplication(pdf_bytes, _subtype="pdf")
     adjunto.add_header(
         "Content-Disposition",
         "attachment",
-        filename=f"historial_{mascota.nombre}.pdf"
+        filename=f"historial_{nombre_mascota}.pdf"
     )
 
     mensaje.attach(adjunto)
 
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
-            servidor.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-            servidor.sendmail(settings.MAIL_FROM, tutor.email, mensaje.as_string())
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"No se pudo enviar el respaldo: {str(e)}"
-        )
+    email_service.enviar(mensaje)

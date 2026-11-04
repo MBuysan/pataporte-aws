@@ -1,7 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import date, datetime
 from typing import Optional
 from enum import Enum
+
+from services.storage_service import url_firmada
+
+
+def _foto_a_url(key: Optional[str]) -> Optional[str]:
+    # foto_url guarda la key de S3; hacia afuera se devuelve una URL firmada temporal
+    if not key or key.startswith("http"):
+        return key
+    return url_firmada(key)
 
 """
 el tipo enum, permite marcar los únicos valores validos para un campo, 
@@ -61,6 +70,11 @@ class MascotaResponse(BaseModel):
     fecha_registro: datetime
     estado: EstadoEnum
 
+    @field_validator("foto_url")
+    @classmethod
+    def firmar_foto(cls, v):
+        return _foto_a_url(v)
+
     class Config:
         from_attributes = True  # permite convertir objetos SQLAlchemy a este schema
 
@@ -108,6 +122,11 @@ class MascotaResumen(BaseModel):
     especie:    EspecieEnum
     foto_url:   Optional[str]
     edad:       Optional[int]
+
+    @field_validator("foto_url")
+    @classmethod
+    def firmar_foto(cls, v):
+        return _foto_a_url(v)
  
     class Config:
         from_attributes = True

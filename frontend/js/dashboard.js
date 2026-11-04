@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const detalle = [formatString(m.especie), edadStr].filter(Boolean).join(" | ");
 
       const fotoHtml = m.foto_url
-        ? `<img src="${API_URL}${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
+        ? `<img src="${m.foto_url}" alt="${m.nombre}" class="foto-mascota" />`
         : `<div class="foto-placeholder">${m.nombre.charAt(0).toUpperCase()}</div>`;
 
       card.innerHTML = `

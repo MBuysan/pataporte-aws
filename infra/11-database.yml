@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Pataporte database (ephemeral): RDS PostgreSQL 16 in the isolated subnets,
+  reachable only from the ECS tasks security group. Multi-AZ in demo.
+
+# ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: pataporte
+    Description: Prefix of the network stack exports
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, demo]
+
+Conditions:
+  IsDemo: !Equals [!Ref Environment, demo]
+
+Resources:
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Pataporte isolated subnets
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${ProjectName}-IsolatedSubnet1
+        - Fn::ImportValue: !Sub ${ProjectName}-IsolatedSubnet2
+
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Pataporte RDS, 5432 only from the ECS tasks
+      VpcId:
+        Fn::ImportValue: !Sub ${ProjectName}-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+            Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
+
+  # Ephemeral by design: the pipeline creates and destroys this stack, so the data
+  # is disposable (Delete, no final snapshot). Do not reuse this for real data.
+  Database:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Engine: postgres
+      EngineVersion: '16.10'
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: '20'
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: pataporte
+      MasterUsername: pataporte
+      ManageMasterUserPassword: true
+      MultiAZ: !If [IsDemo, true, false]
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      VPCSecurityGroups: [!Ref DbSecurityGroup]
+      BackupRetentionPeriod: 1
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+
+Outputs:
+  DbEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+    Export:
+      Name: !Sub ${ProjectName}-DbEndpoint
+  DbPort:
+    Value: !GetAtt Database.Endpoint.Port
+    Export:
+      Name: !Sub ${ProjectName}-DbPort
+  DbSecretArn:
+    Description: RDS-managed master secret (JSON with username/password)
+    Value: !GetAtt Database.MasterUserSecret.SecretArn
+    Export:
+      Name: !Sub ${ProjectName}-DbSecretArn
+  DbName:
+    Value: pataporte
+    Export:
+      Name: !Sub ${ProjectName}-DbName
+  DbUser:
+    Value: pataporte
+    Export:
+      Name: !Sub ${ProjectName}-DbUser
