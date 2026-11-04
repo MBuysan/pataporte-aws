@@ -142,6 +142,8 @@ Resources:
     Properties:
       TableName: pataporte-auditoria
       BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
         - AttributeName: pk
           AttributeType: S
@@ -155,6 +157,8 @@ Resources:
     Properties:
       TableName: pataporte-entregas
       BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
         - AttributeName: id_evento
           AttributeType: S
