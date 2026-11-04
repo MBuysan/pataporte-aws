@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Pataporte edge (ephemeral): CloudFront in front of the private frontend bucket
-  (OAC) and the ALB (/api/*), plus the frontend bucket policy.
+  (OAI) and the ALB (/api/*), plus the frontend bucket policy.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
 
@@ -12,14 +12,13 @@ Parameters:
     Description: Prefix of the storage/app stack exports
 
 Resources:
-  FrontendOac:
-    Type: AWS::CloudFront::OriginAccessControl
+  # ponytail: legacy OAI instead of OAC because Learner Lab denies
+  # cloudfront:CreateOriginAccessControl. Switch back to OAC in a real account.
+  FrontendOai:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
-      OriginAccessControlConfig:
-        Name: !Sub ${ProjectName}-frontend
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub ${ProjectName}-frontend
 
   # Pages are static files: / -> index.html, the rest live under /pages/*.html,
   # requested by their full path, so no SPA rewrite or error page is needed.
@@ -36,9 +35,8 @@ Resources:
           - Id: frontend
             DomainName:
               Fn::ImportValue: !Sub ${ProjectName}-FrontendBucketDomainName
-            OriginAccessControlId: !GetAtt FrontendOac.Id
             S3OriginConfig:
-              OriginAccessIdentity: ''
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${FrontendOai}
           # ponytail: CloudFront -> ALB is plain HTTP (no domain/ACM cert in Learner Lab).
           - Id: api
             DomainName:
@@ -61,7 +59,7 @@ Resources:
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # Managed-CachingDisabled
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # Managed-AllViewerExceptHostHeader
 
-  # Here and not in the storage stack: it needs the distribution ARN (avoids a cycle).
+  # Here and not in the storage stack: it needs the OAI, which is ephemeral.
   FrontendBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -72,15 +70,12 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: cloudfront.amazonaws.com
+              CanonicalUser: !GetAtt FrontendOai.S3CanonicalUserId
             Action: s3:GetObject
             Resource: !Sub
               - ${BucketArn}/*
               - BucketArn:
                   Fn::ImportValue: !Sub ${ProjectName}-FrontendBucketArn
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}
 
 Outputs:
   DistributionId:
