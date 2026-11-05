@@ -90,15 +90,25 @@ jobs:
               sleep 5
             done
             recovered=$(date +%s)
-            az_after=$(aws rds describe-db-instances --db-instance-identifier "$DB_ID" \
-              --query 'DBInstances[0].AvailabilityZone' --output text)
+            # RDS reports "available" before it refreshes AvailabilityZone, so wait up to 5 min for the swap
+            for _ in $(seq 1 30); do
+              az_after=$(aws rds describe-db-instances --db-instance-identifier "$DB_ID" \
+                --query 'DBInstances[0].AvailabilityZone' --output text)
+              [ "$az_after" != "$az_before" ] && break
+              sleep 10
+            done
             echo "AZ after: $az_after"
+            # RDS's own record of the failover, independent of the AZ field
+            failover_events=$(aws rds describe-events --source-type db-instance --source-identifier "$DB_ID" \
+              --duration 30 --query "Events[?contains(Message, \`failover\`) || contains(Message, \`Failover\`)].[Date,Message]" \
+              --output text)
+            echo "RDS events:"; echo "${failover_events:-none}"
             # keep probing ~30s: the app reconnects after RDS reports available
             for _ in 1 2 3 4 5 6; do sleep 5; probe "post" || true; done
             downtime=0
             [ -n "$first_fail" ] && downtime=$((last_fail - first_fail + 5))
             ok=true
-            [ "$status" = available ] && [ "$az_after" != "$az_before" ] && probe "final" || ok=false
+            [ "$status" = available ] && { [ "$az_after" != "$az_before" ] || [ -n "$failover_events" ]; } && probe "final" || ok=false
             {
               echo "### Drill rds-failover"
               echo "| | |"
@@ -107,6 +117,7 @@ jobs:
               echo "| DB available again after | $((recovered - start)) s |"
               echo "| failed requests | $failed / $probes |"
               echo "| observed downtime (approx., 5s resolution) | ${downtime} s |"
+              echo "| RDS failover events | $(echo "${failover_events:-none}" | tr '\t\n' ' ;') |"
             } >> "$GITHUB_STEP_SUMMARY"
             ;;
 
