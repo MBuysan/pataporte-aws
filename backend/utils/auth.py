@@ -23,20 +23,21 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     return {"id": sub, "rol": rol}
 
 
-def get_current_vet(token: str = Depends(oauth2_scheme)) -> str:
-    """Solo veterinarios: devuelve el id_veterinario."""
+def _exigir_rol(token: str, rol: str) -> str:
     payload = _decodificar(token)
-    if payload.get("rol") != "veterinario":
-        raise HTTPException(status_code=401, detail="No autorizado")
     sub = payload.get("sub")
     if not sub:
         raise HTTPException(status_code=401, detail="Token inválido")
+    if payload.get("rol") != rol:
+        raise HTTPException(status_code=403, detail="Permisos insuficientes")
     return sub
+
+
+def get_current_vet(token: str = Depends(oauth2_scheme)) -> str:
+    """Solo veterinarios: devuelve el id_veterinario."""
+    return _exigir_rol(token, "veterinario")
 
 
 def get_current_tutor(token: str = Depends(oauth2_scheme)) -> str:
-    """Devuelve el sub del token. No valida el rol: los veterinarios también usan /mascotas."""
-    sub = _decodificar(token).get("sub")
-    if not sub:
-        raise HTTPException(status_code=401, detail="Token inválido")
-    return sub
+    """Solo tutores: devuelve el id_tutor. Los endpoints para ambos roles usan get_current_user."""
+    return _exigir_rol(token, "tutor")
