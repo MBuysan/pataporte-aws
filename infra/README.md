@@ -7,7 +7,7 @@ Plantillas CloudFormation para AWS Academy Learner Lab (us-east-1, 2 AZ). Todos 
 | Stack | Plantilla | Tipo | Contenido |
 |---|---|---|---|
 | `pataporte-network` | `01-network.yml` | persistente | VPC 10.20.0.0/16, subredes públicas/privadas/aisladas, endpoints gateway S3 y DynamoDB, SG de las tareas ECS |
-| `pataporte-storage` | `02-storage.yml` | persistente | buckets S3 (uploads; el de frontend quedó sin uso), ECR `pataporte-api` y `pataporte-frontend`, SQS + DLQ, bus EventBridge `pataporte`, Lambda `pataporte-audit`, DynamoDB `pataporte-auditoria` y `pataporte-entregas` (deduplicación del worker, TTL 7 días), secreto de la app |
+| `pataporte-storage` | `02-storage.yml` | persistente | bucket S3 de uploads, ECR `pataporte-api` y `pataporte-frontend`, SQS + DLQ, bus EventBridge `pataporte`, Lambda `pataporte-audit`, DynamoDB `pataporte-auditoria` y `pataporte-entregas` (deduplicación del worker, TTL 7 días), secreto de la app |
 | `pataporte-nat` | `10-nat.yml` | efímero | NAT Gateway (1 en dev, 1 por AZ en demo) |
 | `pataporte-database` | `11-database.yml` | efímero | RDS PostgreSQL 16 (Multi-AZ en demo). Al destruir deja un snapshot final que el próximo deploy restaura |
 | `pataporte-app` | `12-app.yml` | efímero | ALB, ECS Fargate (api, worker en Spot, tarea init), autoscaling, alarmas y dashboard |
@@ -25,7 +25,7 @@ En *Settings > Secrets and variables > Actions*: `AWS_ACCESS_KEY_ID`, `AWS_SECRE
 
 - **ci**: en cada PR y push a ramas que no sean `main`: pytest, cfn-lint y build de la imagen.
 - **deploy** (*Actions > deploy > Run workflow*, elegir `dev` o `demo`): despliega todos los stacks, publica la imagen, corre `init_db` y espera los servicios. La URL del ALB queda en el resumen del job. Un push a `main` solo redespliega si `pataporte-app` ya existe (mantiene su entorno).
-- **destroy** (*Run workflow* escribiendo `destroy`): borra edge, app, database y nat y conserva los 2 snapshots más nuevos de la base. Con `include_persistent` también vacía los buckets (todas las versiones) y borra storage y network (el repositorio ECR se borra con sus imágenes); los snapshots se conservan salvo que se marque `delete_snapshots`.
+- **destroy** (*Run workflow* escribiendo `destroy`): borra edge, app, database y nat y conserva los 2 snapshots más nuevos de la base. Con `include_persistent` también vacía el bucket de uploads (todas las versiones) y borra storage y network (el repositorio ECR se borra con sus imágenes); los snapshots se conservan salvo que se marque `delete_snapshots`.
 
 ## Backups
 
