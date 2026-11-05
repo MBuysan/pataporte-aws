@@ -1,0 +1,111 @@
+name: loadtest
+
+# Read-only load test (GET /api/health, GET /api/vacunas/tipos) with k6; shows api scale-out.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Base URL (empty = pataporte-app stack output Url)
+        type: string
+        default: ''
+      profile:
+        description: smoke (30s, 5 VUs) or scale (ramp 2m + hold + 1m ramp-down)
+        type: choice
+        options: [smoke, scale]
+        default: scale
+      vus:
+        description: Virtual users at the plateau (scale profile)
+        type: string
+        default: '40'
+      hold:
+        description: Plateau duration (scale profile), e.g. 7m
+        type: string
+        default: 7m
+
+env:
+  AWS_REGION: us-east-1
+  CLUSTER: pataporte
+
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve URL and start ECS sampler
+        env:
+          INPUT_URL: ${{ inputs.url }}
+        run: |
+          set -euo pipefail
+          url=$INPUT_URL
+          if [ -z "$url" ]; then
+            url=$(aws cloudformation describe-stacks --stack-name pataporte-app \
+              --query "Stacks[0].Outputs[?OutputKey=='Url'].OutputValue" --output text)
+          fi
+          echo "BASE_URL=${url%/}" >> "$GITHUB_ENV"
+          echo "target: $url"
+          echo "time desired running pending" > ecs-api.log
+          # ponytail: background sampler lives until the job ends or the stop step kills it
+          (while :; do
+            echo "$(date -u +%H:%M:%S) $(aws ecs describe-services --cluster "$CLUSTER" --services api \
+              --query 'services[0].[desiredCount,runningCount,pendingCount]' --output text 2>&1)" >> ecs-api.log
+            sleep 30
+          done) >/dev/null 2>&1 &
+          echo "SAMPLER_PID=$!" >> "$GITHUB_ENV"
+
+      - uses: grafana/setup-k6-action@v1
+
+      - uses: grafana/run-k6-action@v1
+        env:
+          PROFILE: ${{ inputs.profile }}
+          VUS: ${{ inputs.vus }}
+          HOLD: ${{ inputs.hold }}
+        with:
+          path: loadtest/k6.js
+          flags: --summary-export=summary.json
+          cloud-comment-on-pr: false
+          disable-analytics: true
+          debug: true
+
+      - name: Summary
+        if: always()
+        run: |
+          kill "${SAMPLER_PID:-0}" 2>/dev/null || true
+          echo "$(date -u +%H:%M:%S) $(aws ecs describe-services --cluster "$CLUSTER" --services api \
+            --query 'services[0].[desiredCount,runningCount,pendingCount]' --output text)" >> ecs-api.log || true
+          {
+            echo "### Load test (${{ inputs.profile }}) against $BASE_URL"
+            if [ -f summary.json ]; then
+              jq -r '.metrics as $m | "| metric | value |\n|---|---|",
+                "| requests | \($m.http_reqs.count) (\($m.http_reqs.rate | floor) req/s) |",
+                "| failed | \(($m.http_req_failed.value * 100 * 100 | round) / 100)% |",
+                "| p95 | \($m.http_req_duration["p(95)"] | round) ms |",
+                "| p99 | \($m.http_req_duration["p(99)"] | round) ms |",
+                "| max | \($m.http_req_duration.max | round) ms |"' summary.json
+            else
+              echo "k6 produced no summary (see the run step logs)"
+            fi
+            echo
+            echo "ECS api service (sampled every 30s):"
+            echo '```'
+            cat ecs-api.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat ecs-api.log
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: k6-summary
+          path: |
+            summary.json
+            ecs-api.log
+          if-no-files-found: warn

@@ -25,7 +25,7 @@ jobs:
     if: inputs.confirm == 'destroy'
     runs-on: ubuntu-latest
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -59,24 +59,22 @@ jobs:
             fi
           done
 
-      # ECR images go with the repository (EmptyOnDelete: true); buckets must be emptied first,
-      # including every object version and delete marker (the uploads bucket is versioned).
+      # ECR images go with the repository (EmptyOnDelete: true); the uploads bucket must be emptied
+      # first, including every object version and delete marker (it is versioned).
       - name: Delete persistent stacks (storage, network)
         if: inputs.include_persistent
         run: |
           out() { aws cloudformation describe-stacks --stack-name pataporte-storage --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text 2>/dev/null || true; }
-          for key in UploadsBucketName FrontendBucketName; do
-            bucket=$(out "$key")
-            if [ -n "$bucket" ] && [ "$bucket" != "None" ]; then
-              # ponytail: relists the whole bucket per batch of 1000 (O(n^2)); fine for a lab bucket
-              while :; do
-                batch=$(aws s3api list-object-versions --bucket "$bucket" --output json \
-                  | jq -c '{Objects: [(.Versions // [])[], (.DeleteMarkers // [])[] | {Key, VersionId}][:1000], Quiet: true}')
-                [ "$(jq '.Objects | length' <<<"$batch")" -gt 0 ] || break
-                aws s3api delete-objects --bucket "$bucket" --delete "$batch" >/dev/null
-              done
-            fi
-          done
+          bucket=$(out UploadsBucketName)
+          if [ -n "$bucket" ] && [ "$bucket" != "None" ]; then
+            # ponytail: relists the whole bucket per batch of 1000 (O(n^2)); fine for a lab bucket
+            while :; do
+              batch=$(aws s3api list-object-versions --bucket "$bucket" --output json \
+                | jq -c '{Objects: [(.Versions // [])[], (.DeleteMarkers // [])[] | {Key, VersionId}][:1000], Quiet: true}')
+              [ "$(jq '.Objects | length' <<<"$batch")" -gt 0 ] || break
+              aws s3api delete-objects --bucket "$bucket" --delete "$batch" >/dev/null
+            done
+          fi
           for stack in pataporte-storage pataporte-network; do
             echo "deleting $stack"
             aws cloudformation delete-stack --stack-name "$stack"

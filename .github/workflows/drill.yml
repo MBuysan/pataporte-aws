@@ -1,0 +1,180 @@
+name: drill
+
+# Resilience drills against the running environment (meant for Environment=demo).
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "drill" to confirm (this disrupts the running app)
+        required: true
+        type: string
+      scenario:
+        description: rds-failover (Multi-AZ failover) or az-tasks (stop api/frontend tasks in the first AZ)
+        type: choice
+        options: [rds-failover, az-tasks]
+        default: rds-failover
+
+concurrency:
+  group: pataporte-aws
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  CLUSTER: pataporte
+  DB_ID: pataporte-db
+
+jobs:
+  drill:
+    if: inputs.confirm == 'drill'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Run ${{ inputs.scenario }}
+        env:
+          SCENARIO: ${{ inputs.scenario }}
+        run: |
+          set -euo pipefail
+          out() { aws cloudformation describe-stacks --stack-name "$1" --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text; }
+          now() { date -u +%H:%M:%S; }
+          url=$(out pataporte-app Url)
+          echo "app: $url"
+
+          # one probe per call: logs "time health tipos" and counts failures (tipos needs the DB)
+          probes=0; failed=0; first_fail=""; last_fail=""
+          probe() {
+            local h t
+            h=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "$url/api/health" || true)
+            t=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "$url/api/vacunas/tipos" || true)
+            probes=$((probes + 2))
+            if [ "$h" != 200 ] || [ "$t" != 200 ]; then
+              [ "$h" != 200 ] && failed=$((failed + 1))
+              [ "$t" != 200 ] && failed=$((failed + 1))
+              [ -n "$first_fail" ] || first_fail=$(date +%s)
+              last_fail=$(date +%s)
+            fi
+            echo "$(now) health=$h tipos=$t $*"
+            [ "$h" = 200 ] && [ "$t" = 200 ]
+          }
+
+          probe "baseline" || { echo "::error::app is not healthy before the drill; aborting"; exit 1; }
+          probes=0; failed=0
+          start=$(date +%s)
+          deadline=$((start + 20 * 60))
+
+          case "$SCENARIO" in
+          rds-failover)
+            read -r multi az_before <<<"$(aws rds describe-db-instances --db-instance-identifier "$DB_ID" \
+              --query 'DBInstances[0].[MultiAZ,AvailabilityZone]' --output text)"
+            if [ "$multi" != "True" ]; then
+              echo "::error::$DB_ID is not Multi-AZ (deploy with Environment=demo); a failover drill needs a standby."
+              exit 1
+            fi
+            echo "AZ before: $az_before"
+            aws rds reboot-db-instance --db-instance-identifier "$DB_ID" --force-failover >/dev/null
+            seen_reboot=false
+            while :; do
+              status=$(aws rds describe-db-instances --db-instance-identifier "$DB_ID" \
+                --query 'DBInstances[0].DBInstanceStatus' --output text)
+              probe "db=$status" || true
+              [ "$status" != available ] && seen_reboot=true
+              # ponytail: if the status flip is shorter than one 5s poll, 60s of "available" ends the wait
+              if [ "$status" = available ] && { $seen_reboot || [ $(( $(date +%s) - start )) -ge 60 ]; }; then break; fi
+              [ "$(date +%s)" -lt "$deadline" ] || { echo "::error::timed out waiting for $DB_ID"; break; }
+              sleep 5
+            done
+            recovered=$(date +%s)
+            az_after=$(aws rds describe-db-instances --db-instance-identifier "$DB_ID" \
+              --query 'DBInstances[0].AvailabilityZone' --output text)
+            echo "AZ after: $az_after"
+            # keep probing ~30s: the app reconnects after RDS reports available
+            for _ in 1 2 3 4 5 6; do sleep 5; probe "post" || true; done
+            downtime=0
+            [ -n "$first_fail" ] && downtime=$((last_fail - first_fail + 5))
+            ok=true
+            [ "$status" = available ] && [ "$az_after" != "$az_before" ] && probe "final" || ok=false
+            {
+              echo "### Drill rds-failover"
+              echo "| | |"
+              echo "|---|---|"
+              echo "| AZ before → after | $az_before → $az_after |"
+              echo "| DB available again after | $((recovered - start)) s |"
+              echo "| failed requests | $failed / $probes |"
+              echo "| observed downtime (approx., 5s resolution) | ${downtime} s |"
+            } >> "$GITHUB_STEP_SUMMARY"
+            ;;
+
+          az-tasks)
+            subnet=$(out pataporte-network PrivateSubnet1)
+            stopped=()
+            for svc in api frontend; do
+              arns=$(aws ecs list-tasks --cluster "$CLUSTER" --service-name "$svc" --desired-status RUNNING \
+                --query 'taskArns' --output text)
+              [ -n "$arns" ] && [ "$arns" != None ] || continue
+              # shellcheck disable=SC2086
+              for task in $(aws ecs describe-tasks --cluster "$CLUSTER" --tasks $arns --output json \
+                  | jq -r --arg s "$subnet" '.tasks[] | select(any(.attachments[].details[]; .name == "subnetId" and .value == $s)) | .taskArn'); do
+                echo "stopping $svc ${task##*/} (subnet $subnet)"
+                aws ecs stop-task --cluster "$CLUSTER" --task "$task" --reason "drill az-tasks" >/dev/null
+                stopped+=("$svc/${task##*/}")
+              done
+            done
+            if [ ${#stopped[@]} -eq 0 ]; then
+              echo "::error::no api/frontend task runs in $subnet; nothing to simulate (Environment=dev runs 1 task each)."
+              exit 1
+            fi
+            stable=false
+            while [ "$(date +%s)" -lt "$deadline" ]; do
+              probe || true
+              counts=$(aws ecs describe-services --cluster "$CLUSTER" --services api frontend \
+                --query 'services[].[serviceName,desiredCount,runningCount,pendingCount]' --output text)
+              echo "$counts"
+              if [ $(( $(date +%s) - start )) -ge 30 ] && awk '$2 != $3 || $4 != 0 {bad=1} END {exit bad}' <<<"$counts"; then
+                stable=true; break
+              fi
+              sleep 5
+            done
+            recovered=$(date +%s)
+            $stable || echo "::error::services did not stabilise within 20 minutes"
+            placement=$(for svc in api frontend; do
+              arns=$(aws ecs list-tasks --cluster "$CLUSTER" --service-name "$svc" --desired-status RUNNING --query 'taskArns' --output text)
+              # shellcheck disable=SC2086
+              [ -n "$arns" ] && [ "$arns" != None ] && aws ecs describe-tasks --cluster "$CLUSTER" --tasks $arns \
+                --query 'tasks[].[group,availabilityZone]' --output text
+            done | sort | uniq -c | awk '{print "| " $2 " | " $3 " | " $1 " |"}')
+            ok=true
+            $stable && probe "final" || ok=false
+            {
+              echo "### Drill az-tasks (subnet $subnet)"
+              echo "Stopped: ${stopped[*]}"
+              echo
+              echo "| | |"
+              echo "|---|---|"
+              echo "| failed requests | $failed / $probes |"
+              echo "| services stable again after | $((recovered - start)) s |"
+              echo
+              echo "| service | AZ | running tasks |"
+              echo "|---|---|---|"
+              echo "$placement"
+            } >> "$GITHUB_STEP_SUMMARY"
+            ;;
+          esac
+
+          if $ok; then verdict="PASS: recovered and the app answers"; else verdict="FAIL: see the log above"; fi
+          echo "**Verdict: $verdict**" >> "$GITHUB_STEP_SUMMARY"
+          echo "Verdict: $verdict"
+          $ok
+
+  rejected:
+    if: inputs.confirm != 'drill'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Confirmation must be exactly 'drill'. Nothing was touched."
+          exit 1
