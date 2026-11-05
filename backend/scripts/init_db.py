@@ -34,9 +34,13 @@ def usuario_app(usuario: str, password: str):
     try:
         with crudo.cursor() as cur:
             cur.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (usuario,))
-            accion = "ALTER" if cur.fetchone() else "CREATE"
-            cur.execute(sql.SQL(accion + " ROLE {} LOGIN PASSWORD {} NOSUPERUSER NOCREATEDB NOCREATEROLE")
-                        .format(rol, sql.Literal(password)))
+            # en RDS el maestro no es superusuario: ALTER no puede tocar atributos como NOSUPERUSER,
+            # así que en un rol existente (por ejemplo, restaurado de un snapshot) solo se cambia la contraseña
+            if cur.fetchone():
+                cur.execute(sql.SQL("ALTER ROLE {} LOGIN PASSWORD {}").format(rol, sql.Literal(password)))
+            else:
+                cur.execute(sql.SQL("CREATE ROLE {} LOGIN PASSWORD {} NOSUPERUSER NOCREATEDB NOCREATEROLE")
+                            .format(rol, sql.Literal(password)))
             for sentencia in (
                 "GRANT CONNECT ON DATABASE {base} TO {rol}",
                 "REVOKE CREATE ON SCHEMA public FROM PUBLIC",
