@@ -7,7 +7,7 @@ on:
         description: dev (single NAT, single-AZ RDS) or demo (HA + autoscaling)
         type: choice
         options: [dev, demo]
-        default: dev
+        default: demo
   # on main only redeploys when the environment is already up (see the gate step)
   push:
     branches: [main]
