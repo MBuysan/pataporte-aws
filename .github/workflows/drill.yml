@@ -1,6 +1,6 @@
 name: drill
 
-# Resilience drills against the running environment (meant for Environment=demo).
+# Resilience drills against the running environment.
 on:
   workflow_dispatch:
     inputs:
@@ -73,7 +73,7 @@ jobs:
             read -r multi az_before <<<"$(aws rds describe-db-instances --db-instance-identifier "$DB_ID" \
               --query 'DBInstances[0].[MultiAZ,AvailabilityZone]' --output text)"
             if [ "$multi" != "True" ]; then
-              echo "::error::$DB_ID is not Multi-AZ (deploy with Environment=demo); a failover drill needs a standby."
+              echo "::error::$DB_ID is not Multi-AZ; a failover drill needs a standby."
               exit 1
             fi
             echo "AZ before: $az_before"
@@ -137,7 +137,7 @@ jobs:
               done
             done
             if [ ${#stopped[@]} -eq 0 ]; then
-              echo "::error::no api/frontend task runs in $subnet; nothing to simulate (Environment=dev runs 1 task each)."
+              echo "::error::no api/frontend task runs in $subnet; nothing to simulate."
               exit 1
             fi
             stable=false

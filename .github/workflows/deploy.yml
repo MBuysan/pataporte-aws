@@ -2,12 +2,6 @@ name: deploy
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: dev (single NAT, single-AZ RDS) or demo (HA + autoscaling)
-        type: choice
-        options: [dev, demo]
-        default: demo
   # on main only redeploys when the environment is already up (see the gate step)
   push:
     branches: [main]
@@ -33,24 +27,20 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # push to main: only if pataporte-app exists, keeping its current Environment
+      # push to main: only if pataporte-app exists
       - name: Gate
         id: gate
-        env:
-          INPUT_ENVIRONMENT: ${{ inputs.environment }}
         run: |
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            environment=$INPUT_ENVIRONMENT
-          elif environment=$(aws cloudformation describe-stacks --stack-name pataporte-app \
-              --query "Stacks[0].Parameters[?ParameterKey=='Environment'].ParameterValue" --output text 2>/dev/null); then
-            echo "pataporte-app exists ($environment): redeploying"
+            :
+          elif aws cloudformation describe-stacks --stack-name pataporte-app >/dev/null 2>&1; then
+            echo "pataporte-app exists: redeploying"
           else
             echo "::notice::pataporte-app does not exist; skipping deploy. Run the deploy workflow manually to create it."
             echo "run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "run=true" >> "$GITHUB_OUTPUT"
-          echo "ENVIRONMENT=$environment" >> "$GITHUB_ENV"
 
       - name: Persistent stacks (network, storage)
         if: steps.gate.outputs.run == 'true'
@@ -77,7 +67,7 @@ jobs:
       - name: Ephemeral stacks (nat, database, app)
         if: steps.gate.outputs.run == 'true'
         run: |
-          infra/deploy-stack.sh pataporte-nat infra/10-nat.yml Environment="$ENVIRONMENT"
+          infra/deploy-stack.sh pataporte-nat infra/10-nat.yml
           if aws cloudformation describe-stacks --stack-name pataporte-database >/dev/null 2>&1; then
             snapshot=$(aws cloudformation describe-stacks --stack-name pataporte-database \
               --query "Stacks[0].Parameters[?ParameterKey=='SnapshotIdentifier'].ParameterValue" --output text)
@@ -92,8 +82,8 @@ jobs:
               echo "Database: no snapshot of pataporte-db, created empty" >> "$GITHUB_STEP_SUMMARY"
             fi
           fi
-          infra/deploy-stack.sh pataporte-database infra/11-database.yml Environment="$ENVIRONMENT" SnapshotIdentifier="$snapshot"
-          infra/deploy-stack.sh pataporte-app infra/12-app.yml Environment="$ENVIRONMENT" ImageTag="$GITHUB_SHA"
+          infra/deploy-stack.sh pataporte-database infra/11-database.yml SnapshotIdentifier="$snapshot"
+          infra/deploy-stack.sh pataporte-app infra/12-app.yml ImageTag="$GITHUB_SHA"
 
       # ponytail: init_db (alembic upgrade head) runs after the new image is live, so only
       # additive migrations are safe. Move it before the app update for breaking ones.
@@ -131,5 +121,5 @@ jobs:
         run: |
           out() { aws cloudformation describe-stacks --stack-name "$1" --query "Stacks[0].Outputs[?OutputKey=='$2'].OutputValue" --output text; }
           url=$(out pataporte-app Url)
-          echo "### Pataporte ($ENVIRONMENT) deployed: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Pataporte deployed: $url" >> "$GITHUB_STEP_SUMMARY"
           echo "Pataporte: $url"
