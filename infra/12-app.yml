@@ -11,10 +11,6 @@ Parameters:
     Type: String
     Default: pataporte
     Description: Prefix of the network/storage/database stack exports
-  Environment:
-    Type: String
-    Default: dev
-    AllowedValues: [dev, demo]
   ImageTag:
     Type: String
     Description: Tag of the pataporte-api and pataporte-frontend images in ECR (the pipeline passes the git sha)
@@ -24,13 +20,10 @@ Metadata:
     ParameterGroups:
       - Label:
           default: Deployment
-        Parameters: [Environment, ImageTag]
+        Parameters: [ImageTag]
       - Label:
           default: Wiring
         Parameters: [ProjectName]
-
-Conditions:
-  IsDemo: !Equals [!Ref Environment, demo]
 
 Resources:
   # --- Load balancer ---
@@ -232,7 +225,7 @@ Resources:
             - Name: SMTP_PORT
               Value: '587'
             - Name: ENVIRONMENT
-              Value: !Ref Environment
+              Value: production
             - Name: LOG_LEVEL
               Value: INFO
           Secrets:
@@ -325,7 +318,7 @@ Resources:
             - Name: SMTP_PORT
               Value: '587'
             - Name: ENVIRONMENT
-              Value: !Ref Environment
+              Value: production
             - Name: LOG_LEVEL
               Value: INFO
           Secrets:
@@ -416,7 +409,7 @@ Resources:
             - Name: SMTP_PORT
               Value: '587'
             - Name: ENVIRONMENT
-              Value: !Ref Environment
+              Value: production
             - Name: LOG_LEVEL
               Value: INFO
           Secrets:
@@ -460,7 +453,7 @@ Resources:
       Cluster: !Ref Cluster
       TaskDefinition: !Ref FrontendTaskDefinition
       LaunchType: FARGATE
-      DesiredCount: !If [IsDemo, 2, 1]
+      DesiredCount: 2
       HealthCheckGracePeriodSeconds: 30
       DeploymentConfiguration:
         MinimumHealthyPercent: 100
@@ -489,7 +482,7 @@ Resources:
       Cluster: !Ref Cluster
       TaskDefinition: !Ref ApiTaskDefinition
       LaunchType: FARGATE
-      DesiredCount: !If [IsDemo, 2, 1]
+      DesiredCount: 2
       HealthCheckGracePeriodSeconds: 60
       DeploymentConfiguration:
         MinimumHealthyPercent: 100
@@ -535,15 +528,15 @@ Resources:
             - Fn::ImportValue: !Sub ${ProjectName}-AppSecurityGroup
 
   # --- Autoscaling (no RoleARN: Application Auto Scaling uses its service-linked role) ---
-  # API: dev 1..2, demo 2..4, target tracking on CPU and requests per target.
+  # API: 2..4, target tracking on CPU and requests per target.
   ApiScalableTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
       ServiceNamespace: ecs
       ScalableDimension: ecs:service:DesiredCount
       ResourceId: !Sub service/${Cluster}/${ApiService.Name}
-      MinCapacity: !If [IsDemo, 2, 1]
-      MaxCapacity: !If [IsDemo, 4, 2]
+      MinCapacity: 2
+      MaxCapacity: 4
 
   ApiCpuScaling:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
@@ -572,11 +565,10 @@ Resources:
         ScaleInCooldown: 120
         ScaleOutCooldown: 60
 
-  # Worker: demo only, 1..3 on queue depth.
+  # Worker: 1..3 on queue depth.
   # ponytail: tracks total visible messages, not backlog per task; fine for a demo load.
   WorkerScalableTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
-    Condition: IsDemo
     Properties:
       ServiceNamespace: ecs
       ScalableDimension: ecs:service:DesiredCount
@@ -586,7 +578,6 @@ Resources:
 
   WorkerQueueScaling:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    Condition: IsDemo
     Properties:
       PolicyName: worker-queue-depth
       PolicyType: TargetTrackingScaling

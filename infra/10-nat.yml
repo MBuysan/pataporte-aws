@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  Pataporte NAT (ephemeral, billed per hour). dev = one NAT shared by both AZs,
-  demo = one NAT per AZ. Adds the default route to each private route table.
+  Pataporte NAT (ephemeral, billed per hour). One NAT per AZ. Adds the default route to each private route table.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
 
@@ -10,13 +9,6 @@ Parameters:
     Type: String
     Default: pataporte
     Description: Prefix of the network stack exports
-  Environment:
-    Type: String
-    Default: dev
-    AllowedValues: [dev, demo]
-
-Conditions:
-  IsDemo: !Equals [!Ref Environment, demo]
 
 Resources:
   NatEip1:
@@ -32,12 +24,10 @@ Resources:
 
   NatEip2:
     Type: AWS::EC2::EIP
-    Condition: IsDemo
     Properties:
       Domain: vpc
   NatGateway2:
     Type: AWS::EC2::NatGateway
-    Condition: IsDemo
     Properties:
       AllocationId: !GetAtt NatEip2.AllocationId
       SubnetId:
@@ -56,7 +46,7 @@ Resources:
       RouteTableId:
         Fn::ImportValue: !Sub ${ProjectName}-PrivateRouteTable2
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !If [IsDemo, !Ref NatGateway2, !Ref NatGateway1]
+      NatGatewayId: !Ref NatGateway2
 
 Outputs:
   NatGateway1:

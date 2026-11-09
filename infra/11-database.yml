@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Pataporte database (ephemeral): RDS PostgreSQL 16 in the isolated subnets,
-  reachable only from the ECS tasks security group. Multi-AZ in demo.
+  reachable only from the ECS tasks security group. Multi-AZ.
 
 # ponytail: tags are stack-level (see infra/deploy-stack.sh), propagated by CloudFormation.
 
@@ -10,10 +10,6 @@ Parameters:
     Type: String
     Default: pataporte
     Description: Prefix of the network stack exports
-  Environment:
-    Type: String
-    Default: dev
-    AllowedValues: [dev, demo]
   SnapshotIdentifier:
     Type: String
     Default: ''
@@ -22,7 +18,6 @@ Parameters:
       Never change it on an existing stack: a new value replaces the database.
 
 Conditions:
-  IsDemo: !Equals [!Ref Environment, demo]
   HasSnapshot: !Not [!Equals [!Ref SnapshotIdentifier, '']]
 
 Resources:
@@ -66,7 +61,7 @@ Resources:
       DBName: !If [HasSnapshot, !Ref AWS::NoValue, pataporte]
       MasterUsername: !If [HasSnapshot, !Ref AWS::NoValue, pataporte]
       ManageMasterUserPassword: true
-      MultiAZ: !If [IsDemo, true, false]
+      MultiAZ: true
       PubliclyAccessible: false
       DBSubnetGroupName: !Ref DbSubnetGroup
       VPCSecurityGroups: [!Ref DbSecurityGroup]
